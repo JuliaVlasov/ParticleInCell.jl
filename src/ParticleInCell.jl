@@ -1,5 +1,12 @@
 module ParticleInCell
 
-greet() = print("Hello World!")
+struct Particle
 
-end # module
+   cell :: Int32
+   dx   :: Float32
+   v    :: Float64
+   w    :: Float32
+
+end
+
+include("simulation.jl")
