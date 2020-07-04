@@ -10,3 +10,5 @@ struct Particle
 end
 
 include("simulation.jl")
+
+end
