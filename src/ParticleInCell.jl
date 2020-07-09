@@ -1,14 +1,13 @@
 module ParticleInCell
 
-struct Particle
-
-   cell :: Int32
-   dx   :: Float32
-   v    :: Float64
-   w    :: Float32
-
-end
+using OffsetArrays
+import Sobol
 
 include("simulation.jl")
+include("particles.jl")
+include("mesh.jl")
+include("fields.jl")
+include("decalage.jl")
+include("maxwell.jl")
 
 end
