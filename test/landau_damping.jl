@@ -1,5 +1,6 @@
 using OffsetArrays
 using Sobol
+using Plots
 
 @testset "Landau Damping" begin
 
@@ -223,6 +224,18 @@ function landau_sampling!( pg, alpha, kx )
 end
 
 landau_sampling!( pg, alpha, kx )
+
+xp = view(pg.pos, :, 1)
+vp = pg.vit
+
+pp = plot(layout=(3,1))
+histogram!(pp[1,1], xp, normalize=true, bins = 100, lab="x")
+plot!(pp[1,1], x -> (1+alpha*cos(kx*x))/(2π/kx), 0., 2π/kx, lab="")
+histogram!(pp[2,1], vp[:,1], normalize=true, bins = 100, lab="vx")
+plot!(pp[2,1], v -> exp( - v^2 / 2) * 4 / π^2 , -6, 6, lab="")
+histogram!(pp[3,1], vp[:,2], normalize=true, bins = 100, lab="vy")
+plot!(pp[3,1], v -> exp( - v^2 / 2) * 4 / π^2 , -6, 6, lab="")
+savefig("particles.png")
 
 #=
 
