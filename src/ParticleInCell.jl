@@ -9,5 +9,6 @@ include("mesh.jl")
 include("fields.jl")
 include("decalage.jl")
 include("maxwell.jl")
+include("interpolate.jl")
 
 end
