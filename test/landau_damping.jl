@@ -6,26 +6,21 @@ import ParticleInCell: decalage!, faraday!, ampere!
 
 @testset "Landau Damping" begin
 
-    nx        = 128		    # nombre de pts suivant x
-    ny        = 16   		# nombre de pts suivant y
-    cfl       = 0.9 		# nombre de Courant-Friedrich-Levy
-    tfinal    = 50      	# temps final
-    nstepmax  = 20000000	# nbre d'iterations maxi
-    nomcas    = "plasma"	# nom du cas traite (6 lettres)
-    jname     = "jcico1"	# methode de calcul des courants
-    icrea     = 1			# frequence d'emission des particules
-    idiag     = 50    	    # frequence des sorties graphiques
-    bcname    = "period"	# type de conditions limites
-    exext     = 0			# champ electrique exterieur suivant x
-    eyext     = 0	 		# champ electriaue exterieur suivant y
-    bzext     = 0			# champ magnetique exterieur
-    charge    = 1           # charge d'une macro particule
-    masse     = 1           # masse d'une macro particule
-    c         = 8	 	    # vitesse de la lumiere
-    e0        = 1           # permittivite du vide
+    nx        = 128	    # nombre de pts suivant x
+    ny        = 16   	# nombre de pts suivant y
+    cfl       = 0.9 	# nombre de Courant-Friedrich-Levy
+    tfinal    = 50     	# temps final
+    nstepmax  = 2000000	# nbre d'iterations maxi
+    exext     = 0		# champ electrique exterieur suivant x
+    eyext     = 0	 	# champ electrique exterieur suivant y
+    bzext     = 0		# champ magnetique exterieur
+    charge    = 1       # charge d'une macro particule
+    masse     = 1       # masse d'une macro particule
+    c         = 8	    # vitesse de la lumiere
+    e0        = 1       # permittivite du vide
     
     csq = c*c
-    q_sur_m = charge / masse
+    q_over_m = charge / masse
     poids = charge
     
     alpha = 0.1
@@ -45,7 +40,7 @@ import ParticleInCell: decalage!, faraday!, ampere!
     
     println(" cfl = $cfl ")
     println(" dx = $dx dy = $dy dt = $dt")
-    println(" Nombre d'iteration nstep $nstep ")
+    println(" Nnumber of steps $nstep ")
     
     fields = Fields(nx, ny)
     
@@ -101,7 +96,7 @@ import ParticleInCell: decalage!, faraday!, ampere!
     for istep = 1:nstep
     
        if istep > 1
-           faraday!( fields, dt ) 	#Calcul de B(n-1/2) --> B(n)			
+           faraday!( fields, 0.5dt ) 	#Calcul de B(n-1/2) --> B(n)			
        end
     
        decalage!( mesh, fields, ex, ey, bz )

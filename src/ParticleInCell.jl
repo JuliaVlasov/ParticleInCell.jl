@@ -9,6 +9,8 @@ include("mesh.jl")
 include("fields.jl")
 include("decalage.jl")
 include("maxwell.jl")
-include("interpolate.jl")
+include("interpolate_eb.jl")
+include("compute_current.jl")
+include("particle_push.jl")
 
 end

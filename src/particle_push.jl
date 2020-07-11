@@ -1,31 +1,9 @@
-
-function interpol_eb( m, f, p )
-
-    for ipart=1:p.nbpart
-
-        i = p.case(ipart,1)
-        j = p.case(ipart,2)
-        xp = p.pos(ipart,1)
-        yp = p.pos(ipart,2)
-    
-        dum = 1/(m.hx[i]*m.hy[j])
-        a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
-        a2 = (xp-x[i]) * (y(j+1)-yp) * dum
-        a3 = (xp-x[i]) * (yp-y[j]) * dum
-        a4 = (x[i+1]-xp) * (yp-y[j]) * dum
-    
-        p.epx[ipart] = a1 * f.ex[i,j] + a2 * f.ex[i+1,j] + a3 * f.ex[i+1,j+1] + a4 * f.ex[i,j+1] 
-        p.epy[ipart] = a1 * f.ey[i,j] + a2 * f.ey[i+1,j] + a3 * f.ey[i+1,j+1] + a4 * f.ey[i,j+1] 
-        p.bpz[ipart] = a1 * f.bz[i,j] + a2 * f.bz[i+1,j] + a3 * f.bz[i+1,j+1] + a4 * f.bz[i,j+1] 
-
-    end
-
-end 
-
-
 function avancee_vitesse( p )
 
-for ipart = 1, nbpart
+exext = 0.0
+eyext = 0.0
+
+for ipart = 1:p.nbpart
 
    #*** Changement de variable u = gamma*vit
 
@@ -49,11 +27,12 @@ for ipart = 1, nbpart
    end if
 
 
-   #*** Separation des effets p.ctriques et magnetiques
+   #*** Separation des effets electriques et magnetiques
 
    #*** On ajoute la moitie de l'effet champ p.ctrique E
 
-   dum = 0.5 * dt * q_sur_m
+   dum = 0.5 * dt * p.q_over_m
+
    p.vit[ipart,1] = p.vit[ipart,1] + dum*(p.epx[ipart]+exext)
    p.vit[ipart,2] = p.vit[ipart,2] + dum*(p.epy[ipart]+eyext)
 
@@ -66,7 +45,7 @@ for ipart = 1, nbpart
    p.vit[ipart,2] = p.vit[ipart,2] - p.vit[ipart,1] * sintheta
    p.vit[ipart,1] = p.vit[ipart,1] + p.vit[ipart,2] * tantheta
 
-   #*** Autre moitie de l'effet du champ p.ctrique E
+   #*** Autre moitie de l'effet du champ electrique E
 
    p.vit[ipart,1] = p.vit[ipart,1] + dum*(p.epx[ipart]+exext)
    p.vit[ipart,2] = p.vit[ipart,2] + dum*(p.epy[ipart]+eyext)
