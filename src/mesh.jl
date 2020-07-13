@@ -1,3 +1,19 @@
+using OffsetArrays
+
+export Mesh
+
+"""
+    Mesh( dimx, nx, dimy, ny)
+
+Generate a cartesians mesh on rectangle `dimx`x `dimy` with `nx` x `ny` points
+
+- `nx` : indices are in [0:nx]
+- `ny` : indices are in [0:ny]
+- `dimx` x `dimy`: mesh area
+- `x, y` : node positions
+- `hx, hy` : mesh step
+- `hhx, hhy` : mesh half step
+"""
 struct Mesh
 
     nx
@@ -25,11 +41,11 @@ struct Mesh
         y[0] = 0
         
         for i=1:nx
-            x[i] = (i*dx) *(i*dx+1)/(1+dimx)
+            x[i] = i*dx # *(i*dx+1)/(1+dimx)
         end
         
         for j=1:ny
-            y[j] = (j*dy) *(j*dy+1)/(1+dimy)
+            y[j] = j*dy # *(j*dy+1)/(1+dimy)
         end
         
         for i=0:nx-1

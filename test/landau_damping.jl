@@ -2,7 +2,8 @@ using OffsetArrays
 using Sobol
 using Plots
 import ParticleInCell: Mesh, Fields, Particles, landau_sampling!
-import ParticleInCell: decalage!, faraday!, ampere!
+import ParticleInCell: decalage!, faraday!, ampere!, interpol_eb!
+import ParticleInCell: push_x!, push_v!
 
 @testset "Landau Damping" begin
 
@@ -100,19 +101,19 @@ import ParticleInCell: decalage!, faraday!, ampere!
        end
     
        decalage!( mesh, fields, ex, ey, bz )
-       interpol_eb( ex, ey, bz, particles )
+       interpol_eb!( ex, ey, bz, particles, mesh )
     
-       avancee_vitesse( particles )
+       push_v!( particles )
     
-       avancee_part( particles, 0.5)  # x(n) --> x(n+1/2)
-       sortie_part( particles )
+       psu_x!( particles, 0.5)  # x(n) --> x(n+1/2)
+       output_particles!( particles )
        calcul_j_cic( particles, fields, jx, jy )
-       avancee_part( particles, 0.5)  # x(n+1/2) -- x(n+1)
-       sortie_part( particles )
+       push_x!( particles, 0.5)  # x(n+1/2) -- x(n+1)
+       output_particles!( particles )
             
        faraday!( mesh, fields, dt, c, e0 )   #Calcul de B(n) --> B(n+1/2)
        ampere!( mesh, fields, dt, c, e0 )    #Calcul de E(n) --> E(n+1)
-       conditions_limites!( mesh, fields )
+       boundary_conditions!( mesh, fields )
     
        time = time + dt
     

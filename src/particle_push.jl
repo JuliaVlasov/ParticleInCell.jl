@@ -1,4 +1,4 @@
-function avancee_vitesse( p )
+function push_v!( p )
 
 exext = 0.0
 eyext = 0.0
@@ -24,7 +24,7 @@ for ipart = 1:p.nbpart
 
        gamma = 1
 
-   end if
+   end
 
 
    #*** Separation des effets electriques et magnetiques
@@ -68,7 +68,7 @@ end
 end 
 
 
-function avancee_part( p, coef )  # Avancee de coef * dt
+function push_x!( p, coef )  # Avancee de coef * dt
 
     for ipart=1:p.nbpart
        p.pos[ipart,1] = p.pos[ipart,1] + p.vit[ipart,1] * dt * coef
@@ -79,29 +79,29 @@ function avancee_part( p, coef )  # Avancee de coef * dt
     
     for ipart=1:p.nbpart
        i = 0
-       while (p.pos(ipart,1) >= x[i] .and. p.pos(ipart,1)<dimx) 
+       while (p.pos[ipart,1] >= x[i] && p.pos[ipart,1]<dimx) 
           i=i+1
        end
-       if ( p.pos(ipart,1) >= dimx ) i=nx+1
-       p.case(ipart,1) = i-1
+       ( p.pos[ipart,1] >= dimx )  && (i=nx+1)
+       p.case[ipart,1] = i-1
        j = 0
-       while (p.pos(ipart,2) >= y[j] .and. p.pos(ipart,2)<dimy) 
+       while (p.pos[ipart,2] >= y[j] && p.pos[ipart,2]<dimy) 
           j=j+1 
        end
-       if ( p.pos(ipart,2) >= dimy ) j=ny+1
-       p.case(ipart,2) = j-1
+       ( p.pos[ipart,2] >= dimy ) && (j=ny+1)
+       p.case[ipart,2] = j-1
     end 
 
 end 
 
 
-function sortie_part( p, m )
+function particles_output!( p, m )
 
    for ipart=1:nbpart
-      if( p.pos[ipart,1] >= dimx ) p.pos[ipart,1] = p.pos[ipart,1] - m.dimx
-      if( p.pos[ipart,2] >= dimy ) p.pos[ipart,2] = p.pos[ipart,2] - m.dimy
-      if( p.pos[ipart,1] < 0 )  p.pos[ipart,1] = p.pos[ipart,1] + m.dimx
-      if( p.pos[ipart,2] < 0 )  p.pos[ipart,2] = p.pos[ipart,2] + m.dimy
+      ( p.pos[ipart,1] >= dimx ) && (p.pos[ipart,1] = p.pos[ipart,1] - m.dimx)
+      ( p.pos[ipart,2] >= dimy ) && (p.pos[ipart,2] = p.pos[ipart,2] - m.dimy)
+      ( p.pos[ipart,1] <  0    ) && (p.pos[ipart,1] = p.pos[ipart,1] + m.dimx)
+      ( p.pos[ipart,2] <  0    ) && (p.pos[ipart,2] = p.pos[ipart,2] + m.dimy)
    end
 
    for ipart=1:nbpart
@@ -119,7 +119,7 @@ function sortie_part( p, m )
 
 end 
 
-function calcul_j_cic( m, p, f, jx, jy )
+function compute_current!( m, p, f, jx, jy )
 
    fill!(jx, 0)
    fill!(jy, 0)
@@ -130,8 +130,8 @@ function calcul_j_cic( m, p, f, jx, jy )
       xp = p.pos[ipart,1]
       yp = p.pos[ipart,2]
       dum = p.p[ipart] / (m.hx[i]*m.hy[j])
-      a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
-      a2 = (xp-x[i]) * (y(j+1)-yp) * dum
+      a1 = (x[i+1]-xp) * (y[j+1]-yp) * dum
+      a2 = (xp-x[i]) * (y[j+1]-yp) * dum
       a3 = (xp-x[i]) * (yp-y[j]) * dum
       a4 = (x[i+1]-xp) * (yp-y[j]) * dum
       dum = p.vit[ipart,1] / (m.hx[i]*m.hy[j]) 

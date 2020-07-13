@@ -1,4 +1,4 @@
-function interpol_eb( p, m, ex, ey, bz )
+function interpol_eb!( ex, ey, bz, p :: Particles, m :: Mesh )
 
     for ipart=1:p.nbpart
 
@@ -8,6 +8,7 @@ function interpol_eb( p, m, ex, ey, bz )
         yp = p.pos(ipart,2)
     
         dum = 1/(m.hx[i]*m.hy[j])
+
         a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
         a2 = (xp-x[i]) * (y(j+1)-yp) * dum
         a3 = (xp-x[i]) * (yp-y[j]) * dum
