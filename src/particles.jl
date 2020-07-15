@@ -13,7 +13,7 @@ struct Particles
 
     nbpart
     pos
-    case
+    cell
     vit
     epx
     epy
@@ -23,14 +23,14 @@ struct Particles
     function Particles( nbpart )
 
         pos = zeros(nbpart,2)
-        case = zeros(Int32, nbpart,2)
+        cell = zeros(Int32, nbpart,2)
         vit = zeros(nbpart,2)
         epx = zeros(nbpart)
         epy = zeros(nbpart)
         bpz = zeros(nbpart)
         p = zeros(nbpart)
 
-        new( nbpart, pos, case, vit, epx, epy, bpz, p )
+        new( nbpart, pos, cell, vit, epx, epy, bpz, p )
 
     end 
 
@@ -74,8 +74,8 @@ function update_cells!( p, m )
 
     for i in 1:p.nbpart
 
-       @show p.case[i,1] = trunc(Int, p.pos[i,1] / m.dimx * m.nx) + 1
-       @show p.case[i,2] = trunc(Int, p.pos[i,2] / m.dimy * m.ny) + 1
+       p.cell[i,1] = trunc(Int, p.pos[i,1] / m.dimx * m.nx) + 1
+       p.cell[i,2] = trunc(Int, p.pos[i,2] / m.dimy * m.ny) + 1
 
     end
 

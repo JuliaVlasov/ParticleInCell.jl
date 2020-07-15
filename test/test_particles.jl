@@ -34,36 +34,17 @@ using ParticleInCell
         end
     end
 
+    @show sum(rho[1:nx,1:ny])
+
     nbpart = 100*nx*ny
     
     particles = Particles(nbpart)
     
     landau_sampling!( particles, alpha, kx )
     
-    xp = view(particles.pos, :, 1)
-    vp = particles.vit
-    
-    # pp = plot(layout=(3,1))
-    # histogram!(pp[1,1], xp, normalize=true, bins = 100, lab="x")
-    # plot!(pp[1,1], x -> (1+alpha*cos(kx*x))/(2π/kx), 0., 2π/kx, lab="")
-    # histogram!(pp[2,1], vp[:,1], normalize=true, bins = 100, lab="vx")
-    # plot!(pp[2,1], v -> exp( - v^2 / 2) * 4 / π^2 , -6, 6, lab="")
-    # histogram!(pp[3,1], vp[:,2], normalize=true, bins = 100, lab="vy")
-    # plot!(pp[3,1], v -> exp( - v^2 / 2) * 4 / π^2 , -6, 6, lab="")
-    # savefig("particles.png")
+    update_cells!( particles, mesh)
 
-    for i in 1:nbpart
-        particles.case[i,1] = trunc(Int, particles.pos[i,1] / dimx * nx) + 1
-        particles.case[i,2] = trunc(Int, particles.pos[i,2] / dimy * ny) + 1
-    end
-
-
-    # surface(compute_rho(particles, mesh))
-    # savefig("rho.png")
-    
-
-    @show sum(compute_rho(particles, mesh)) 
-    @show sum(particles.p) 
+    @show sum(compute_rho(particles, mesh)[1:nx,1:ny] * dx * dy) 
 
     @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-6
     

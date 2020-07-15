@@ -21,8 +21,8 @@ using ParticleInCell
     
     for i in 1:particles.nbpart
 
-        @test particles.case[i,1] == i
-        @test particles.case[i,2] == i
+        @test particles.cell[i,1] == i
+        @test particles.cell[i,2] == i
     
     end
     

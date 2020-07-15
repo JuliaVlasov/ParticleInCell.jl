@@ -5,8 +5,8 @@ function calcul_j_cic( jx, jy, m, p, f )
    
    for ipart=1:nbpart
 
-      i = p.case[ipart,1]
-      j = p.case[ipart,2]
+      i = p.cell[ipart,1]
+      j = p.cell[ipart,2]
 
       xp = p.pos[ipart,1]
       yp = p.pos[ipart,2]
