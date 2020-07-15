@@ -15,6 +15,8 @@ struct Mesh
 
     nx
     ny
+    dimx
+    dimy
     x
     y
     dx
@@ -28,7 +30,7 @@ struct Mesh
         dx = dimx / nx
         dy = dimy / ny
         
-        new( nx, ny, x, y, dx, dy )
+        new( nx, ny, dimx, dimy, x, y, dx, dy )
 
     end
 

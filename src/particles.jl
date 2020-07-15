@@ -7,6 +7,8 @@ struct Particle
 
 end
 
+export Particles
+
 struct Particles
 
     nbpart
@@ -21,7 +23,7 @@ struct Particles
     function Particles( nbpart )
 
         pos = zeros(nbpart,2)
-        case = zeros(nbpart,2)
+        case = zeros(Int32, nbpart,2)
         vit = zeros(nbpart,2)
         epx = zeros(nbpart)
         epy = zeros(nbpart)
@@ -33,6 +35,8 @@ struct Particles
     end 
 
 end
+
+export landau_sampling!
 
 function landau_sampling!( pg, alpha, kx )
 
@@ -60,6 +64,19 @@ function landau_sampling!( pg, alpha, kx )
         pg.vit[i,1] = v * cos(θ)
         pg.vit[i,2] = v * sin(θ)
         pg.p[i] = 1 / nbpart
+    end
+
+end
+
+export update_cells!
+
+function update_cells!( p, m )
+
+    for i in 1:p.nbpart
+
+       @show p.case[i,1] = trunc(Int, p.pos[i,1] / m.dimx * m.nx) + 1
+       @show p.case[i,2] = trunc(Int, p.pos[i,2] / m.dimy * m.ny) + 1
+
     end
 
 end

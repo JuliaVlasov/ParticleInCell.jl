@@ -68,108 +68,79 @@ end
 end 
 
 
-function push_x!( p, coef )  # Avancee de coef * dt
+function push_x!( p, mesh, dt )  # Avancee de coef * dt
 
     for ipart=1:p.nbpart
-       p.pos[ipart,1] = p.pos[ipart,1] + p.vit[ipart,1] * dt * coef
-       p.pos[ipart,2] = p.pos[ipart,2] + p.vit[ipart,2] * dt * coef
-    end
-    
-    #*** Mise a jour des "cases"
-    
-    for ipart=1:p.nbpart
-       i = 0
-       while (p.pos[ipart,1] >= x[i] && p.pos[ipart,1]<dimx) 
-          i=i+1
-       end
-       ( p.pos[ipart,1] >= dimx )  && (i=nx+1)
-       p.case[ipart,1] = i-1
-       j = 0
-       while (p.pos[ipart,2] >= y[j] && p.pos[ipart,2]<dimy) 
-          j=j+1 
-       end
-       ( p.pos[ipart,2] >= dimy ) && (j=ny+1)
-       p.case[ipart,2] = j-1
+
+       p.pos[ipart,1] = mod(p.pos[ipart,1] + p.vit[ipart,1] * dt, mesh.dimy)
+       p.pos[ipart,2] = mod(p.pos[ipart,2] + p.vit[ipart,2] * dt, mesh.dimy)
+
+       p.case[ipart,1] = trunc(Int, p.pos[ipart,1] / dimx * nx) + 1
+       p.case[ipart,2] = trunc(Int, p.pos[ipart,2] / dimy * ny) + 1
+
     end 
 
 end 
 
 
-function particles_output!( p, m )
-
-   for ipart=1:nbpart
-      ( p.pos[ipart,1] >= dimx ) && (p.pos[ipart,1] = p.pos[ipart,1] - m.dimx)
-      ( p.pos[ipart,2] >= dimy ) && (p.pos[ipart,2] = p.pos[ipart,2] - m.dimy)
-      ( p.pos[ipart,1] <  0    ) && (p.pos[ipart,1] = p.pos[ipart,1] + m.dimx)
-      ( p.pos[ipart,2] <  0    ) && (p.pos[ipart,2] = p.pos[ipart,2] + m.dimy)
-   end
-
-   for ipart=1:nbpart
-       i = 0
-       while (p.pos[ipart,1] >= x[i] && p.pos[ipart,1] <= dimx) 
-          i=i+1
-       end
-       p.case[ipart,1] = i-1
-       j = 0
-       while (p.pos[ipart,2] >= y[j] && p.pos[ipart,2] <= dimy) 
-          j=j+1 
-       end
-       p.case[ipart,2] = j-1
-   end
-
-end 
-
-function compute_current!( m, p, f, jx, jy )
+function compute_current!( f, p, m, jx, jy )
 
    fill!(jx, 0)
    fill!(jy, 0)
+
+   one_over_s = m.dx * m.dy
    
    for ipart=1:nbpart
+
       i = p.case[ipart,1]
       j = p.case[ipart,2]
+
       xp = p.pos[ipart,1]
       yp = p.pos[ipart,2]
-      dum = p.p[ipart] / (m.hx[i]*m.hy[j])
+
+      dum = p.p[ipart] * one_over_s
+
       a1 = (x[i+1]-xp) * (y[j+1]-yp) * dum
       a2 = (xp-x[i]) * (y[j+1]-yp) * dum
       a3 = (xp-x[i]) * (yp-y[j]) * dum
       a4 = (x[i+1]-xp) * (yp-y[j]) * dum
-      dum = p.vit[ipart,1] / (m.hx[i]*m.hy[j]) 
+
+      dum = p.vit[ipart,1] * one_over_s
+
       jx[i,j]     = jx[i,j]     + a1*dum  
       jx[i+1,j]   = jx[i+1,j]   + a2*dum 
       jx[i+1,j+1] = jx[i+1,j+1] + a3*dum 
       jx[i,j+1]   = jx[i,j+1]   + a4*dum 
-      dum = p.vit[ipart,2] / (m.hx[i]*m.hy[j]) 
+
+      dum = p.vit[ipart,2] * one_over_s
+
       jy[i,j]     = jy[i,j]     + a1*dum  
       jy[i+1,j]   = jy[i+1,j]   + a2*dum 
       jy[i+1,j+1] = jy[i+1,j+1] + a3*dum 
       jy[i,j+1]   = jy[i,j+1]   + a4*dum 
+
    end
 
-   for i=0:nx
-      jx[i,0]  = jx[i,0] + jx[i,ny]
-      jx[i,ny] = jx[i,0]
-      jy[i,0]  = jy[i,0] + jy[i,ny]
-      jy[i,ny] = jy[i,0]
+   for i=1:nx
+      jx[i,1]  = jx[i,1] + jx[i,ny]
+      jx[i,ny] = jx[i,1]
+      jy[i,1]  = jy[i,1] + jy[i,ny]
+      jy[i,ny] = jy[i,1]
    end
-   for j=0:ny
-      jx[0,j]  = jx[0,j] + jx[nx,j]
-      jx[nx,j] = jx[0,j]
-      jy[0,j]  = jy[0,j] + jy[nx,j]
-      jy[nx,j] = jy[0,j]
+   for j=1:ny
+      jx[1,j]  = jx[1,j] + jx[nx,j]
+      jx[nx,j] = jx[1,j]
+      jy[1,j]  = jy[1,j] + jy[nx,j]
+      jy[nx,j] = jy[1,j]
    end
 
 
-    for i=0:nx-1
-    for j=0:ny
+    for j=1:ny+1, i=1:nx
        f.jx[i,j] = 0.5 * (jx[i,j]+jx[i+1,j])
-    end 
     end
     
-    for i=0:nx
-    for j=0:ny-1
+    for j=1:ny, i=1:nx+1
        f.jy[i,j] = 0.5 * (jy[i,j]+jy[i,j+1])
-    end
     end
 
 end 
