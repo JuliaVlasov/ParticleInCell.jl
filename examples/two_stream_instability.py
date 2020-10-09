@@ -120,8 +120,8 @@ def animate(frame):
     histPotE.append(0.5 * (Eg**2).sum() * dx) 
     histKinE.append(0.5 * Q/QM * (vp**2).sum()) 
     histMomentum.append(Q/QM * vp.sum())
-    #particles1.set_data(xp[0:-1:2], vp[0:-1:2]) 
-    #particles2.set_data(xp[1:-1:2], vp[1:-1:2]) 
+    particles1.set_data(xp[0:-1:2], vp[0:-1:2]) 
+    particles2.set_data(xp[1:-1:2], vp[1:-1:2]) 
     return particles1, particles2
 
 ani = animation.FuncAnimation(fig, animate, frames=NT+1, repeat=False, blit=True, init_func=init)
