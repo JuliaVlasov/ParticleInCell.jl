@@ -59,8 +59,8 @@ def init():
     vp += pm * (V0 * (1 - V0**2)**(-0.5)) # Momentum + stream velocity
     # Add electron perturbation to excite the desired mode
     xp += XP1 * (L/N) * np.sin(2 * np.pi * xp / L * mode) 
-    xp[np.where(xp < 0)] += L
-    xp[np.where(xp >= L)] -= L
+    xp[xp < 0] += L
+    xp[xp >= L] -= L
     global histEnergy, histPotE, histKinE, histMomentum 
     histEnergy, histPotE, histKinE, histMomentum = [], [], [], [] 
     particles1.set_data(xp[0::2], vp[0::2])
@@ -71,8 +71,8 @@ def update_position(xp, vp, DT):
     # update particle position xp
     xp += vp * DT
     # Periodic boundary condition 
-    xp[np.where(xp < 0)] += L 
-    xp[np.where(xp >= L)] -= L 
+    xp[xp < 0] += L 
+    xp[xp >= L] -= L 
     return xp
 
 def compute_rho(xp):
@@ -81,8 +81,8 @@ def compute_rho(xp):
     g = np.concatenate((g1, g1+1))
     fraz1 = 1 - np.abs(xp/dx - g1 - 0.5) 
     fraz = np.concatenate((fraz1, 1-fraz1)) 
-    g[np.where(g < 0)] += NG
-    g[np.where(g > NG-1)] -= NG
+    g[g < 0] += NG
+    g[g > NG-1] -= NG
     mat = sparse.csc_matrix((fraz, (p, g)), shape=(N, NG)) 
     return mat, Q / dx * mat.toarray().sum(axis=0) + rho_back
 
@@ -124,12 +124,15 @@ def animate(frame):
     particles2.set_data(xp[1:-1:2], vp[1:-1:2]) 
     return particles1, particles2
 
-ani = animation.FuncAnimation(fig, animate, frames=NT+1, repeat=False, blit=True, init_func=init)
+# +
+#ani = animation.FuncAnimation(fig, animate, frames=NT+1, repeat=False, blit=True, init_func=init)
 
+# +
 # Set up formatting for the movie files
-Writer = animation.writers['ffmpeg']
-writer = Writer(fps=200, metadata=dict(artist='Me'), bitrate=1800)
-ani.save('tsi.mp4', writer=writer)
+#Writer = animation.writers['ffmpeg']
+#writer = Writer(fps=200, metadata=dict(artist='Me'), bitrate=1800)
+#ani.save('tsi.mp4', writer=writer)
+# -
 
 t = np.arange(0.0, (NT+1)*DT, DT)
 
@@ -160,3 +163,5 @@ ax4 = fig.add_subplot(224, autoscale_on=True, xlim=(0, NT*DT))
 ax4.set_xlabel('time')
 ax4.plot(t, histMomentum, label='Momentum', linewidth=2) 
 ax4.legend(loc=1);
+
+
