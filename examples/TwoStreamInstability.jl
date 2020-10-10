@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: Julia 1.5.1
+#     display_name: Julia 1.5.2
 #     language: julia
 #     name: julia-1.5
 # ---
@@ -38,26 +38,42 @@ const mode = 1
 const Q = WP^2 / (QM*N/L)  # rho0*L/N: charge carried by a single particle?
 const rho_back = -Q*N/L  # Background charge density?
 const dx = L / NG # Grid step
-    
-# Auxilliary vectors
-const p = [1:N; 1:N]  # Some indices up to N
 
-# -
 
-function compute_rho!(rho, xp)
+# +
+struct Deposition
+    g
+    f
+    p
+    function Deposition(N, NG)
+        g = zeros(Int, 2*N)
+        f = zeros( Float64, 2*N)
+        p = [1:N; 1:N]
+        new( g, f, p)
+    end
+end
+
+function compute_rho!(rho, d, xp)
     # Project particles -> grid
-    g1 = floor.(Int64,floor.(xp/dx .- 0.5))
-    g = floor.(Int64,vcat(g1, g1.+1))
-    fraz1 = 1 .- abs.(xp/dx .- g1 .- 0.5)
-    fraz = vcat(fraz1, 1 .- fraz1)
-    for i in eachindex
-    g[g .< 0   ] .+= NG
-    g[g .> NG-1] .-= NG
-    g .+= 1
-    mat = sparse(p, g, fraz, N, NG)
+    for i in 1:N
+        delta = xp[i] / dx - 0.5
+        g1 = floor(Int, delta )
+        f1 = 1 - abs(delta - g1)
+        d.g[i] = g1
+        d.g[i+N] = g1+1
+        
+        d.f[i] = f1
+        d.f[i+N] = 1 - f1
+    end
+    
+    for i in eachindex(d.g)
+        d.g[i] = mod1(d.g[i], NG)
+    end 
+    mat = sparse(d.p, d.g, d.f, N, NG)
     rho .= Q / dx * vec(sum(mat,dims=1)) .+ rho_back
     return mat
 end
+# -
 
 function solve!( Eg, rho, Poisson )
     # Compute electric field potential
@@ -103,16 +119,17 @@ function main()
     PotE = Float64[]
     Eg = zeros(Float64,NG)
     rho = zeros(Float64,NG)
+    d = Deposition( N, NG)
     
     for it in 1:NT+1
         update_position!(xp, vp, DT) 
-        mat = compute_rho!(rho, xp)
+        mat = compute_rho!(rho, d, xp)
         solve!(Eg, rho, Poisson)
         vp .+= mat * QM * Eg * DT
         push!(PotE, 0.5 * sum(Eg.^2) * dx) 
-        plt = plot()
-        xlims!(0, L)
-        ylims!(-7, 7)
+        #plt = plot()
+        #xlims!(0, L)
+        #ylims!(-7, 7)
         #scatter!(plt, xp[1:2:end], vp[1:2:end], marker = (:circle, 2, 1., :blue, stroke(1, 0.2, :blue, :dot)))
         #scatter!(plt, xp[2:2:end], vp[2:2:end], marker = (:circle, 2, 1., :red, stroke(1, 0.2, :red, :dot)))
         next!(b)
