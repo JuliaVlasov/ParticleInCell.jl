@@ -23,5 +23,5 @@ docs/site/
 # environment.
 Manifest.toml
 *.swp
-examples/.ipynb_checkpoints/example_maxwell-checkpoint.jl
+examples/.ipynb_checkpoints/
 test/particles.png
