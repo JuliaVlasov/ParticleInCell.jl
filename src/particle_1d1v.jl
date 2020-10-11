@@ -60,6 +60,41 @@ function tsi( rng, mesh, np )
 
 end
 
+export landau_damping
+
+function landau_damping(rng, mesh, np, alpha, kx )
+
+    function newton(r)
+        x0, x1 = 0.0, 1.0
+        r *= 2π / kx
+        while (abs(x1-x0) > 1e-12)
+            p = x0 + alpha * sin( kx * x0) / kx
+            f = 1 + alpha * cos( kx * x0)
+            x0, x1 = x1, x0 - (p - r) / f
+        end
+        x1
+    end
+
+    xp = zeros(np)
+    vp = zeros(np)
+    s = Sobol.SobolSeq(2)
+
+    for i=1:np
+
+        v = sqrt(-2 * log( (i-0.5)/np))
+        r1, r2 = Sobol.next!(s)
+        θ = r1 * 2π
+        xp[i] = newton(r2)
+        vp[i] = v * cos(θ)
+    end
+
+    qm = 1.
+    qp = 1 / np
+
+    return Particles1D( np, qm, xp, vp, qp )
+
+end
+
 export Poisson1D
 
 struct Poisson1D
@@ -152,10 +187,8 @@ function update_positions!(p, mesh, dt)
     xmin = mesh.xmin
     xmax = mesh.xmax
 
-    for i in eachindex(p.xp)
-        p.xp[i] += p.vp[i] * dt
-        p.xp[i] = xmin + mod( p.xp[i] - xmin , xmax - xmin) # Periodic boundary condition 
-    end
+    p.xp .+= p.vp .* dt
+    p.xp .= xmin .+ mod.( p.xp .- xmin , xmax - xmin)
 
 end
 
