@@ -6,6 +6,6 @@ Particle In Cell code in Julia
 
 Work in progress, you can find first tests in the documentation.
 
-## Julia PIC codes 
+## Other Julia PIC codes 
 
 - [ParticleInCell.jl](https://github.com/adamslc/ParticleInCell.jl) by Luke Adams.
