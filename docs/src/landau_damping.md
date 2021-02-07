@@ -1,25 +1,14 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .jl
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.6.0
-#   kernelspec:
-#     display_name: Julia 1.5.2
-#     language: julia
-#     name: julia-1.5
-# ---
+# Landau damping
 
+
+```@setup landau
 using Plots
-using ProgressMeter
 using Random
-using Revise
+```
 
 
-# +
+```@example landau
+
 using ParticleInCell
 
 function main(nt, dt)
@@ -33,7 +22,6 @@ function main(nt, dt)
     kx = 0.5
     pa = landau_damping(rng, mesh, np, α, kx )
     pm = ParticleMeshCoupling1D(pa, mesh)
-    b = Progress(nt+1)
     energy = Float64[]
     e = zeros(Float64, nx)
     ρ = zeros(Float64, nx)
@@ -49,16 +37,16 @@ function main(nt, dt)
         solve!(e, poisson, ρ)
         update_velocities!(pa, e, mat, dt)
         push!(energy, 0.5 * sum(e.^2) * mesh.dx) 
-        next!(b)
     end
     energy
 end
+```
 
-# -
-
+```@example landau
 nt, dt = 2000, 0.01
 results = main(nt, dt)
 t = collect(0:nt) .* dt
 plot( t, results, yaxis = :log )
+```
 
 

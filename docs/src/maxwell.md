@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
+# Maxwell solver
+
+
+```@setup maxwell
 using Plots
-using ProgressMeter
+```
 
+```@example maxwell
+using ParticleInCell
 
-include("../src/mesh.jl")
-include("../src/maxwell.jl")
-
-# +
 dimx, dimy = 1, 1
 nx, ny = 64, 64
 e0 = 1
@@ -26,15 +27,14 @@ y = transpose(0.5 .* (mesh.y[1:end-1] .+ mesh.y[2:end]))
 
 maxwell.bz .= - cos.(md*pi*x) .* cos.(nd*pi*y) .* cos(omega*(-0.5*dt))
     
-# -
-
 faraday!(maxwell, bz, dt)    
 surface(bz, aspect_ratio=:equal, zlims=(-1,1))
+```
 
-# Ex and Ey are set at t = 0.0
-# Bz is set at  t = -dt/2
+- Ex and Ey are set at t = 0.0
+- Bz is set at  t = -dt/2
 
-# +
+```@example maxwell
 function run(nstep)
     dimx, dimy = 1, 1
     nx, ny = 64, 64
@@ -71,8 +71,7 @@ function run(nstep)
     
 end
 
-# -
-
 run(2000)
+```
 
 
