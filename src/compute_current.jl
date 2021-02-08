@@ -1,5 +1,7 @@
 function calcul_j_cic( jx, jy, m, p, f )
 
+   dx, dy = m.dx, m.dy
+
    fill!(jx, 0)
    fill!(jy, 0)
    
@@ -11,21 +13,21 @@ function calcul_j_cic( jx, jy, m, p, f )
       xp = p.pos[ipart,1]
       yp = p.pos[ipart,2]
 
-      dum = p.p[ipart] / (m.hx[i]*m.hy[j])
+      dum = p.p[ipart] / (dx*dy)
 
       a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
       a2 = (xp-x[i]) * (y(j+1)-yp) * dum
       a3 = (xp-x[i]) * (yp-y[j]) * dum
       a4 = (x[i+1]-xp) * (yp-y[j]) * dum
 
-      dum = p.vit[ipart,1] / (m.hx[i]*m.hy[j]) 
+      dum = p.vit[ipart,1] / (dx*dy) 
 
       jx[i,j]     = jx[i,j]     + a1*dum  
       jx[i+1,j]   = jx[i+1,j]   + a2*dum 
       jx[i+1,j+1] = jx[i+1,j+1] + a3*dum 
       jx[i,j+1]   = jx[i,j+1]   + a4*dum 
 
-      dum = p.vit[ipart,2] / (m.hx[i]*m.hy[j]) 
+      dum = p.vit[ipart,2] / (dx*dy) 
 
       jy[i,j]     = jy[i,j]     + a1*dum  
       jy[i+1,j]   = jy[i+1,j]   + a2*dum 

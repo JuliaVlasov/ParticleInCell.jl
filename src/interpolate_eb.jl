@@ -7,7 +7,10 @@ function interpol_eb!( ex, ey, bz, p :: Particles, m :: Mesh )
         xp = p.pos(ipart,1)
         yp = p.pos(ipart,2)
     
-        dum = 1/(m.hx[i]*m.hy[j])
+        dum = 1 / (dx * dy )
+
+        ip1 = mod1(ip+1,nx)
+        jp1 = mod1(jp+1,ny)
 
         a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
         a2 = (xp-x[i]) * (y(j+1)-yp) * dum

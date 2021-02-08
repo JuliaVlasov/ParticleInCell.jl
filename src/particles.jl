@@ -74,8 +74,8 @@ function update_cells!( p, m )
 
     for i in 1:p.nbpart
 
-       p.cell[i,1] = trunc(Int, p.pos[i,1] / m.dimx * m.nx) + 1
-       p.cell[i,2] = trunc(Int, p.pos[i,2] / m.dimy * m.ny) + 1
+       p.cell[i,1] = trunc(Int, p.pos[i,1] / m.dx) + 1
+       p.cell[i,2] = trunc(Int, p.pos[i,2] / m.dy) + 1
 
     end
 
