@@ -2,41 +2,32 @@ using ParticleInCell
 
 @testset "Particles" begin
 
-    nx        = 128	    # nombre de pts suivant x
-    ny        = 16   	# nombre de pts suivant y
-    tfinal    = 50     	# temps final
-    charge    = 1       # charge d'une macro particule
-    masse     = 1       # masse d'une macro particule
-    
-    q_over_m = charge / masse
+    nx    = 64	 # nombre de pts suivant x
+    ny    = 16   # nombre de pts suivant y
     
     alpha = 0.1
-    kx = 0.5
-    dimx = 2*pi/kx
-    dimy = 1  
+    kx    = 0.5
+    dimx  = 2*pi/kx
+    dimy  = 1  
     
     mesh = Mesh( dimx, nx, dimy, ny)
     
     dx = mesh.dx
     dy = mesh.dy
     
-    println(" dx = $dx dy = $dy ")
+    ex  = zeros(nx,ny)
+    rho = zeros(nx,ny)
     
-    ex  = zeros(nx+1,ny+1)
-    rho = zeros(nx+1,ny+1)
-    
-    for i=1:nx+1
+    for i=1:nx
         aux1 = alpha/kx * sin(kx*mesh.x[i])
         aux2 = alpha * cos(kx*mesh.x[i])
-        for j=1:ny+1
+        for j=1:ny
             ex[i,j] = aux1
             rho[i,j] = aux2
         end
     end
 
-    @show sum(rho[1:nx,1:ny])
-
-    nbpart = 100*nx*ny
+    nbpart = 200*nx*ny
     
     particles = Particles(nbpart)
     
@@ -44,9 +35,6 @@ using ParticleInCell
     
     update_cells!( particles, mesh)
 
-    @show sum(compute_rho(particles, mesh)[1:nx,1:ny] * dx * dy) 
-
-    @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-6
-    
+    @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-2
     
 end

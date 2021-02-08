@@ -5,8 +5,8 @@ export Mesh
 
 Generate a cartesians mesh on rectangle `dimx`x `dimy` with `nx` x `ny` points
 
-- `nx` : indices are in [0:nx]
-- `ny` : indices are in [0:ny]
+- `nx` : indices are in [1:nx]
+- `ny` : indices are in [1:ny]
 - `dimx` x `dimy`: mesh area
 - `x, y` : node positions
 - `dx, dy` : step size
