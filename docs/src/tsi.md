@@ -30,7 +30,6 @@ function main()
     rng = MersenneTwister(42)
     pa = tsi(rng, mesh, np )
     pm = ParticleMeshCoupling1D(pa, mesh)
-    b = Progress(nt+1)
     energy = Float64[]
     e = zeros(Float64, nx)
     ρ = zeros(Float64, nx)
@@ -45,7 +44,6 @@ function main()
         solve!(e, poisson, ρ)
         update_velocities!(pa, e, mat, dt)
         push!(energy, 0.5 * sum(e.^2) * mesh.dx) 
-        next!(b)
 
     end
 
