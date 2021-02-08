@@ -1,99 +1,58 @@
-export MaxwellSolver
+export Maxwell
 
+struct Maxwell
 
-"""
-     MaxwellSolver(mesh, c, e0)
+    kx::Vector{Float64}
+    ky::Vector{Float64}
 
-Initialize a Maxwell solver that uses FDTD numerical method.
+    function Maxwell(mesh)
 
-- `c` : speed of light
-- `e0` :  electric permitivity
+        nx = mesh.nx
+        Lx = mesh.dimx
+        kx = 2π / Lx .* vcat(0:nx÷2-1, -nx÷2:-1)
+        ny = mesh.ny
+        Ly = mesh.dimy
+        ky = 2π / Ly .* vcat(0:ny÷2-1, -ny÷2:-1)
 
-"""
-struct MaxwellSolver
+        new(kx, ky)
 
-   m :: Mesh
-   ex
-   ey
-   bz
-   jx
-   jy
-   c
-   e0
-
-   function MaxwellSolver(m, c, e0)
-
-       nx = m.nx
-       ny = m.ny
-
-       ex = zeros(nx,ny+1)
-       ey = zeros(nx+1,ny)
-       bz = zeros(nx,ny)
-       jx = zeros(nx,ny+1)
-       jy = zeros(nx+1,ny)
-
-       new( m, ex, ey, bz, jx, jy, c, e0)
-
-   end
+    end
 
 end
 
-export faraday!
+export faraday!, ampere_maxwell!
 
 """
-    faraday!( f , bz, dt )
+    ampere_maxwell!( ex, ey, solver, bz, dt)
 
-Solve the Faraday equation to compute the magnetic field at ``t+1/2`` from electric field 
-at ``t`` and magnetic field at ``t-1/2``.
+```math
+Ex^{t+dt} = Ex^{t} + dt \\big( \\frac{\\partial Bz}{\\partial y} - Jx \\big)
+```
+    
+```math
+Ey^{t+dt} = Ey^{t} - dt \\big( \\frac{\\partial Bz}{\\partial x} - Jy \\big)
+```
 """
-function faraday!( f :: MaxwellSolver, bz, dt )
+function ampere_maxwell!(ex, ey, s::Maxwell, bz, jx, jy, dt)
 
-   nx, ny = f.m.nx, f.m.ny
-
-   for j=1:ny, i=1:nx
-      dex_dy    = (f.ex[i,j+1] - f.ex[i,j]) / f.m.dy
-      dey_dx    = (f.ey[i+1,j] - f.ey[i,j]) / f.m.dx
-      f.bz[i,j] = f.bz[i,j] + dt * (dex_dy - dey_dx)
-   end
-
-   for j=1:ny+1, i=1:nx+1
-       bz[i,j] = 0.25 * ( f.bz[mod1(i-1,nx),mod1(j-1,ny)] 
-                        + f.bz[mod1(i, nx),mod1(j-1,ny)] 
-                        + f.bz[mod1(i-1,nx),mod1(j, ny)] 
-                        + f.bz[mod1(i,nx),mod1(j,ny)] )
-   end
-
-end 
-
-export ampere_maxwell!
-
-"""
-     ampere_maxwell!( f :: MaxwellSolver, ex, ey, dt )
-
-compute the electric field vector at t+1 from electrict field at t and magnetic field at
-t-1/2. Solutions are compute on staggered grid (Ex[i+1/2,j] and Ey[i,j+1/2])
-then interpolate. 
-"""
-function ampere_maxwell!( f :: MaxwellSolver, ex, ey, dt )
-
-   csq = f.c * f.c
-   nx, ny = f.m.nx, f.m.ny
-
-   for j=1:ny+1, i=1:nx
-      dbz_dy = (f.bz[i,mod1(j,ny)]-f.bz[i,mod1(j-1,ny)]) / f.m.dy
-      f.ex[i,j] = f.ex[i,j] + csq * dt * dbz_dy - dt * f.jx[i,j]/f.e0
-   end
-
-   for j=1:ny, i=1:nx+1
-      dbz_dx = (f.bz[mod1(i,nx),j]-f.bz[mod1(i-1,nx),j]) / f.m.dx
-      f.ey[i,j] = f.ey[i,j] - csq * dt * dbz_dx - dt * f.jy[i,j]/f.e0
-   end
-
-   for j=1:ny+1, i=1:nx+1
-       ex[i,j] = 0.5 * ( f.ex[mod1(i-1,nx),j] + f.ex[mod1(i,nx),j] ) 
-       ey[i,j] = 0.5 * ( f.ey[i,mod1(j-1,ny)] + f.ey[i,mod1(j,ny)] ) 
-   end
-
+    ex .= ex .- dt .* (ifft(-1im .* s.ky' .* fft(bz, 2)) .- jx)
+    ey .= ey .+ dt .* (ifft(-1im .* s.kx  .* fft(bz, 1)) .- jy)
 
 end
 
+
+"""
+    faraday!( bz, solver, ex, ey, dt)
+
+```math
+Bz^{t+dt} = Bz^{t} + dt (  \\frac{\\partial Ey}{\\partial x}
+-   \\frac{\\partial Ex}{\\partial y})
+"""
+function faraday!(bz, s::Maxwell, ex, ey, dt::Float64)
+
+    dex_dy = ifft(-1im .* s.ky' .* fft(ex, 2))
+    dey_dx = ifft(-1im .* s.kx .* fft(ey, 1))
+
+    bz .= bz .- dt .* (dex_dy .- dey_dx)
+
+end

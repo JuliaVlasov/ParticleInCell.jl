@@ -1,25 +1,31 @@
+export interpol_eb!
+
 function interpol_eb!( ex, ey, bz, p :: Particles, m :: Mesh )
+
+    nx, ny = m.nx, m.ny
+    dx, dy = m.dx, m.dy
+
+    dum = 1 / (dx * dy )
 
     for ipart=1:p.nbpart
 
-        i  = p.case(ipart,1)
-        j  = p.case(ipart,2)
-        xp = p.pos(ipart,1)
-        yp = p.pos(ipart,2)
+        i  = p.cell[ipart,1]
+        j  = p.cell[ipart,2]
+        xp = p.pos[ipart,1]
+        yp = p.pos[ipart,2]
     
-        dum = 1 / (dx * dy )
 
-        ip1 = mod1(ip+1,nx)
-        jp1 = mod1(jp+1,ny)
+        ip1 = mod1(i+1,nx)
+        jp1 = mod1(j+1,ny)
 
-        a1 = (x[i+1]-xp) * (y(j+1)-yp) * dum
-        a2 = (xp-x[i]) * (y(j+1)-yp) * dum
-        a3 = (xp-x[i]) * (yp-y[j]) * dum
-        a4 = (x[i+1]-xp) * (yp-y[j]) * dum
+        a1 = (m.x[i+1]-xp) * (m.y[j+1]-yp) * dum
+        a2 = (xp-m.x[i]) * (m.y[j+1]-yp) * dum
+        a3 = (xp-m.x[i]) * (yp-m.y[j]) * dum
+        a4 = (m.x[i+1]-xp) * (yp-m.y[j]) * dum
     
-        ex[ipart] = a1 * ex[i,j] + a2 * ex[i+1,j] + a3 * ex[i+1,j+1] + a4 * ex[i,j+1] 
-        ey[ipart] = a1 * ey[i,j] + a2 * ey[i+1,j] + a3 * ey[i+1,j+1] + a4 * ey[i,j+1] 
-        bz[ipart] = a1 * bz[i,j] + a2 * bz[i+1,j] + a3 * bz[i+1,j+1] + a4 * bz[i,j+1] 
+        ex[ipart] = a1*ex[i,j]+a2*ex[ip1,j]+a3*ex[ip1,jp1]+a4*ex[i,jp1] 
+        ey[ipart] = a1*ey[i,j]+a2*ey[ip1,j]+a3*ey[ip1,jp1]+a4*ey[i,jp1] 
+        bz[ipart] = a1*bz[i,j]+a2*bz[ip1,j]+a3*bz[ip1,jp1]+a4*bz[i,jp1] 
 
     end
 
