@@ -72,4 +72,6 @@
     
     end 
 
+    @test true
+
 end
