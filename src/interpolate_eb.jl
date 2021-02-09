@@ -14,7 +14,6 @@ function interpol_eb!( ex, ey, bz, p :: Particles, m :: Mesh )
         xp = p.pos[ipart,1]
         yp = p.pos[ipart,2]
     
-
         ip1 = mod1(i+1,nx)
         jp1 = mod1(j+1,ny)
 
@@ -23,9 +22,9 @@ function interpol_eb!( ex, ey, bz, p :: Particles, m :: Mesh )
         a3 = (xp-m.x[i]) * (yp-m.y[j]) * dum
         a4 = (m.x[i+1]-xp) * (yp-m.y[j]) * dum
     
-        ex[ipart] = a1*ex[i,j]+a2*ex[ip1,j]+a3*ex[ip1,jp1]+a4*ex[i,jp1] 
-        ey[ipart] = a1*ey[i,j]+a2*ey[ip1,j]+a3*ey[ip1,jp1]+a4*ey[i,jp1] 
-        bz[ipart] = a1*bz[i,j]+a2*bz[ip1,j]+a3*bz[ip1,jp1]+a4*bz[i,jp1] 
+        p.epx[ipart] = a1*ex[i,j]+a2*ex[ip1,j]+a3*ex[ip1,jp1]+a4*ex[i,jp1] 
+        p.epy[ipart] = a1*ey[i,j]+a2*ey[ip1,j]+a3*ey[ip1,jp1]+a4*ey[i,jp1] 
+        p.bpz[ipart] = a1*bz[i,j]+a2*bz[ip1,j]+a3*bz[ip1,jp1]+a4*bz[i,jp1] 
 
     end
 

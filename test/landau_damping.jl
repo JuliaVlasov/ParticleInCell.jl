@@ -51,14 +51,15 @@
     update_cells!( particles, mesh )
     
     time = 0
-    while time < tfinal
+    for istep in 1:10
     
        if time > 0
            faraday!( bz, maxwell, ex, ey, 0.5dt ) 
        end
+
        interpol_eb!( ex, ey, bz, particles, mesh )
     
-       push_v!( particles )
+       push_v!( particles, dt )
        push_x!( particles, 0.5dt)  # x(n) --> x(n+1/2)
        update_cells!( particles, mesh )
        compute_current!( jx, jy, particles, mesh)

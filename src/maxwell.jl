@@ -1,3 +1,5 @@
+using FFTW
+
 export Maxwell
 
 struct Maxwell
@@ -35,8 +37,8 @@ Ey^{t+dt} = Ey^{t} - dt \\big( \\frac{\\partial Bz}{\\partial x} - Jy \\big)
 """
 function ampere_maxwell!(ex, ey, s::Maxwell, bz, jx, jy, dt)
 
-    ex .= ex .- dt .* (ifft(-1im .* s.ky' .* fft(bz, 2)) .- jx)
-    ey .= ey .+ dt .* (ifft(-1im .* s.kx  .* fft(bz, 1)) .- jy)
+    ex .= ex .- dt .* real(ifft(-1im .* s.ky' .* fft(bz, 2)) .+ jx)
+    ey .= ey .+ dt .* real(ifft(-1im .* s.kx  .* fft(bz, 1)) .+ jy)
 
 end
 
@@ -50,8 +52,8 @@ Bz^{t+dt} = Bz^{t} + dt (  \\frac{\\partial Ey}{\\partial x}
 """
 function faraday!(bz, s::Maxwell, ex, ey, dt::Float64)
 
-    dex_dy = ifft(-1im .* s.ky' .* fft(ex, 2))
-    dey_dx = ifft(-1im .* s.kx .* fft(ey, 1))
+    dex_dy = real(ifft(-1im .* s.ky' .* fft(ex, 2)))
+    dey_dx = real(ifft(-1im .* s.kx  .* fft(ey, 1)))
 
     bz .= bz .- dt .* (dex_dy .- dey_dx)
 
