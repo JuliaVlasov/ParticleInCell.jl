@@ -2,19 +2,18 @@ export interpol_eb!
 
 function interpol_eb!(ex, ey, bz, p::Particles, m::Mesh)
 
-    nx, ny = m.nx, m.ny
-    dx, dy = m.dx, m.dy
-
-    dum = 1 / (dx * dy)
+    dum = 1 / (m.dx * m.dy)
 
     for ipart = 1:p.nbpart
+
         i = p.cell[ipart, 1]
         j = p.cell[ipart, 2]
+
         xp = p.pos[ipart, 1]
         yp = p.pos[ipart, 2]
 
-        ip1 = mod1(i + 1, nx)
-        jp1 = mod1(j + 1, ny)
+        ip1 = mod1(i + 1, m.nx)
+        jp1 = mod1(j + 1, m.ny)
 
         a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp) * dum
         a2 = (xp - m.x[i]) * (m.y[j+1] - yp) * dum

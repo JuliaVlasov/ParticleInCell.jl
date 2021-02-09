@@ -10,11 +10,9 @@ struct Maxwell
     function Maxwell(mesh)
 
         nx = mesh.nx
-        Lx = mesh.dimx
-        kx = 2π / Lx .* vcat(0:nx÷2-1, -nx÷2:-1)
+        kx = 2π / mesh.dimx .* vcat(0:nx÷2-1, -nx÷2:-1)
         ny = mesh.ny
-        Ly = mesh.dimy
-        ky = 2π / Ly .* vcat(0:ny÷2-1, -ny÷2:-1)
+        ky = 2π / mesh.dimy .* vcat(0:ny÷2-1, -ny÷2:-1)
 
         new(kx, ky)
 
@@ -37,8 +35,11 @@ Ey^{t+dt} = Ey^{t} - dt \\big( \\frac{\\partial Bz}{\\partial x} - Jy \\big)
 """
 function ampere_maxwell!(ex, ey, s::Maxwell, bz, jx, jy, dt)
 
-    ex .= ex .+ dt .* real(ifft(1im .* s.ky' .* fft(bz, 2)) .- jx)
-    ey .= ey .- dt .* real(ifft(1im .* s.kx .* fft(bz, 1)) .+ jy)
+    dbz_dy = real(ifft(1im .* s.ky' .* fft(bz, 2)))
+    ex .= ex .+ dt .* dbz_dy .- dt .* jx
+
+    dbz_dx = real(ifft(1im .* s.kx .* fft(bz, 1)))
+    ey .= ey .- dt .* dbz_dx .- dt .* jy
 
 end
 
