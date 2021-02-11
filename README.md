@@ -12,7 +12,8 @@ You can find it [here](https://github.com/pnavaro/vm_nonunif). This is an old co
 and not well optimized but it takes 27 seconds with 1 million particles.
 I will note here times of this Julia code and what i have done to speed-up things.
 
-- 11/02/2021 : 323 seconds
+- 323 seconds : First version 
+- 303 seconds : Use julia -O3 --check-bounds=no
 
 ## Other Julia PIC codes 
 

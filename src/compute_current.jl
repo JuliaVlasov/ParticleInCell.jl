@@ -8,7 +8,7 @@ function compute_current!(jx, jy, p, m)
     fill!(jx, 0)
     fill!(jy, 0)
 
-    for ipart = 1:p.nbpart
+    @inbounds for ipart = 1:p.nbpart
         i = p.cell[ipart, 1]
         j = p.cell[ipart, 2]
 

@@ -4,7 +4,7 @@ function interpol_eb!(ex, ey, bz, p::Particles, m::Mesh)
 
     dum = 1 / (m.dx * m.dy)
 
-    for ipart = 1:p.nbpart
+    @inbounds for ipart = 1:p.nbpart
 
         i = p.cell[ipart, 1]
         j = p.cell[ipart, 2]
