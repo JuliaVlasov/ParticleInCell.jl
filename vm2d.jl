@@ -11,7 +11,7 @@ function run( nstep )
     nx     = 128  # nombre de pts suivant x
     ny     = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
-    nbpart = 100*nx*ny
+    @show nbpart = 100*nx*ny
     ex = zeros(nx,ny)
     ey = zeros(nx,ny)
     bz = zeros(nx,ny)
@@ -27,7 +27,7 @@ function run( nstep )
         fdtd.bz[i,j] = 0.0
     end
     time = 0
-    energy = [0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
+    energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
     t = Float64[time]
     
     @showprogress 1 for istep in 1:nstep
@@ -50,9 +50,8 @@ function run( nstep )
     
 end
 
-nstep = 1
-t, energy = run( nstep )
-nstep = 250
+t, energy = run( 1 )
+@show nstep = 250
 @time t, energy = run( nstep )
 plot(t, energy, m=:o)
 savefig("out.png")

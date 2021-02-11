@@ -9,8 +9,8 @@ Work in progress, you can find first tests in the documentation.
 I am working on this Julia code to compare performances with a Fortran code that 
 solves same equation with same parameters and same numerical method.
 You can find it [here](https://github.com/pnavaro/vm_nonunif). This is an old code written in 2005
-and not well optimized but it takes 27 seconds with 1 million particles.
-I will note here times of this Julia code and what i have done to speed-up things.
+and not well optimized but it takes 6 seconds with 204800 particles.
+I will note here times of this Julia code and what I have done to speed-up things.
 
 - 323 seconds : First version 
 - 303 seconds : Use julia -O3 --check-bounds=no
