@@ -76,14 +76,14 @@ function compute_current!( jx, jy, fdtd :: FDTD, p, mesh )
     
     for ipart=1:p.nbpart
     
-       i = p.cell[ipart,1]
-       j = p.cell[ipart,2]
+       i = p.cell[1,ipart]
+       j = p.cell[2,ipart]
     
        ip1 = mod1(i+1, nx)
        jp1 = mod1(j+1, ny)
     
-       xp = p.pos[ipart,1]
-       yp = p.pos[ipart,2]
+       xp = p.pos[1,ipart]
+       yp = p.pos[2,ipart]
     
        w = (mesh.dimx * mesh.dimy) / p.nbpart / (dx * dy)
     
@@ -92,14 +92,14 @@ function compute_current!( jx, jy, fdtd :: FDTD, p, mesh )
        a3 = (xp-mesh.x[i]) * (yp-mesh.y[j]) * w
        a4 = (mesh.x[i+1]-xp) * (yp-mesh.y[j]) * w
     
-       w = p.vit[ipart,1] / (dx*dy) 
+       w = p.vit[1,ipart] / (dx*dy) 
     
        jx[i,j]     +=  a1*w  
        jx[ip1,j]   +=  a2*w 
        jx[ip1,jp1] +=  a3*w 
        jx[i,jp1]   +=  a4*w 
     
-       w = p.vit[ipart,2] / (dx*dy) 
+       w = p.vit[2,ipart] / (dx*dy) 
     
        jy[i,j]     += a1*w  
        jy[ip1,j]   += a2*w 

@@ -9,14 +9,14 @@ function compute_rho(p, m)
     rho = zeros(nx, ny)
 
     for ipart = 1:p.nbpart
-        i = p.cell[ipart, 1]
-        j = p.cell[ipart, 2]
+        i = p.cell[1,ipart]
+        j = p.cell[2,ipart]
 
         ip1 = mod1(i + 1, nx)
         jp1 = mod1(j + 1, ny)
 
-        xp = p.pos[ipart, 1]
-        yp = p.pos[ipart, 2]
+        xp = p.pos[1, ipart]
+        yp = p.pos[2, ipart]
 
         a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp)
         a2 = (xp - m.x[i]) * (m.y[j+1] - yp)

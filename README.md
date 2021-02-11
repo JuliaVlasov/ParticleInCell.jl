@@ -14,6 +14,7 @@ I will note here times of this Julia code and what i have done to speed-up thing
 
 - 323 seconds : First version 
 - 303 seconds : Use julia -O3 --check-bounds=no
+- 302 seconds : change shape of positions and velocities arrays for particles
 
 ## Other Julia PIC codes 
 

@@ -6,11 +6,11 @@ function interpol_eb!(ex, ey, bz, p::Particles, m::Mesh)
 
     @inbounds for ipart = 1:p.nbpart
 
-        i = p.cell[ipart, 1]
-        j = p.cell[ipart, 2]
+        i = p.cell[1,ipart]
+        j = p.cell[2,ipart]
 
-        xp = p.pos[ipart, 1]
-        yp = p.pos[ipart, 2]
+        xp = p.pos[1, ipart]
+        yp = p.pos[2, ipart]
 
         ip1 = mod1(i + 1, m.nx)
         jp1 = mod1(j + 1, m.ny)

@@ -1,12 +1,3 @@
-struct Particle
-
-    cell::Int32
-    dx::Float32
-    v::Float64
-    w::Float32
-
-end
-
 export Particles
 
 struct Particles
@@ -18,19 +9,17 @@ struct Particles
     epx::Any
     epy::Any
     bpz::Any
-    p::Any
 
     function Particles(nbpart)
 
-        pos = zeros(nbpart, 2)
-        cell = zeros(Int32, nbpart, 2)
-        vit = zeros(nbpart, 2)
+        pos = zeros(2, nbpart)
+        cell = zeros(Int16, 2, nbpart)
+        vit = zeros(2, nbpart)
         epx = zeros(nbpart)
         epy = zeros(nbpart)
         bpz = zeros(nbpart)
-        p = zeros(nbpart)
 
-        new(nbpart, pos, cell, vit, epx, epy, bpz, p)
+        new(nbpart, pos, cell, vit, epx, epy, bpz)
 
     end
 
@@ -58,11 +47,10 @@ function landau_sampling!(pg, alpha, kx)
         v = sqrt(-2 * log((i - 0.5) / nbpart))
         r1, r2, r3 = Sobol.next!(s)
         θ = r1 * 2π
-        pg.pos[i, 1] = newton(r2)
-        pg.pos[i, 2] = r3
-        pg.vit[i, 1] = v * cos(θ)
-        pg.vit[i, 2] = v * sin(θ)
-        pg.p[i] = 1 / nbpart
+        pg.pos[1, i] = newton(r2)
+        pg.pos[2, i] = r3
+        pg.vit[1, i] = v * cos(θ)
+        pg.vit[2, i] = v * sin(θ)
     end
 
 end
@@ -71,11 +59,11 @@ export update_cells!
 
 function update_cells!(p, m)
 
-    p.pos[:, 1] .= mod.(p.pos[:, 1], m.dimx)
-    p.pos[:, 2] .= mod.(p.pos[:, 2], m.dimy)
+    p.pos[1,:] .= mod.(p.pos[1,:], m.dimx)
+    p.pos[2,:] .= mod.(p.pos[2,:], m.dimy)
 
-    p.cell[:, 1] .= trunc.(Int, p.pos[:, 1] ./ m.dx) .+ 1
-    p.cell[:, 2] .= trunc.(Int, p.pos[:, 2] ./ m.dy) .+ 1
+    p.cell[1,:] .= trunc.(Int, p.pos[1,:] ./ m.dx) .+ 1
+    p.cell[2,:] .= trunc.(Int, p.pos[2,:] ./ m.dy) .+ 1
 
 
 end
