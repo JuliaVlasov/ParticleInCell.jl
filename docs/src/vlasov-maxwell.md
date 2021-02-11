@@ -33,7 +33,7 @@ time  = 0
 for i=1:nx, j=1:ny
     fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
 end
-surface!(fdtd.ex )
+surface!(mesh.x[1:nx], mesh.y[1:ny], fdtd.ex )
 ```
 
 ```@example vm2d
@@ -43,10 +43,10 @@ landau_sampling!( particles, alpha, kx )
 update_cells!( particles, mesh )
 
 p = plot(layout=4)
-histogram!(p[1], particles.pos[:,1], normalize=true, label="x")
-histogram!(p[2], particles.pos[:,2], normalize=true, label="y")
-histogram!(p[3], particles.vit[:,1], normalize=true, label="vx")
-histogram!(p[4], particles.vit[:,2], normalize=true, label="vy")
+histogram!(p[1], particles.pos[1,:], normalize=true, label="x")
+histogram!(p[2], particles.pos[2,:], normalize=true, label="y")
+histogram!(p[3], particles.vit[1,:], normalize=true, label="vx")
+histogram!(p[4], particles.vit[2,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
@@ -71,7 +71,7 @@ function run( ex, ey, bz, jx, jy, particles, mesh, nstep, dt)
         fdtd.bz[i,j] = 0.0
     end
     time = 0
-    energy = [0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
+    energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
     t = Float64[time]
     
     for istep in 1:nstep
