@@ -1,3 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ParticleInCell = "b2a21095-fe39-467b-95a1-deb4cd10d2e0"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Weave = "44d3d7a6-8a23-5bf8-98c5-b353f8df5ec9"

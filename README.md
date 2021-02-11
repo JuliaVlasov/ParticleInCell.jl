@@ -6,6 +6,14 @@ Particle In Cell code in Julia
 
 Work in progress, you can find first tests in the documentation.
 
+I am working on this Julia code to compare performances with a Fortran code that 
+solves same equation with same parameters and same numerical method.
+You can find it [here](https://github.com/pnavaro/vm_nonunif). This is an old code written in 2005
+and not well optimized but it takes 27 seconds with 1 million particles.
+I will note here times of this Julia code and what i have done to speed-up things.
+
+- 11/02/2021 : 323 seconds
+
 ## Other Julia PIC codes 
 
 - [ParticleInCell.jl](https://github.com/adamslc/ParticleInCell.jl) by Luke Adams.

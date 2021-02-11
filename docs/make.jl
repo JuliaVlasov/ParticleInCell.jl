@@ -1,5 +1,6 @@
 push!(LOAD_PATH,"../src/")
 using Documenter
+using Weave
 using Plots 
 using ParticleInCell
 
@@ -18,6 +19,7 @@ makedocs(modules=[ParticleInCell],
                   "Maxwell solver" => "maxwell.md",
                   "Landau damping" => "landau_damping.md",
                   "Two-stream instability" => "tsi.md",
+                  "Vlasov-Maxwell 2D" => "vlasov-maxwell.md",
                   "Types"     => "types.md",
                   "Functions" => "functions.md",
                   "Contents"  => "contents.md"])
