@@ -160,3 +160,8 @@ function compute_current!( fdtd :: FDTD, p :: Particles )
     end
 
 end 
+
+export compute_energy
+
+compute_energy( fdtd :: FDTD ) = 0.5 * log( sum(fdtd.ex.^2) * fdtd.m.dx * fdtd.m.dy)
+

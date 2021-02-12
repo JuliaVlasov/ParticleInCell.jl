@@ -15,7 +15,6 @@ function run( nstep )
     ny     = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
     @show nbpart = 100*nx*ny
-    jxy = zeros(2,nx,ny)
     particles = Particles(nbpart)
     landau_sampling!( particles, alpha, kx )
     update_cells!( particles, mesh )
@@ -26,26 +25,25 @@ function run( nstep )
         fdtd.bz[i,j] = 0.0
     end
     time = 0
-    energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
+    energy = Float64[compute_energy(fdtd)]
     t = Float64[time]
-    eb = zeros((3,nx,ny))
     
     reset_timer!()
     @showprogress 1 for istep in 1:nstep
     
        if istep > 1
-           @timeit to "fdtd" faraday!( eb, fdtd, mesh, 0.5dt ) 
+           @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
-       @timeit to "interpolation" interpol_eb!( eb, particles, mesh )
+       @timeit to "interpolation" interpol_eb!( particles, fdtd )
        @timeit to "pushv" push_v!( particles, dt )
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( jxy, fdtd, particles)
+       @timeit to "deposition" compute_current!( fdtd, particles)
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "fdtd" faraday!(eb, fdtd, 0.5dt)
-       @timeit to "fdtd" ampere_maxwell!(eb, fdtd, dt)
+       @timeit to "fdtd" faraday!(fdtd, 0.5dt)
+       @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
        time = time + dt
        push!(t, time)
-       push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))
+       push!(energy, compute_energy(fdtd))
     
     end
 
