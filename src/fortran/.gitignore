@@ -1,0 +1,9 @@
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+*.mod
+install_manifest.txt
+*.dylib
+*.dat
+*.exe
+CMakeFiles
