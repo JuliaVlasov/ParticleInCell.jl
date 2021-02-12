@@ -2,7 +2,7 @@ using ParticleInCell
 using LinearAlgebra
 
 
-@testset "Maxwell solver" begin
+@testset "PSTD solver" begin
 
     dimx, dimy = 2π, 2π
     nx, ny = 128, 128

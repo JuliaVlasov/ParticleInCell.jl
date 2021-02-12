@@ -15,9 +15,7 @@ using LinearAlgebra
 
     ω = sqrt(2)
 
-    ex = zeros(nx, ny)
-    ey = zeros(nx, ny)
-    bz = zeros(nx, ny)
+    eb = zeros(3, nx, ny)
     jx = zeros(nx, ny)
     jy = zeros(nx, ny)
 
@@ -30,8 +28,7 @@ using LinearAlgebra
     yc = ( mesh.y[1:ny] .+ mesh.y[2:ny+1] ) ./ 2 |> transpose
 
     t = 0
-    ex .= 0
-    ey .= 0
+    fill!(eb, 0)
     t = 0.5dt
     fdtd.bz .= - cos.(xc) .* cos.(yc) .* cos(ω * t)
 
@@ -41,21 +38,21 @@ using LinearAlgebra
 
     for istep = 1:nstep # Loop over time
 
-        ampere_maxwell!(ex, ey, fdtd, mesh, dt)
+        ampere_maxwell!(eb, fdtd, mesh, dt)
 
         t = t + 0.5dt
 
         @test maximum(abs.(fdtd.ex .- sol_ex(xc,y) .* sin(ω * t))) < 1e-6
         @test maximum(abs.(fdtd.ey .- sol_ey(x,yc) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(ex .- sol_ex(x,y) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(ey .- sol_ey(x,y) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(eb[1,:,:] .- sol_ex(x,y) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(eb[2,:,:] .- sol_ey(x,y) .* sin(ω * t))) < 1e-6
 
-        faraday!(bz, fdtd, mesh, dt)
+        faraday!(eb, fdtd, mesh, dt)
 
         t = t + 0.5dt
 
         @test maximum(abs.(fdtd.bz .- sol_bz(xc,yc) .* cos(ω * t))) < 1e-6
-        @test maximum(abs.(bz .- sol_bz(x,y) .* cos(ω * t))) < 1e-3
+        @test maximum(abs.(eb[3,:,:] .- sol_bz(x,y) .* cos(ω * t))) < 1e-3
 
     end # next time step
 

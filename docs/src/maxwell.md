@@ -31,9 +31,7 @@ surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1))
 ```@example maxwell
 function run(mesh, maxwell, nstep)
 
-    ex = zeros(nx,ny)
-    ey = zeros(nx,ny)
-    bz = zeros(nx,ny)
+    eb = zeros(3,mesh.nx,mesh.ny)
     
     x = 0.5 .* (mesh.x[1:end-1] .+ mesh.x[2:end])
     y = 0.5 .* (mesh.y[1:end-1] .+ mesh.y[2:end]) |> transpose
@@ -43,11 +41,11 @@ function run(mesh, maxwell, nstep)
     
     @gif for istep = 1:nstep # Loop over time
     
-        faraday!(bz, maxwell, mesh, dt)     
+        faraday!(eb, maxwell, mesh, dt)     
     
-        ampere_maxwell!(ex, ey, maxwell, mesh, dt) 
+        ampere_maxwell!(eb, maxwell, mesh, dt) 
     
-        surface(bz, aspect_ratio=:equal, zlims=(-1,1), clims=(-1,1))
+        surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1))
 
     end every (nstep ÷ 100)
     

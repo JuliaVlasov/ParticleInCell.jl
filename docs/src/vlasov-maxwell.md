@@ -3,7 +3,7 @@
 ## Landau damping
 
 ```@setup vm2d
-using Plots, LinearAlgebra, ProgressMeter
+using Plots, LinearAlgebra
 ```
 
 ```@example vm2d
@@ -22,11 +22,6 @@ poids = dimx * dimy
 mesh = Mesh( dimx, nx, dimy, ny)
 fdtd = FDTD(mesh)
 
-ex = zeros(nx,ny)
-ey = zeros(nx,ny)
-bz = zeros(nx,ny)
-jx = zeros(nx,ny)
-jy = zeros(nx,ny)
 
 time  = 0
 
@@ -50,6 +45,8 @@ histogram!(p[4], particles.vit[2,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
+jx = zeros(nx,ny)
+jy = zeros(nx,ny)
 compute_current!( jx, jy, fdtd, particles, mesh)
 
 p = plot(layout=2)
@@ -58,7 +55,7 @@ surface!(p[2], jy)
 ```
 
 ```@example vm2d
-function run( ex, ey, bz, jx, jy, particles, mesh, nstep, dt)
+function run( jx, jy, particles, mesh, nstep, dt)
     
     alpha = 0.1
     kx = 0.5
@@ -70,20 +67,23 @@ function run( ex, ey, bz, jx, jy, particles, mesh, nstep, dt)
         fdtd.ey[i,j] = 0.0
         fdtd.bz[i,j] = 0.0
     end
+
+    eb = zeros(3, nx, ny)
+
     time = 0
     energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
     t = Float64[time]
     
     for istep in 1:nstep
     
-       istep > 1 && faraday!( bz, fdtd, mesh, 0.5dt ) 
-       interpol_eb!( ex, ey, bz, particles, mesh )
+       istep > 1 && faraday!( eb, fdtd, mesh, 0.5dt ) 
+       interpol_eb!( eb, particles, mesh )
        push_v!( particles, dt )
        push_x!( particles, mesh, 0.5dt) 
        compute_current!( jx, jy, fdtd, particles, mesh)
        push_x!( particles, mesh, 0.5dt) 
-       faraday!(bz, fdtd, mesh, 0.5dt)
-       ampere_maxwell!(ex, ey, fdtd, mesh, dt)
+       faraday!(eb, fdtd, mesh, 0.5dt)
+       ampere_maxwell!(eb, fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
        push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))

@@ -3,6 +3,5 @@ using ParticleInCell
 
 include("test_fdtd.jl")
 include("test_maxwell.jl")
-include("test_update_cells.jl")
 include("test_particles.jl")
 include("landau_damping.jl")

@@ -41,7 +41,7 @@ function faraday!( eb, fdtd :: FDTD, m, dt )
    
 end 
 
-function ampere_maxwell!( ex, ey, fdtd :: FDTD, m, dt)
+function ampere_maxwell!( eb, fdtd :: FDTD, m, dt)
 
    nx, ny = m.nx, m.ny
    dx, dy = m.dx, m.dy
@@ -57,8 +57,8 @@ function ampere_maxwell!( ex, ey, fdtd :: FDTD, m, dt)
    end
 
    for i=1:nx, j=1:ny
-      ex[i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[i,j] )
-      ey[i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
+      eb[1,i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[i,j] )
+      eb[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
    end
 
 end 

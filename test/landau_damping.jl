@@ -13,11 +13,9 @@
     dx = mesh.dx
     dy = mesh.dy
 
-    maxwell = Maxwell(mesh)
+    maxwell = FDTD(mesh)
 
-    ex = zeros(nx, ny)
-    ey = zeros(nx, ny)
-    bz = zeros(nx, ny)
+    eb = zeros(3, nx, ny)
     jx = zeros(nx, ny)
     jy = zeros(nx, ny)
 
@@ -25,7 +23,7 @@
     dt = 0.01
 
     for i = 1:nx, j = 1:ny
-        ex[i, j] = alpha / kx * sin(kx * mesh.x[i])
+        maxwell.ex[i, j] = alpha / kx * sin(kx * mesh.x[i])
     end
 
     nbpart = 100 * nx * ny
@@ -36,18 +34,16 @@
     update_cells!(particles, mesh)
 
     for istep = 1:10
-        if istep > 1
-            faraday!(bz, maxwell, ex, ey, 0.5dt)
-        end
 
-        interpol_eb!(ex, ey, bz, particles, mesh)
+        istep > 1 && faraday!(eb, maxwell, mesh, 0.5dt)
+
+        interpol_eb!(eb, particles, mesh)
         push_v!(particles, dt)
-
         push_x!(particles, mesh, 0.5dt)
         compute_current!(jx, jy, particles, mesh)
-        push_x!(particles, mesh, 0.5dt)  # x(n+1/2) -- x(n+1)
-        faraday!(bz, maxwell, ex, ey, 0.5dt)
-        ampere_maxwell!(ex, ey, maxwell, bz, jx, jy, dt)
+        push_x!(particles, mesh, 0.5dt) 
+        faraday!(eb, maxwell, mesh, 0.5dt)
+        ampere_maxwell!(eb, maxwell, mesh, dt)
 
         time = time + dt
 
