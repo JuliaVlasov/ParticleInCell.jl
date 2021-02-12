@@ -50,7 +50,7 @@ jy = zeros(nx,ny)
 compute_current!( jx, jy, fdtd, particles, mesh)
 
 p = plot(layout=2)
-surface!(p[1], jx )
+surface!(p[1], jx)
 surface!(p[2], jy)
 ```
 
@@ -98,6 +98,6 @@ end
 ```@example vm2d
 dt = 0.01
 nstep = 250
-t, energy = run( ex, ey, bz, jx, jy, particles, mesh, nstep, dt)
+t, energy = run( jx, jy, particles, mesh, nstep, dt)
 plot(t, energy, m=:o)
 ```
