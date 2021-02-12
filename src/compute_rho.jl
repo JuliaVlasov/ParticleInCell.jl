@@ -10,19 +10,22 @@ function compute_rho(p, m)
 
     for ipart = 1:p.nbpart
 
-        xp = p.data[1, ipart]
-        yp = p.data[2, ipart]
+        xp = p.data[1, ipart] / dx
+        yp = p.data[2, ipart] / dy
 
-        i = trunc(Int, xp / m.dx) + 1
-        j = trunc(Int, yp / m.dy) + 1
+        i = trunc(Int, xp ) + 1
+        j = trunc(Int, yp ) + 1
+
+        dxp = i - xp
+        dyp = j - yp
 
         ip1 = mod1(i + 1, nx)
         jp1 = mod1(j + 1, ny)
 
-        a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp)
-        a2 = (xp - m.x[i]) * (m.y[j+1] - yp)
-        a3 = (xp - m.x[i]) * (yp - m.y[j])
-        a4 = (m.x[i+1] - xp) * (yp - m.y[j])
+        a1 = dxp * dyp
+        a2 = (1 - dxp) * dyp
+        a3 = (1 - dxp) * (1 - dyp)
+        a4 = dxp * (1 - dyp)
 
         rho[i, j] += a1
         rho[ip1, j] += a2
@@ -31,7 +34,7 @@ function compute_rho(p, m)
 
     end
 
-    rho = rho .* (nx * ny) ./ p.nbpart ./ (dx * dy)
+    rho = rho .* (nx * ny) ./ p.nbpart 
 
     return rho .- mean(rho)
 

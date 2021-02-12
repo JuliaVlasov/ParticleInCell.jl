@@ -33,7 +33,6 @@ using ParticleInCell
 
     landau_sampling!(particles, alpha, kx)
 
-    update_cells!(particles, mesh)
 
     @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-2
 

@@ -47,12 +47,6 @@ end
 
 export update_cells!
 
-function update_cells!(p, m)
-
-    p.data[1,:] .= mod.(p.data[1,:], m.dimx)
-    p.data[2,:] .= mod.(p.data[2,:], m.dimy)
-
-end
 
 
 export push_v!
@@ -88,11 +82,15 @@ export push_x!
 
 function push_x!(p, mesh, dt)
 
-    @simd for ipart in 1:p.nbpart
-        p.data[1,ipart] += p.data[3,ipart] * dt
-        p.data[2,ipart] += p.data[4,ipart] * dt
-    end
+    dimx, dimy = mesh.dimx, mesh.dimy
 
-    update_cells!(p, mesh)
+    for ipart in 1:p.nbpart
+        v1 = p.data[3, ipart]
+        v2 = p.data[4, ipart]
+        x1 = p.data[1,ipart] + v1 * dt
+        x2 = p.data[2,ipart] + v2 * dt
+        p.data[1,ipart] = mod(x1, dimx)
+        p.data[2,ipart] = mod(x2, dimy)
+    end
 
 end

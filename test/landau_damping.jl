@@ -27,7 +27,6 @@
     particles = Particles(nbpart)
 
     landau_sampling!(particles, alpha, kx)
-    update_cells!(particles, mesh)
 
     for istep = 1:10
 
