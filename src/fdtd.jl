@@ -75,32 +75,30 @@ function interpol_eb!(p::Particles, fdtd::FDTD)
 
     @inbounds for ip = 1:p.nbpart
 
-        xp = p.pos[1, ip]
-        yp = p.pos[2, ip]
+        xp = p.data[1, ip] / dx
+        yp = p.data[2, ip] / dy
 
-        i = trunc(Int, xp / dx) + 1
-        j = trunc(Int, yp / dy) + 1
+        i = trunc(Int, xp ) + 1
+        j = trunc(Int, yp ) + 1
 
         ip1 = mod1(i + 1, nx)
         jp1 = mod1(j + 1, ny)
 
-        dxp = i*dx - xp
-        dyp = j*dy - yp
-        dxq = dx - dxp
-        dyq = dy - dyp
+        dxp = i - 1 - xp
+        dyp = j - 1 - yp
+        dxq = 1 - dxp
+        dyq = 1 - dyp
 
-        a1 = dxp * dyp
+        a1 = dxp * dyp 
         a2 = dxq * dyp
         a3 = dxq * dyq
         a4 = dxp * dyq
 
-        p.ebp[1,ip] = a1 * fdtd.ebj[1,i,j] + a2 * fdtd.ebj[1,ip1,j] + a3 * fdtd.ebj[1,ip1,jp1] + a4 * fdtd.ebj[1,i,jp1]
-        p.ebp[2,ip] = a1 * fdtd.ebj[2,i,j] + a2 * fdtd.ebj[2,ip1,j] + a3 * fdtd.ebj[2,ip1,jp1] + a4 * fdtd.ebj[2,i,jp1]
-        p.ebp[3,ip] = a1 * fdtd.ebj[3,i,j] + a2 * fdtd.ebj[3,ip1,j] + a3 * fdtd.ebj[3,ip1,jp1] + a4 * fdtd.ebj[3,i,jp1]
+        p.data[5,ip] = a1 * fdtd.ebj[1,i,j] + a2 * fdtd.ebj[1,ip1,j] + a3 * fdtd.ebj[1,ip1,jp1] + a4 * fdtd.ebj[1,i,jp1]
+        p.data[6,ip] = a1 * fdtd.ebj[2,i,j] + a2 * fdtd.ebj[2,ip1,j] + a3 * fdtd.ebj[2,ip1,jp1] + a4 * fdtd.ebj[2,i,jp1]
+        p.data[7,ip] = a1 * fdtd.ebj[3,i,j] + a2 * fdtd.ebj[3,ip1,j] + a3 * fdtd.ebj[3,ip1,jp1] + a4 * fdtd.ebj[3,i,jp1]
 
     end
-
-    p.ebp ./= (dx * dy)
 
 end
 
@@ -114,42 +112,43 @@ function compute_current!( fdtd :: FDTD, p :: Particles )
     
     for ipart=1:p.nbpart
     
-       xp = p.pos[1,ipart]
-       yp = p.pos[2,ipart]
+       xp = p.data[1,ipart] / dx 
+       yp = p.data[2,ipart] / dy
 
-       i = trunc(Int, xp / dx) + 1
-       j = trunc(Int, yp / dy) + 1
+       i = trunc(Int, xp ) + 1
+       j = trunc(Int, yp ) + 1
     
        ip1 = mod1(i+1, nx)
        jp1 = mod1(j+1, ny)
     
-       dxp = i*dx - xp
-       dyp = j*dy - yp
-       dxq = dx - dxp
-       dyq = dy - dyp
+       dxp = i + 1 - xp
+       dyp = j + 1 - yp
+       dxq = 1 - dxp
+       dyq = 1 - dyp
 
        a1 = dxp * dyp
        a2 = dxq * dyp
        a3 = dxq * dyq
        a4 = dxp * dyq
     
-       w = p.vit[1,ipart]
+       w1 = p.data[3,ipart]
+       w2 = p.data[4,ipart]
     
-       fdtd.ebj[1,i,j]     += a1*w  
-       fdtd.ebj[1,ip1,j]   += a2*w 
-       fdtd.ebj[1,ip1,jp1] += a3*w 
-       fdtd.ebj[1,i,jp1]   += a4*w 
-    
-       w = p.vit[2,ipart]
-    
-       fdtd.ebj[2,i,j]     += a1*w  
-       fdtd.ebj[2,ip1,j]   += a2*w 
-       fdtd.ebj[2,ip1,jp1] += a3*w 
-       fdtd.ebj[2,i,jp1]   += a4*w 
+       fdtd.ebj[1,i,j]     += a1*w1  
+       fdtd.ebj[2,i,j]     += a1*w2  
+
+       fdtd.ebj[1,ip1,j]   += a2*w1
+       fdtd.ebj[2,ip1,j]   += a2*w2
+
+       fdtd.ebj[1,ip1,jp1] += a3*w1
+       fdtd.ebj[2,ip1,jp1] += a3*w2
+
+       fdtd.ebj[1,i,jp1]   += a4*w1
+       fdtd.ebj[2,i,jp1]   += a4*w2
     
     end
 
-    fdtd.ebj .*= (nx * ny) / p.nbpart / (dx * dy)
+    fdtd.ebj .*= (nx * ny) / p.nbpart 
     
     for i=1:nx, j=1:ny
        fdtd.jx[i,j] = 0.5 * (fdtd.ebj[1,i,j]+fdtd.ebj[1,mod1(i+1,nx),j])

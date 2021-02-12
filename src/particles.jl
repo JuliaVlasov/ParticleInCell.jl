@@ -2,18 +2,13 @@ export Particles
 
 struct Particles
 
-    nbpart::Any
-    pos::Any
-    vit::Any
-    ebp::Any
+    nbpart::Int
+    data::Array{Float64,2}
 
     function Particles(nbpart)
 
-        pos = zeros(2, nbpart)
-        vit = zeros(2, nbpart)
-        ebp = zeros(3, nbpart)
-
-        new(nbpart, pos, vit, ebp)
+        data = zeros(7, nbpart)
+        new(nbpart, data)
 
     end
 
@@ -41,10 +36,10 @@ function landau_sampling!(pg, alpha, kx)
         v = sqrt(-2 * log((i - 0.5) / nbpart))
         r1, r2, r3 = Sobol.next!(s)
         θ = r1 * 2π
-        pg.pos[1, i] = newton(r2)
-        pg.pos[2, i] = r3
-        pg.vit[1, i] = v * cos(θ)
-        pg.vit[2, i] = v * sin(θ)
+        pg.data[1, i] = newton(r2)
+        pg.data[2, i] = r3
+        pg.data[3, i] = v * cos(θ)
+        pg.data[4, i] = v * sin(θ)
     end
 
 end
@@ -53,7 +48,50 @@ export update_cells!
 
 function update_cells!(p, m)
 
-    p.pos[1,:] .= mod.(p.pos[1,:], m.dimx)
-    p.pos[2,:] .= mod.(p.pos[2,:], m.dimy)
+    p.data[1,:] .= mod.(p.data[1,:], m.dimx)
+    p.data[2,:] .= mod.(p.data[2,:], m.dimy)
+
+end
+
+
+export push_v!
+
+function push_v!(p, dt)
+
+    for ipart = 1:p.nbpart
+
+        v1 = p.data[3, ipart]
+        v2 = p.data[4, ipart]
+        e1 = p.data[5, ipart]
+        e2 = p.data[6, ipart]
+        b3 = p.data[7, ipart]
+
+        v1 += 0.5dt * e1
+        v2 += 0.5dt * e2
+
+        tantheta = 0.5dt * b3
+        sintheta = 2 * tantheta / (1 + tantheta * tantheta)
+
+        v1 += v2 * tantheta
+        v2 += - v1 * sintheta
+        v1 += v2 * tantheta
+
+        p.data[3, ipart] = v1 + 0.5dt * e1
+        p.data[4, ipart] = v2 + 0.5dt * e2
+
+    end
+
+end
+
+export push_x!
+
+function push_x!(p, mesh, dt)
+
+    @simd for ipart in 1:p.nbpart
+        p.data[1,ipart] += p.data[3,ipart] * dt
+        p.data[2,ipart] += p.data[4,ipart] * dt
+    end
+
+    update_cells!(p, mesh)
 
 end

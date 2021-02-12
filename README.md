@@ -16,6 +16,8 @@ I will note here times of this Julia code and what I have done to speed-up thing
 - 303 seconds : Use julia -O3 --check-bounds=no
 - 302 seconds : change shape of positions and velocities arrays for particles
 - 156 seconds : Regroup ex, ey, and bz in a same array eb(3,nx,ny)
+- 176 seconds : put the array eb in fdtd type
+- 140 seconds : put the particles data in one array, the particle push is now very fast.
 
 ## Other Julia PIC codes 
 

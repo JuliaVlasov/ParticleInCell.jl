@@ -10,15 +10,14 @@ function compute_rho(p, m)
 
     for ipart = 1:p.nbpart
 
-        xp = p.pos[1, ipart]
-        yp = p.pos[2, ipart]
+        xp = p.data[1, ipart]
+        yp = p.data[2, ipart]
 
         i = trunc(Int, xp / m.dx) + 1
         j = trunc(Int, yp / m.dy) + 1
 
         ip1 = mod1(i + 1, nx)
         jp1 = mod1(j + 1, ny)
-
 
         a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp)
         a2 = (xp - m.x[i]) * (m.y[j+1] - yp)
