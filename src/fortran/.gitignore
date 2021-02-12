@@ -7,3 +7,4 @@ install_manifest.txt
 *.dat
 *.exe
 CMakeFiles
+*.out
