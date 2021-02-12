@@ -3,11 +3,12 @@ export Particles
 struct Particles
 
     nbpart::Int
-    data::Array{Float64,2}
+    data::Array{Float64, 2}
 
     function Particles(nbpart)
 
         data = zeros(7, nbpart)
+
         new(nbpart, data)
 
     end
