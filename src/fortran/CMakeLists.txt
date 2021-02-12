@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.9)
+enable_language(Fortran)
+project(heatKERNEL DESCRIPTION "a simple heat kernel")
+add_library(heatKernel SHARED heat.f90)
+install(TARGETS heatKernel DESTINATION ${CMAKE_SOURCE_DIR})

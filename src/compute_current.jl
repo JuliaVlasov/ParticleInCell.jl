@@ -9,14 +9,16 @@ function compute_current!(jx, jy, p, m)
     fill!(jy, 0)
 
     @inbounds for ipart = 1:p.nbpart
-        i = p.cell[1,ipart]
-        j = p.cell[2,ipart]
 
-        ip1 = mod1(i + 1, nx)
-        jp1 = mod1(j + 1, ny)
 
         xp = p.pos[1, ipart]
         yp = p.pos[2, ipart]
+
+        i = trunc(Int, xp / m.dx) + 1
+        j = trunc(Int, yp / m.dy) + 1
+
+        ip1 = mod1(i + 1, nx)
+        jp1 = mod1(j + 1, ny)
 
         a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp)
         a2 = (xp - m.x[i]) * (m.y[j+1] - yp)
@@ -39,7 +41,7 @@ function compute_current!(jx, jy, p, m)
 
     end
 
-    jx .= jx .* m.nx .* m.ny ./ p.nbpart ./ (dx * dy)
-    jy .= jy .* m.nx .* m.ny ./ p.nbpart ./ (dx * dy)
+    jx .*= m.nx .* m.ny ./ p.nbpart ./ (dx * dy)
+    jy .*= m.nx .* m.ny ./ p.nbpart ./ (dx * dy)
 
 end

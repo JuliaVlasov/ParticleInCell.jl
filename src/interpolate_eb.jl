@@ -1,29 +1,37 @@
 export interpol_eb!
 
-function interpol_eb!(ex, ey, bz, p::Particles, m::Mesh)
+function interpol_eb!(eb, p::Particles, m::Mesh)
 
-    dum = 1 / (m.dx * m.dy)
+    nx, ny = m.nx, m.ny
+    dx, dy = m.dx, m.dy
 
-    @inbounds for ipart = 1:p.nbpart
+    @inbounds for ip = 1:p.nbpart
 
-        i = p.cell[1,ipart]
-        j = p.cell[2,ipart]
+        xp = p.pos[1, ip]
+        yp = p.pos[2, ip]
 
-        xp = p.pos[1, ipart]
-        yp = p.pos[2, ipart]
+        i = trunc(Int, xp / dx) + 1
+        j = trunc(Int, yp / dy) + 1
 
-        ip1 = mod1(i + 1, m.nx)
-        jp1 = mod1(j + 1, m.ny)
+        ip1 = mod1(i + 1, nx)
+        jp1 = mod1(j + 1, ny)
 
-        a1 = (m.x[i+1] - xp) * (m.y[j+1] - yp) * dum
-        a2 = (xp - m.x[i]) * (m.y[j+1] - yp) * dum
-        a3 = (xp - m.x[i]) * (yp - m.y[j]) * dum
-        a4 = (m.x[i+1] - xp) * (yp - m.y[j]) * dum
+        dxp = i*dx - xp
+        dyp = j*dy - yp
+        dxq = dx - dxp
+        dyq = dy - dyp
 
-        p.epx[ipart] = a1 * ex[i, j] + a2 * ex[ip1, j] + a3 * ex[ip1, jp1] + a4 * ex[i, jp1]
-        p.epy[ipart] = a1 * ey[i, j] + a2 * ey[ip1, j] + a3 * ey[ip1, jp1] + a4 * ey[i, jp1]
-        p.bpz[ipart] = a1 * bz[i, j] + a2 * bz[ip1, j] + a3 * bz[ip1, jp1] + a4 * bz[i, jp1]
+        a1 = dxp * dyp
+        a2 = dxq * dyp
+        a3 = dxq * dyq
+        a4 = dxp * dyq
+
+        p.ebp[1,ip] = a1 * eb[1,i,j] + a2 * eb[1,ip1,j] + a3 * eb[1,ip1,jp1] + a4 * eb[1,i,jp1]
+        p.ebp[2,ip] = a1 * eb[2,i,j] + a2 * eb[2,ip1,j] + a3 * eb[2,ip1,jp1] + a4 * eb[2,i,jp1]
+        p.ebp[3,ip] = a1 * eb[3,i,j] + a2 * eb[3,ip1,j] + a3 * eb[3,ip1,jp1] + a4 * eb[3,i,jp1]
 
     end
+
+    p.ebp ./= (m.dx * m.dy)
 
 end

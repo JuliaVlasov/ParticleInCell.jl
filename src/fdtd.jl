@@ -8,9 +8,9 @@ struct FDTD
     jx
     jy
 
-    function FDTD( mesh )
+    function FDTD( m )
 
-        nx, ny = mesh.nx, mesh.ny
+        nx, ny = m.nx, m.ny
         ex = zeros(nx,ny)
         ey = zeros(nx,ny)
         bz = zeros(nx,ny)
@@ -23,28 +23,28 @@ struct FDTD
 
 end
 
-function faraday!( bz, fdtd :: FDTD, mesh, dt )
+function faraday!( eb, fdtd :: FDTD, m, dt )
 
-   nx, ny = mesh.nx, mesh.ny
-   dx, dy = mesh.dx, mesh.dy
+   nx, ny = m.nx, m.ny
+   dx, dy = m.dx, m.dy
 
-   for i=1:nx, j=1:ny
+   for j=1:ny, i=1:nx
       dex_dy  = (fdtd.ex[i,mod1(j+1,ny)]-fdtd.ex[i,j]) / dy
       dey_dx  = (fdtd.ey[mod1(i+1,nx),j]-fdtd.ey[i,j]) / dx
       fdtd.bz[i,j] += dt * (dex_dy - dey_dx)
    end
 
-   for i=1:nx, j=1:ny
-      bz[i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
-                + fdtd.bz[mod1(i-1,nx), j] + fdtd.bz[i, j]) / 4
+   for j=1:ny, i=1:nx
+      eb[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
+                  + fdtd.bz[mod1(i-1,nx), j] + fdtd.bz[i, j]) / 4
    end
    
 end 
 
-function ampere_maxwell!( ex, ey, fdtd :: FDTD, mesh, dt)
+function ampere_maxwell!( ex, ey, fdtd :: FDTD, m, dt)
 
-   nx, ny = mesh.nx, mesh.ny
-   dx, dy = mesh.dx, mesh.dy
+   nx, ny = m.nx, m.ny
+   dx, dy = m.dx, m.dy
 
    for i=1:nx, j=1:ny
       dbz_dy = (fdtd.bz[i,j]-fdtd.bz[i,mod1(j-1,ny)]) / dy
@@ -65,41 +65,44 @@ end
 
 
 
-function compute_current!( jx, jy, fdtd :: FDTD, p, mesh )
+function compute_current!( jx, jy, fdtd :: FDTD, p, m )
 
 
-    nx, ny = mesh.nx, mesh.ny
-    dx, dy = mesh.dx, mesh.dy
+    nx, ny = m.nx, m.ny
+    dx, dy = m.dx, m.dy
     
     fill!(jx, 0)
     fill!(jy, 0)
     
     for ipart=1:p.nbpart
     
-       i = p.cell[1,ipart]
-       j = p.cell[2,ipart]
+       xp = p.pos[1,ipart]
+       yp = p.pos[2,ipart]
+
+       i = trunc(Int, xp / dx) + 1
+       j = trunc(Int, yp / dy) + 1
     
        ip1 = mod1(i+1, nx)
        jp1 = mod1(j+1, ny)
     
-       xp = p.pos[1,ipart]
-       yp = p.pos[2,ipart]
+       dxp = i*dx - xp
+       dyp = j*dy - yp
+       dxq = dx - dxp
+       dyq = dy - dyp
+
+       a1 = dxp * dyp
+       a2 = dxq * dyp
+       a3 = dxq * dyq
+       a4 = dxp * dyq
     
-       w = (mesh.dimx * mesh.dimy) / p.nbpart / (dx * dy)
-    
-       a1 = (mesh.x[i+1]-xp) * (mesh.y[j+1]-yp) * w
-       a2 = (xp-mesh.x[i]) * (mesh.y[j+1]-yp) * w
-       a3 = (xp-mesh.x[i]) * (yp-mesh.y[j]) * w
-       a4 = (mesh.x[i+1]-xp) * (yp-mesh.y[j]) * w
-    
-       w = p.vit[1,ipart] / (dx*dy) 
+       w = p.vit[1,ipart]
     
        jx[i,j]     +=  a1*w  
        jx[ip1,j]   +=  a2*w 
        jx[ip1,jp1] +=  a3*w 
        jx[i,jp1]   +=  a4*w 
     
-       w = p.vit[2,ipart] / (dx*dy) 
+       w = p.vit[2,ipart]
     
        jy[i,j]     += a1*w  
        jy[ip1,j]   += a2*w 
@@ -107,6 +110,10 @@ function compute_current!( jx, jy, fdtd :: FDTD, p, mesh )
        jy[i,jp1]   += a4*w 
     
     end
+
+    jx .*= (nx * ny) / p.nbpart / (dx * dy)
+    jy .*= (nx * ny) / p.nbpart / (dx * dy)
+
     
     for i=1:nx, j=1:ny
        fdtd.jx[i,j] = 0.5 * (jx[i,j]+jx[mod1(i+1,nx),j])

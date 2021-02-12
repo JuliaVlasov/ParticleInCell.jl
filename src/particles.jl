@@ -4,22 +4,16 @@ struct Particles
 
     nbpart::Any
     pos::Any
-    cell::Any
     vit::Any
-    epx::Any
-    epy::Any
-    bpz::Any
+    ebp::Any
 
     function Particles(nbpart)
 
         pos = zeros(2, nbpart)
-        cell = zeros(Int16, 2, nbpart)
         vit = zeros(2, nbpart)
-        epx = zeros(nbpart)
-        epy = zeros(nbpart)
-        bpz = zeros(nbpart)
+        ebp = zeros(3, nbpart)
 
-        new(nbpart, pos, cell, vit, epx, epy, bpz)
+        new(nbpart, pos, vit, ebp)
 
     end
 
@@ -61,9 +55,5 @@ function update_cells!(p, m)
 
     p.pos[1,:] .= mod.(p.pos[1,:], m.dimx)
     p.pos[2,:] .= mod.(p.pos[2,:], m.dimy)
-
-    p.cell[1,:] .= trunc.(Int, p.pos[1,:] ./ m.dx) .+ 1
-    p.cell[2,:] .= trunc.(Int, p.pos[2,:] ./ m.dy) .+ 1
-
 
 end

@@ -1,5 +1,8 @@
 using Plots, LinearAlgebra, ProgressMeter
 using ParticleInCell
+using TimerOutputs
+
+const to = TimerOutput()
 
 function run( nstep )
     
@@ -11,10 +14,9 @@ function run( nstep )
     nx     = 128  # nombre de pts suivant x
     ny     = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
-    @show nbpart = 100*nx*ny
+    @show nbpart = 10*nx*ny
     ex = zeros(nx,ny)
     ey = zeros(nx,ny)
-    bz = zeros(nx,ny)
     jx = zeros(nx,ny)
     jy = zeros(nx,ny)
     particles = Particles(nbpart)
@@ -29,22 +31,29 @@ function run( nstep )
     time = 0
     energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
     t = Float64[time]
+    eb = zeros((3,nx,ny))
     
+    reset_timer!()
     @showprogress 1 for istep in 1:nstep
     
-       istep > 1 && faraday!( bz, fdtd, mesh, 0.5dt ) 
-       interpol_eb!( ex, ey, bz, particles, mesh )
-       push_v!( particles, dt )
-       push_x!( particles, mesh, 0.5dt) 
-       compute_current!( jx, jy, fdtd, particles, mesh)
-       push_x!( particles, mesh, 0.5dt) 
-       faraday!(bz, fdtd, mesh, 0.5dt)
-       ampere_maxwell!(ex, ey, fdtd, mesh, dt)
+       if istep > 1
+           @timeit to "fdtd" faraday!( eb, fdtd, mesh, 0.5dt ) 
+       end
+       eb[1,:,:] .= ex
+       eb[2,:,:] .= ey
+       @timeit to "interpolation" interpol_eb!( eb, particles, mesh )
+       @timeit to "pushv" push_v!( particles, dt )
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "deposition" compute_current!( jx, jy, fdtd, particles, mesh)
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "fdtd" faraday!(eb, fdtd, mesh, 0.5dt)
+       @timeit to "fdtd" ampere_maxwell!(ex, ey, fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
        push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))
     
     end
+
    
     t, energy
     
@@ -55,3 +64,4 @@ t, energy = run( 1 )
 @time t, energy = run( nstep )
 plot(t, energy, m=:o)
 savefig("out.png")
+show(to)
