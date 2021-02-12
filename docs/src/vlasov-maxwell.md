@@ -28,7 +28,7 @@ time  = 0
 for i=1:nx, j=1:ny
     fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
 end
-surface!(mesh.x[1:nx], mesh.y[1:ny], fdtd.ex )
+surface!(fdtd.ex )
 ```
 
 ```@example vm2d

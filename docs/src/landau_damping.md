@@ -43,7 +43,7 @@ end
 ```
 
 ```@example landau
-nt, dt = 2000, 0.01
+nt, dt = 1000, 0.01
 results = main(nt, dt)
 t = collect(0:nt) .* dt
 plot( t, results, yaxis = :log )
