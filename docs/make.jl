@@ -1,6 +1,5 @@
 push!(LOAD_PATH,"../src/")
 using Documenter
-using Weave
 using Plots 
 using ParticleInCell
 
