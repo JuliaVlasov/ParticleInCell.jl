@@ -1,4 +1,4 @@
-using Plots, LinearAlgebra, ProgressMeter
+using LinearAlgebra, ProgressMeter
 using ParticleInCell
 using TimerOutputs
 
@@ -17,7 +17,7 @@ function run( nstep )
     @show nbpart = 100*nx*ny
     particles = Particles(nbpart)
     landau_sampling!( particles, alpha, kx )
-    update_cells!( particles, mesh )
+
     fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny
         fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
@@ -55,6 +55,12 @@ end
 t, energy = run( 1 )
 @show nstep = 250
 @time t, energy = run( nstep )
-plot(t, energy, m=:o)
-savefig("out.png")
 show(to)
+
+open("modeE.dat", "w") do f
+
+    for i in 1:nstep
+        println(f, t[i], " ", energy[i])
+    end
+
+end
