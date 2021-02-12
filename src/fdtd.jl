@@ -81,11 +81,11 @@ function interpol_eb!(p::Particles, fdtd::FDTD)
         i = trunc(Int, xp ) + 1
         j = trunc(Int, yp ) + 1
 
-        ip1 = mod1(i + 1, nx)
-        jp1 = mod1(j + 1, ny)
+        ip1 = mod1(i+1, nx+1)
+        jp1 = mod1(j+1, ny+1)
 
-        dxp = i - 1 - xp
-        dyp = j - 1 - yp
+        dxp = xp - i - 1
+        dyp = yp - j - 1
         dxq = 1 - dxp
         dyq = 1 - dyp
 
@@ -110,7 +110,7 @@ function compute_current!( fdtd :: FDTD, p :: Particles )
     
     fill!(fdtd.ebj, 0)
     
-    for ipart=1:p.nbpart
+    @inbounds for ipart=1:p.nbpart
     
        xp = p.data[1,ipart] / dx 
        yp = p.data[2,ipart] / dy
@@ -121,8 +121,8 @@ function compute_current!( fdtd :: FDTD, p :: Particles )
        ip1 = mod1(i+1, nx)
        jp1 = mod1(j+1, ny)
     
-       dxp = i + 1 - xp
-       dyp = j + 1 - yp
+       dxp = xp - i - 1
+       dyp = yp - j - 1
        dxq = 1 - dxp
        dyq = 1 - dyp
 

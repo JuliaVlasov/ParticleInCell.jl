@@ -1,5 +1,6 @@
 module particules
 
+use iso_c_binding
 use zone
 use quietstart
 
@@ -16,23 +17,24 @@ subroutine interpol_eb( tm1, ele )
 
 type(particle) :: ele
 type(mesh_fields) :: tm1
-real(kind = prec) :: a1, a2, a3, a4, s
-real(kind = prec) :: xp, yp
-
-s = dx * dy
+real(c_double) :: a1, a2, a3, a4
+real(c_double) :: xp, yp, dxp, dyp
 
 do ipart=1,nbpart
 
-   xp = ele%pos(ipart,1)
-   yp = ele%pos(ipart,2)
+   xp = ele%pos(ipart,1) / dx
+   yp = ele%pos(ipart,2) / dy
 
-   i = floor( xp / dx)
-   j = floor( yp / dx)
+   i = floor( xp )
+   j = floor( yp )
 
-   a1 = (x(i+1)-xp) * (y(j+1)-yp)  / s
-   a2 = (xp-x(i)) * (y(j+1)-yp)  / s
-   a3 = (xp-x(i)) * (yp-y(j)) / s
-   a4 = (x(i+1)-xp) * (yp-y(j))/ s
+   dxp = xp - i
+   dyp = yp - j
+
+   a1 = (1-dxp) * (1-dyp) 
+   a2 = dxp * (1-dyp) 
+   a3 = dxp * dyp 
+   a4 = (1-dxp) * dyp 
 
    ele%epx(ipart) = a1 * tm1%ex(i,j) + a2 * tm1%ex(i+1,j) &
         & + a3 * tm1%ex(i+1,j+1) + a4 * tm1%ex(i,j+1) 
@@ -49,24 +51,32 @@ end subroutine interpol_eb
 subroutine avancee_vitesse( ele )
 
 type (particle) :: ele
-real(kind=prec) :: dum
-real(kind=prec) :: tantheta, sintheta
+real(c_double) :: dum
+real(c_double) :: tantheta, sintheta
+real(8) :: hdt, v1, v2, e1, e2, b3
+
+hdt = 0.5 * dt
 
 do ipart = 1, nbpart
 
-   dum = 0.5 * dt
-   ele%vit(ipart,1) = ele%vit(ipart,1) + dum*ele%epx(ipart)
-   ele%vit(ipart,2) = ele%vit(ipart,2) + dum*ele%epy(ipart)
+   v1 = ele%vit(ipart,1)
+   v2 = ele%vit(ipart,2)
+   e1 = ele%epx(ipart)
+   e2 = ele%epx(ipart)
+   b3 = ele%bpz(ipart)
 
-   tantheta = dum * ele%bpz(ipart)
+   v1 = v1 + hdt * e1
+   v2 = v2 + hdt * e2
+
+   tantheta = hdt * b3
    sintheta = 2.0 * tantheta / ( 1. + tantheta*tantheta)
 
-   ele%vit(ipart,1) = ele%vit(ipart,1) + ele%vit(ipart,2)*tantheta
-   ele%vit(ipart,2) = ele%vit(ipart,2) - ele%vit(ipart,1)*sintheta
-   ele%vit(ipart,1) = ele%vit(ipart,1) + ele%vit(ipart,2)*tantheta
+   v1 = v1 + v2 * tantheta
+   v2 = v2 - v1 * sintheta
+   v1 = v1 + v2 * tantheta
 
-   ele%vit(ipart,1) = ele%vit(ipart,1) + dum*ele%epx(ipart)
-   ele%vit(ipart,2) = ele%vit(ipart,2) + dum*ele%epy(ipart)
+   ele%vit(ipart,1) = v1 + hdt * e1
+   ele%vit(ipart,2) = v2 + hdt * e2
 
 end do
 
@@ -77,7 +87,7 @@ end subroutine avancee_vitesse
 subroutine avancee_part( ele, coef )  !Avancee de coef * dt
 
 type(particle) :: ele
-real(kind=prec) :: coef
+real(c_double) :: coef
 
 ele%pos = ele%pos + ele%vit * dt * coef
 
@@ -92,7 +102,7 @@ subroutine calcul_j_cic( ele, tm, tm1 )
 
 type(particle) :: ele
 type(mesh_fields) :: tm, tm1
-real(kind=prec) :: a1, a2, a3, a4, dum, xp, yp
+real(c_double) :: a1, a2, a3, a4, dum, xp, yp
 integer :: ip1, jp1
 
 tm1%jx = 0.d0
@@ -151,8 +161,8 @@ end subroutine calcul_j_cic
 subroutine plasma( ele )
 
 type (particle) :: ele
-real(kind=prec) :: speed, theta, vth, n
-real(kind=prec) :: a, b, eps, R
+real(c_double) :: speed, theta, vth, n
+real(c_double) :: a, b, eps, R
 integer :: k
 
 eps = 1.d-12

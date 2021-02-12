@@ -12,20 +12,22 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine faraday( tm )
+subroutine faraday( ex, ey, bz, dt )
 
-type( mesh_fields ) :: tm
+   real(8), intent(in) :: ex(:,:), ey(:,:)
+   real(8), intent(in) :: dt
+   real(8), intent(inout) :: bz(:,:)
 
    !*** On utilise l'equation de Faraday sur un demi pas
    !*** de temps pour le calcul du champ magnetique  Bz 
    !*** a l'instant n puis n+1/2 apres deplacement des
    !*** particules
 
-   do i=0,nx-1
-   do j=0,ny-1
-      dex_dy     = (tm%ex(i,j+1)-tm%ex(i,j)) / dy
-      dey_dx     = (tm%ey(i+1,j)-tm%ey(i,j)) / dx
-      tm%bz(i,j) = tm%bz(i,j) + 0.5 * dt * (dex_dy - dey_dx)
+   do j=1,ny
+   do i=1,nx
+      dex_dy  = (ex(i,j+1)-ex(i,j)) / dy
+      dey_dx  = (ey(i+1,j)-ey(i,j)) / dx
+      bz(i,j) = bz(i,j) + dt * (dex_dy - dey_dx)
    end do
    end do
 
@@ -33,39 +35,40 @@ end subroutine faraday
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine ampere( tm )
+subroutine ampere( ex, ey, bz, jx, jy, dt )
 
-type( mesh_fields ) :: tm
-
+   real(8), intent(inout) :: ex(:,:), ey(:,:)
+   real(8), intent(in) :: dt
+   real(8), intent(in) :: bz(:,:), jx(:,:), jy(:,:)
    !*** Calcul du champ electrique E au temps n+1
    !*** sur les points internes du maillage
    !*** Ex aux points (i+1/2,j)
    !*** Ey aux points (i,j+1/2)
 
-   do i=0,nx-1
-   do j=1,ny-1
-      dbz_dy = (tm%bz(i,j)-tm%bz(i,j-1)) / dy
-      tm%ex(i,j) = tm%ex(i,j) + dt * dbz_dy - dt * tm%jx(i,j)
+   do i=1,nx
+   do j=2,ny
+      dbz_dy = (bz(i,j)-bz(i,j-1)) / dy
+      ex(i,j) = ex(i,j) + dt * dbz_dy - dt * jx(i,j)
    end do
    end do
 
-   do i=1,nx-1
-   do j=0,ny-1
-      dbz_dx = (tm%bz(i,j)-tm%bz(i-1,j)) / dx
-      tm%ey(i,j) = tm%ey(i,j) - dt * dbz_dx - dt * tm%jy(i,j)
+   do i=2,nx
+   do j=1,ny
+      dbz_dx = (bz(i,j)-bz(i-1,j)) / dx
+      ey(i,j) = ey(i,j) - dt * dbz_dx - dt * jy(i,j)
    end do
    end do
 
-   do i=0,nx-1
-      dbz_dy = (tm%bz(i,0)-tm%bz(i,ny-1)) / dy
-      tm%ex(i,0)  = tm%ex(i,0) + dt * dbz_dy - dt * tm%jx(i,0)
-      tm%ex(i,ny) = tm%ex(i,0)
+   do i=1,nx
+      dbz_dy = (bz(i,1)-bz(i,ny)) / dy
+      ex(i,1)  = ex(i,1) + dt * dbz_dy - dt * jx(i,1)
+      ex(i,ny+1) = ex(i,1)
    end do
    
-   do j=0,ny-1
-      dbz_dx = (tm%bz(0,j)-tm%bz(nx-1,j)) / dx
-      tm%ey(0,j)  = tm%ey(0,j) - dt * dbz_dx - dt * tm%jy(0,j)
-      tm%ey(nx,j) = tm%ey(0,j)
+   do j=1,ny
+      dbz_dx = (bz(1,j)-bz(nx,j)) / dx
+      ey(1,j)  = ey(1,j) - dt * dbz_dx - dt * jy(1,j)
+      ey(nx+1,j) = ey(1,j)
    end do
 
 end subroutine ampere

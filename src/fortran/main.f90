@@ -15,11 +15,17 @@ integer :: i, j
 
 call init( )
 
+! staggered grid for FDTD maxwell scheme
+
 allocate(f0%ex(0:nx-1,0:ny))
 allocate(f0%ey(0:nx,0:ny-1))
 allocate(f0%bz(0:nx-1,0:ny-1))
 allocate(f0%jx(0:nx-1,0:ny))
 allocate(f0%jy(0:nx,0:ny-1))
+
+
+! Regular grid for particle interpolation and deposition
+
 allocate(f1%ex(0:nx,0:ny)) 
 allocate(f1%ey(0:nx,0:ny))
 allocate(f1%bz(0:nx,0:ny))
@@ -41,7 +47,7 @@ call plasma( p )
 
 do istep = 1, nstep
 
-   if (istep > 1) call faraday( f0 )
+   if (istep > 1) call faraday( f0%ex, f0%ey, f0%bz, 0.5*dt )
 
    call decalage( f0, f1 )
    call interpol_eb( f1, p )
@@ -52,8 +58,8 @@ do istep = 1, nstep
    call calcul_j_cic( p, f0, f1 )
    call avancee_part( p, 0.5d0 )  ! x(n+1/2) -- x(n+1)
         
-   call faraday( f0 )   !B(n) --> B(n+1/2)
-   call ampere( f0 )    !E(n) --> E(n+1)
+   call faraday( f0%ex, f0%ey, f0%bz, 0.5*dt )
+   call ampere( f0%ex, f0%ey, f0%bz, f0%jx, f0%jy, dt ) 
 
    time = time + dt
    print*,'time = ',time, ' nbpart = ', nbpart
