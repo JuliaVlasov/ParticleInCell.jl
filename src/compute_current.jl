@@ -1,12 +1,11 @@
 export compute_current!
 
-function compute_current!(jx, jy, p, m)
+function compute_current!(jxy, p, m)
 
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
 
-    fill!(jx, 0)
-    fill!(jy, 0)
+    fill!(jxy, 0)
 
     @inbounds for ipart = 1:p.nbpart
 
@@ -27,17 +26,17 @@ function compute_current!(jx, jy, p, m)
 
         v1 = p.vit[1, ipart]
 
-        jx[i, j] += a1 * v1
-        jx[ip1, j] += a2 * v1
-        jx[ip1, jp1] += a3 * v1
-        jx[i, jp1] += a4 * v1
+        jxy[1, i, j] += a1 * v1
+        jxy[1, ip1, j] += a2 * v1
+        jxy[1, ip1, jp1] += a3 * v1
+        jxy[1, i, jp1] += a4 * v1
 
         v2 = p.vit[2, ipart]
 
-        jy[i, j] += a1 * v2
-        jy[ip1, j] += a2 * v2
-        jy[ip1, jp1] += a3 * v2
-        jy[i, jp1] += a4 * v2
+        jxy[2, i, j] += a1 * v2
+        jxy[2, ip1, j] += a2 * v2
+        jxy[2, ip1, jp1] += a3 * v2
+        jxy[2, i, jp1] += a4 * v2
 
     end
 

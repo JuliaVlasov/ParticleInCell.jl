@@ -9,8 +9,8 @@ using Plots, LinearAlgebra
 ```@example vm2d
 using ParticleInCell
 
-nx        = 128  # nombre de pts suivant x
-ny        = 16   # nombre de pts suivant y
+nx = 128 
+ny = 16   
 
 alpha = 0.1
 kx = 0.5
@@ -21,7 +21,6 @@ poids = dimx * dimy
 
 mesh = Mesh( dimx, nx, dimy, ny)
 fdtd = FDTD(mesh)
-
 
 time  = 0
 
@@ -45,30 +44,25 @@ histogram!(p[4], particles.vit[2,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
-jx = zeros(nx,ny)
-jy = zeros(nx,ny)
-compute_current!( jx, jy, fdtd, particles, mesh)
+compute_current!( fdtd, particles)
 
 p = plot(layout=2)
-surface!(p[1], jx)
-surface!(p[2], jy)
+surface!(p[1], fdtd.jx)
+surface!(p[2], fdtd.jy)
 ```
 
 ```@example vm2d
-function run( jx, jy, particles, mesh, nstep, dt)
+function run( fdtd, particles, mesh, nstep, dt)
     
     alpha = 0.1
     kx = 0.5
     landau_sampling!( particles, alpha, kx )
     update_cells!( particles, mesh )
-    fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny
         fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
         fdtd.ey[i,j] = 0.0
         fdtd.bz[i,j] = 0.0
     end
-
-    eb = zeros(3, nx, ny)
 
     time = 0
     energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
@@ -76,14 +70,14 @@ function run( jx, jy, particles, mesh, nstep, dt)
     
     for istep in 1:nstep
     
-       istep > 1 && faraday!( eb, fdtd, mesh, 0.5dt ) 
-       interpol_eb!( eb, particles, mesh )
+       istep > 1 && faraday!( fdtd, 0.5dt ) 
+       interpol_eb!( particles, fdtd )
        push_v!( particles, dt )
        push_x!( particles, mesh, 0.5dt) 
-       compute_current!( jx, jy, fdtd, particles, mesh)
+       compute_current!( fdtd, particles)
        push_x!( particles, mesh, 0.5dt) 
-       faraday!(eb, fdtd, mesh, 0.5dt)
-       ampere_maxwell!(eb, fdtd, mesh, dt)
+       faraday!(fdtd, 0.5dt)
+       ampere_maxwell!(fdtd, dt)
        time = time + dt
        push!(t, time)
        push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))
@@ -98,6 +92,6 @@ end
 ```@example vm2d
 dt = 0.01
 nstep = 250
-t, energy = run( jx, jy, particles, mesh, nstep, dt)
+t, energy = run( fdtd, particles, mesh, nstep, dt)
 plot(t, energy, m=:o)
 ```

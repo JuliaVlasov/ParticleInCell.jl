@@ -14,13 +14,10 @@ function run( nstep )
     nx     = 128  # nombre de pts suivant x
     ny     = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
-    @show nbpart = 10*nx*ny
-    ex = zeros(nx,ny)
-    ey = zeros(nx,ny)
-    jx = zeros(nx,ny)
-    jy = zeros(nx,ny)
+    @show nbpart = 100*nx*ny
+    jxy = zeros(2,nx,ny)
     particles = Particles(nbpart)
-        landau_sampling!( particles, alpha, kx )
+    landau_sampling!( particles, alpha, kx )
     update_cells!( particles, mesh )
     fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny
@@ -39,15 +36,13 @@ function run( nstep )
        if istep > 1
            @timeit to "fdtd" faraday!( eb, fdtd, mesh, 0.5dt ) 
        end
-       eb[1,:,:] .= ex
-       eb[2,:,:] .= ey
        @timeit to "interpolation" interpol_eb!( eb, particles, mesh )
        @timeit to "pushv" push_v!( particles, dt )
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( jx, jy, fdtd, particles, mesh)
+       @timeit to "deposition" compute_current!( jxy, fdtd, particles)
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "fdtd" faraday!(eb, fdtd, mesh, 0.5dt)
-       @timeit to "fdtd" ampere_maxwell!(ex, ey, fdtd, mesh, dt)
+       @timeit to "fdtd" faraday!(eb, fdtd, 0.5dt)
+       @timeit to "fdtd" ampere_maxwell!(eb, fdtd, dt)
        time = time + dt
        push!(t, time)
        push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))

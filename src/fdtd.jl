@@ -2,11 +2,14 @@ export FDTD
 
 struct FDTD
 
+    m :: Mesh
     ex
     ey
     bz
     jx
     jy
+    ebj
+    
 
     function FDTD( m )
 
@@ -16,17 +19,18 @@ struct FDTD
         bz = zeros(nx,ny)
         jx = zeros(nx,ny)
         jy = zeros(nx,ny)
+        ebj = zeros(3, nx, ny)
 
-        new( ex, ey, bz, jx, jy )
+        new( m, ex, ey, bz, jx, jy, ebj )
 
     end
 
 end
 
-function faraday!( eb, fdtd :: FDTD, m, dt )
+function faraday!( fdtd :: FDTD, dt )
 
-   nx, ny = m.nx, m.ny
-   dx, dy = m.dx, m.dy
+   nx, ny = fdtd.m.nx, fdtd.m.ny
+   dx, dy = fdtd.m.dx, fdtd.m.dy
 
    for j=1:ny, i=1:nx
       dex_dy  = (fdtd.ex[i,mod1(j+1,ny)]-fdtd.ex[i,j]) / dy
@@ -35,16 +39,16 @@ function faraday!( eb, fdtd :: FDTD, m, dt )
    end
 
    for j=1:ny, i=1:nx
-      eb[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
+      fdtd.ebj[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
                   + fdtd.bz[mod1(i-1,nx), j] + fdtd.bz[i, j]) / 4
    end
    
 end 
 
-function ampere_maxwell!( eb, fdtd :: FDTD, m, dt)
+function ampere_maxwell!( fdtd :: FDTD, dt)
 
-   nx, ny = m.nx, m.ny
-   dx, dy = m.dx, m.dy
+   nx, ny = fdtd.m.nx, fdtd.m.ny
+   dx, dy = fdtd.m.dx, fdtd.m.dy
 
    for i=1:nx, j=1:ny
       dbz_dy = (fdtd.bz[i,j]-fdtd.bz[i,mod1(j-1,ny)]) / dy
@@ -57,22 +61,56 @@ function ampere_maxwell!( eb, fdtd :: FDTD, m, dt)
    end
 
    for i=1:nx, j=1:ny
-      eb[1,i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[i,j] )
-      eb[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
+      fdtd.ebj[1,i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[i,j] )
+      fdtd.ebj[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
    end
 
 end 
 
 
+function interpol_eb!(p::Particles, fdtd::FDTD)
 
-function compute_current!( jx, jy, fdtd :: FDTD, p, m )
+    nx, ny = fdtd.m.nx, fdtd.m.ny
+    dx, dy = fdtd.m.dx, fdtd.m.dy
+
+    @inbounds for ip = 1:p.nbpart
+
+        xp = p.pos[1, ip]
+        yp = p.pos[2, ip]
+
+        i = trunc(Int, xp / dx) + 1
+        j = trunc(Int, yp / dy) + 1
+
+        ip1 = mod1(i + 1, nx)
+        jp1 = mod1(j + 1, ny)
+
+        dxp = i*dx - xp
+        dyp = j*dy - yp
+        dxq = dx - dxp
+        dyq = dy - dyp
+
+        a1 = dxp * dyp
+        a2 = dxq * dyp
+        a3 = dxq * dyq
+        a4 = dxp * dyq
+
+        p.ebp[1,ip] = a1 * fdtd.ebj[1,i,j] + a2 * fdtd.ebj[1,ip1,j] + a3 * fdtd.ebj[1,ip1,jp1] + a4 * fdtd.ebj[1,i,jp1]
+        p.ebp[2,ip] = a1 * fdtd.ebj[2,i,j] + a2 * fdtd.ebj[2,ip1,j] + a3 * fdtd.ebj[2,ip1,jp1] + a4 * fdtd.ebj[2,i,jp1]
+        p.ebp[3,ip] = a1 * fdtd.ebj[3,i,j] + a2 * fdtd.ebj[3,ip1,j] + a3 * fdtd.ebj[3,ip1,jp1] + a4 * fdtd.ebj[3,i,jp1]
+
+    end
+
+    p.ebp ./= (dx * dy)
+
+end
+
+function compute_current!( fdtd :: FDTD, p :: Particles )
 
 
-    nx, ny = m.nx, m.ny
-    dx, dy = m.dx, m.dy
+    nx, ny = fdtd.m.nx, fdtd.m.ny
+    dx, dy = fdtd.m.dx, fdtd.m.dy
     
-    fill!(jx, 0)
-    fill!(jy, 0)
+    fill!(fdtd.ebj, 0)
     
     for ipart=1:p.nbpart
     
@@ -97,31 +135,28 @@ function compute_current!( jx, jy, fdtd :: FDTD, p, m )
     
        w = p.vit[1,ipart]
     
-       jx[i,j]     +=  a1*w  
-       jx[ip1,j]   +=  a2*w 
-       jx[ip1,jp1] +=  a3*w 
-       jx[i,jp1]   +=  a4*w 
+       fdtd.ebj[1,i,j]     += a1*w  
+       fdtd.ebj[1,ip1,j]   += a2*w 
+       fdtd.ebj[1,ip1,jp1] += a3*w 
+       fdtd.ebj[1,i,jp1]   += a4*w 
     
        w = p.vit[2,ipart]
     
-       jy[i,j]     += a1*w  
-       jy[ip1,j]   += a2*w 
-       jy[ip1,jp1] += a3*w 
-       jy[i,jp1]   += a4*w 
+       fdtd.ebj[2,i,j]     += a1*w  
+       fdtd.ebj[2,ip1,j]   += a2*w 
+       fdtd.ebj[2,ip1,jp1] += a3*w 
+       fdtd.ebj[2,i,jp1]   += a4*w 
     
     end
 
-    jx .*= (nx * ny) / p.nbpart / (dx * dy)
-    jy .*= (nx * ny) / p.nbpart / (dx * dy)
-
+    fdtd.ebj .*= (nx * ny) / p.nbpart / (dx * dy)
     
     for i=1:nx, j=1:ny
-       fdtd.jx[i,j] = 0.5 * (jx[i,j]+jx[mod1(i+1,nx),j])
+       fdtd.jx[i,j] = 0.5 * (fdtd.ebj[1,i,j]+fdtd.ebj[1,mod1(i+1,nx),j])
     end
     
     for i=1:nx, j=1:ny
-       fdtd.jy[i,j] = 0.5 * (jy[i,j]+jy[i,mod1(j+1,ny)])
+       fdtd.jy[i,j] = 0.5 * (fdtd.ebj[2,i,j]+fdtd.ebj[2,i,mod1(j+1,ny)])
     end
 
 end 
-
