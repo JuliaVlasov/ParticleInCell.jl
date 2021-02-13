@@ -7,7 +7,6 @@ implicit none
 real(c_double) :: pi 
 
 integer :: nx, ny
-integer :: nstep
 integer :: nbpart
 
 integer, private :: i, j
@@ -60,10 +59,8 @@ do j=1,ny+1
 enddo
 
 dt    = 0.01
-nstep = 250
 
 write(*,*) " dx = ", dx, " dy = ", dy, " dt = ", dt
-write(*,*) " Nombre d'iteration nstep = ", nstep
 
 end subroutine init
 

@@ -74,4 +74,12 @@ end subroutine decalage
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+real(c_double) function compute_energy( f )
+
+real(c_double) :: f(:,:,:)
+
+compute_energy = 0.5*log(sum(f(1,1:nx,1:ny)*f(1,1:nx,1:ny))*dx*dy)
+
+end function compute_energy
+
 end module Maxwell
