@@ -14,6 +14,8 @@ function run( nstep )
     nx     = 128  # nombre de pts suivant x
     ny     = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
+    dx, dy = mesh.dx, mesh.dy
+
     @show nbpart = 100*nx*ny
     particles = Particles(nbpart)
     landau_sampling!( particles, alpha, kx )
@@ -34,7 +36,7 @@ function run( nstep )
        if istep > 1
            @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
-       @timeit to "interpolation" interpol_eb!( particles, fdtd )
+       @timeit to "interpolation" interpolation!(particles, fdtd)
        @timeit to "pushv" push_v!( particles, dt )
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
        @timeit to "deposition" compute_current!( fdtd, particles)

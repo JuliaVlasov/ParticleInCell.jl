@@ -17,7 +17,10 @@ I will note here times of this Julia code and what I have done to speed-up thing
 - 302 seconds : change shape of positions and velocities arrays for particles
 - 156 seconds : Regroup ex, ey, and bz in a same array eb(3,nx,ny)
 - 176 seconds : put the array eb in fdtd type
-- 140 seconds : put the particles data in one array, the particle push is now very fast.
+- 140 seconds : put the particles data in one array, the particle push_v is now very fast.
+- 077 seconds : replace the julia interpolation function by a call to the fortran subroutine.
+- 019 seconds : replace the julia deposition by a call to the fortran subroutine
+- 006 seconds : vectorize and use views in function push_x instead of a loop
 
 ## Other Julia PIC codes 
 

@@ -84,13 +84,7 @@ function push_x!(p, mesh, dt)
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
-    for ipart in 1:p.nbpart
-        v1 = p.data[3, ipart]
-        v2 = p.data[4, ipart]
-        x1 = p.data[1,ipart] + v1 * dt
-        x2 = p.data[2,ipart] + v2 * dt
-        p.data[1,ipart] = mod(x1, dimx)
-        p.data[2,ipart] = mod(x2, dimy)
-    end
+    p.data[1,:] .= mod.(view(p.data,1,:) .+ dt .* view(p.data,3,:), dimx)
+    p.data[2,:] .= mod.(view(p.data,2,:) .+ dt .* view(p.data,4,:), dimy)
 
 end

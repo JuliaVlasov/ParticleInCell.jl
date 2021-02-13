@@ -1,7 +1,6 @@
 module quietstart
 
 use iso_c_binding
-use zone
 
 implicit none
 
@@ -9,9 +8,10 @@ CONTAINS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(c_double) function bit_reversing( n )
+pure real(c_double) function bit_reversing( n )
 
-integer :: n, deci, k, div
+integer(c_int32_t), intent(in) :: n
+integer(c_int32_t) :: deci, k, div
 real(c_double) :: miroir
 
 k = 25
@@ -19,7 +19,7 @@ miroir = 0.d0
 deci = n
 
 if (deci > 33554432) then 
-   print*,'too big > 33554432=2**25'
+   !print*,'too big > 33554432=2**25'
    stop
 else 
    do while (k >= 0)
@@ -39,9 +39,10 @@ end function bit_reversing
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(c_double) function trinary_reversing( n )
+pure real(c_double) function trinary_reversing( n )
 
-integer :: deci, k, div, n
+integer(c_int32_t), intent(in) :: n
+integer(c_int32_t) :: deci, k, div
 real(c_double) :: miroir
 
 !a = 0
@@ -50,7 +51,7 @@ miroir = 0.d0
 deci = n
 
 if (deci > 43046721) then 
-   print*,' too big > 43046721=3**16 '
+   !print*, ' too big > 43046721=3**16 '
    stop
 else 
    do while (k >= 0)
@@ -74,9 +75,10 @@ end function trinary_reversing
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(c_double) function penta_reversing( n )
+pure real(c_double) function penta_reversing( n )
 
-integer :: deci, k, div, n
+integer, intent(in) :: n
+integer :: deci, k, div
 real(c_double) :: miroir
 
 !a = 0
@@ -85,7 +87,7 @@ miroir = 0.d0
 deci = n
 
 if (deci > 48828125) then 
-   print*,'too big > 48828125=5**11'
+   !print*,'too big > 48828125=5**11'
    stop
 else 
    do while (k >= 0)
@@ -117,11 +119,15 @@ end function penta_reversing
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine dichotomie_x( a, b, R, eps ) 
+subroutine dichotomie_x( alpha, kx, a, b, R, eps ) 
 
 ! il faut D(a)<R<D(b), on cherche x tq R=D(x), resu dans a 
 
-real(c_double) :: a, b, R, eps, x, D
+real(c_double), intent(in) :: alpha, kx, R, eps
+real(c_double) :: a, b
+real(c_double) :: x, D, pi
+
+pi = 4d0 * atan(1d0)
 
 D = ( kx*a + alpha * sin(kx*a) ) / (2*pi)
 do while ( D<R-eps .or. D>R+eps )
