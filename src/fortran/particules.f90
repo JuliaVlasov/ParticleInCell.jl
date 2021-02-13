@@ -1,6 +1,7 @@
 module particules
 
 use iso_c_binding
+
 use zone
 use quietstart
 
@@ -11,59 +12,93 @@ integer, private :: i, j
 
 CONTAINS
 
+subroutine plasma( p )
+
+real(c_double), allocatable :: p(:,:)
+real(c_double) :: speed, theta, vth, n
+real(c_double) :: a, b, eps, R
+integer :: k
+
+eps = 1.d-12
+
+vth =  1.
+nbpart = 100*(nx)*(ny)
+n = 1.d0/nbpart
+
+allocate(p(7, nbpart))
+
+do k=0,nbpart-1
+
+   speed = vth * sqrt(-2 * log( (k+0.5)*n ))
+
+   theta = trinary_reversing( k ) * 2 * pi
+
+   a = 0; b = dimx ! 2*pi/kx 
+   R = bit_reversing( k )
+   call dichotomie_x(a,b,R,eps) 
+   p(1,k+1) = a
+   p(2,k+1) = dimy * penta_reversing( k ) 
+   p(3,k+1) = speed * cos(theta)
+   p(4,k+1) = speed * sin(theta)
+
+enddo
+
+end subroutine plasma
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine interpol_eb( tm1, ele )
+subroutine interpolation( f, p ) bind(C, name="interpolation")
 
-type(particle) :: ele
-type(mesh_fields) :: tm1
+real(c_double) :: p(:,:)
+real(c_double) :: f(:,:,:)
 real(c_double) :: a1, a2, a3, a4
 real(c_double) :: xp, yp, dxp, dyp
+integer :: ip1, jp1
 
 do ipart=1,nbpart
 
-   xp = ele%pos(ipart,1) / dx
-   yp = ele%pos(ipart,2) / dy
+   xp = p(1,ipart) / dx
+   yp = p(2,ipart) / dy
 
-   i = floor( xp )
-   j = floor( yp )
+   i = floor( xp ) + 1
+   j = floor( yp ) + 1
 
-   dxp = xp - i
-   dyp = yp - j
+   dxp = xp - i + 1
+   dyp = yp - j + 1
 
    a1 = (1-dxp) * (1-dyp) 
    a2 = dxp * (1-dyp) 
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   ele%epx(ipart) = a1 * tm1%ex(i,j) + a2 * tm1%ex(i+1,j) &
-        & + a3 * tm1%ex(i+1,j+1) + a4 * tm1%ex(i,j+1) 
-   ele%epy(ipart) = a1 * tm1%ey(i,j) + a2 * tm1%ey(i+1,j) &
-        & + a3 * tm1%ey(i+1,j+1) + a4 * tm1%ey(i,j+1) 
-   ele%bpz(ipart) =  a1 * tm1%bz(i,j) + a2 * tm1%bz(i+1,j) &
-        & + a3 * tm1%bz(i+1,j+1) + a4 * tm1%bz(i,j+1) 
+   ip1 = mod1(i+1,nx)
+   jp1 = mod1(j+1,ny)
+
+   p(5:7,ipart) = a1 * f(1:3,i,j) + a2 * f(1:3,ip1,j) &
+                + a3 * f(1:3,ip1,jp1) + a4 * f(1:3,i,jp1) 
+
 end do
 
-end subroutine interpol_eb
+end subroutine interpolation
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine avancee_vitesse( ele )
+subroutine push_v( p ) bind(C, name="push_v")
 
-type (particle) :: ele
+real(c_double) :: p(:,:)
 real(c_double) :: dum
 real(c_double) :: tantheta, sintheta
-real(8) :: hdt, v1, v2, e1, e2, b3
+real(c_double) :: hdt, v1, v2, e1, e2, b3
 
 hdt = 0.5 * dt
 
 do ipart = 1, nbpart
 
-   v1 = ele%vit(ipart,1)
-   v2 = ele%vit(ipart,2)
-   e1 = ele%epx(ipart)
-   e2 = ele%epx(ipart)
-   b3 = ele%bpz(ipart)
+   v1 = p(3,ipart)
+   v2 = p(4,ipart)
+   e1 = p(5,ipart)
+   e2 = p(6,ipart)
+   b3 = p(7,ipart)
 
    v1 = v1 + hdt * e1
    v2 = v2 + hdt * e2
@@ -75,126 +110,85 @@ do ipart = 1, nbpart
    v2 = v2 - v1 * sintheta
    v1 = v1 + v2 * tantheta
 
-   ele%vit(ipart,1) = v1 + hdt * e1
-   ele%vit(ipart,2) = v2 + hdt * e2
+   p(3,ipart) = v1 + hdt * e1
+   p(4,ipart) = v2 + hdt * e2
 
 end do
 
-end subroutine avancee_vitesse
+end subroutine push_v
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine avancee_part( ele, coef )  !Avancee de coef * dt
+subroutine push_x( p, coef ) bind(C, name="push_x")
 
-type(particle) :: ele
+real(c_double) :: p(:,:)
 real(c_double) :: coef
 
-ele%pos = ele%pos + ele%vit * dt * coef
-
 do ipart=1,nbpart
-   ele%pos(ipart,1) = modulo(ele%pos(ipart,1), dimx)
-   ele%pos(ipart,2) = modulo(ele%pos(ipart,2), dimy)
+   p(1,ipart) = p(1,ipart) + p(3,ipart) * dt * coef
+   p(2,ipart) = p(2,ipart) + p(4,ipart) * dt * coef
+   p(1,ipart) = modulo(p(1,ipart), dimx)
+   p(2,ipart) = modulo(p(2,ipart), dimy)
 end do   
 
-end subroutine avancee_part
+end subroutine push_x
 
-subroutine calcul_j_cic( ele, tm, tm1 )
+subroutine deposition( p, f0, f1 ) bind(C, name="deposition")
 
-type(particle) :: ele
-type(mesh_fields) :: tm, tm1
-real(c_double) :: a1, a2, a3, a4, dum, xp, yp
+real(c_double) :: p(:,:), f0(:,:,:), f1(:,:,:)
+real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp
 integer :: ip1, jp1
 
-tm1%jx = 0.d0
-tm1%jy = 0.d0
+f1(4:5,:,:) = 0.d0
 
 do ipart=1,nbpart
-   xp = ele%pos(ipart,1)
-   yp = ele%pos(ipart,2)
-   i = floor( xp / dx )
-   j = floor( yp / dy )
-   dum = dimx * dimy / (dx*dy) / nbpart
-   a1 = (x(i+1)-xp) * (y(j+1)-yp) * dum
-   a2 = (xp-x(i)) * (y(j+1)-yp) * dum
-   a3 = (xp-x(i)) * (yp-y(j)) * dum
-   a4 = (x(i+1)-xp) * (yp-y(j)) * dum
-   dum = ele%vit(ipart,1) / (dx*dy) !charge unite = 1
 
-   ip1 = mod(i+1,nx)
-   jp1 = mod(j+1,ny)
+   xp = p(1,ipart) / dx
+   yp = p(2,ipart) / dy
 
-   tm1%jx(i,j)     = tm1%jx(i,j)     + a1*dum  
-   tm1%jx(ip1,j)   = tm1%jx(ip1,j)   + a2*dum 
-   tm1%jx(ip1,jp1) = tm1%jx(ip1,jp1) + a3*dum 
-   tm1%jx(i,jp1)   = tm1%jx(i,jp1)   + a4*dum 
-   dum = ele%vit(ipart,2) / (dx*dy) 
-   tm1%jy(i,j)     = tm1%jy(i,j)     + a1*dum  
-   tm1%jy(ip1,j)   = tm1%jy(ip1,j)   + a2*dum 
-   tm1%jy(ip1,j+1) = tm1%jy(ip1,jp1) + a3*dum 
-   tm1%jy(i,jp1)   = tm1%jy(i,jp1)   + a4*dum 
+   i = floor( xp ) + 1
+   j = floor( yp ) + 1
+
+   ip1 = mod1(i+1,nx)
+   jp1 = mod1(j+1,ny)
+
+   dxp = xp - i + 1
+   dyp = yp - j + 1
+
+   a1 = (1-dxp) * (1-dyp) 
+   a2 = dxp * (1-dyp) 
+   a3 = dxp * dyp 
+   a4 = (1-dxp) * dyp 
+
+   dum = p(3,ipart) / (dx*dy) * dimx * dimy / nbpart
+
+   f1(1,i,j)     = f1(1,i,j)     + a1*dum  
+   f1(1,ip1,j)   = f1(1,ip1,j)   + a2*dum 
+   f1(1,ip1,jp1) = f1(1,ip1,jp1) + a3*dum 
+   f1(1,i,jp1)   = f1(1,i,jp1)   + a4*dum 
+
+   dum = p(4,ipart) / (dx*dy) * dimx * dimy / nbpart
+
+   f1(2,i,j)     = f1(2,i,j)     + a1*dum  
+   f1(2,ip1,j)   = f1(2,ip1,j)   + a2*dum 
+   f1(2,ip1,jp1) = f1(2,ip1,jp1) + a3*dum 
+   f1(2,i,jp1)   = f1(2,i,jp1)   + a4*dum 
+
 end do
 
-do i=0,nx
-   tm1%jx(i,ny) = tm1%jx(i,0)
-   tm1%jy(i,ny) = tm1%jy(i,0)
-end do
-do j=0,ny
-   tm1%jx(nx,j) = tm1%jx(0,j)
-   tm1%jy(nx,j) = tm1%jy(0,j)
-end do
-
-
-do i=0,nx-1
-do j=0,ny
-   tm%jx(i,j) = 0.5 * (tm1%jx(i,j)+tm1%jx(i+1,j))
-end do
-end do
-
-do i=0,nx
-do j=0,ny-1
-   tm%jy(i,j) = 0.5 * (tm1%jy(i,j)+tm1%jy(i,j+1))
+do i=1,nx
+do j=1,ny+1
+   f0(1,i,j) = 0.5 * (f1(1,i,mod1(j,ny))+f1(1,mod1(i+1,nx),mod1(j,ny)))
 end do
 end do
 
-end subroutine calcul_j_cic
+do i=1,nx+1
+do j=1,ny
+   f0(2,i,j) = 0.5 * (f1(2,mod1(i,nx),j)+f1(2,mod1(i,nx),mod1(j+1,ny)))
+end do
+end do
 
-subroutine plasma( ele )
-
-type (particle) :: ele
-real(c_double) :: speed, theta, vth, n
-real(c_double) :: a, b, eps, R
-integer :: k
-
-eps = 1.d-12
-
-vth =  1.
-nbpart = 100*(nx)*(ny)
-n = 1.d0/nbpart
-
-allocate(ele%pos(nbpart,2))
-allocate(ele%vit(nbpart,2))
-allocate(ele%epx(nbpart))
-allocate(ele%epy(nbpart))
-allocate(ele%bpz(nbpart))
-
-do k=0,nbpart-1
-
-   speed = vth * sqrt(-2 * log( (k+0.5)*n ))
-
-   theta = trinary_reversing( k ) * 2 * pi
-
-   a = 0; b = dimx ! 2*pi/kx 
-   R = bit_reversing( k )
-   call dichotomie_x(a,b,R,eps) 
-   ele%pos(k+1,1) = a
-   ele%pos(k+1,2) = dimy * penta_reversing( k ) 
-
-   ele%vit(k+1,1) = speed * cos(theta)  !
-   ele%vit(k+1,2) = speed * sin(theta)  !
-
-enddo
-
-end subroutine plasma
+end subroutine deposition
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

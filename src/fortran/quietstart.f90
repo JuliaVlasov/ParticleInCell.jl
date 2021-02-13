@@ -1,5 +1,6 @@
 module quietstart
 
+use iso_c_binding
 use zone
 
 implicit none
@@ -8,12 +9,11 @@ CONTAINS
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(kind=8) function bit_reversing( n )
+real(c_double) function bit_reversing( n )
 
 integer :: n, deci, k, div
-real(kind=8) :: miroir
+real(c_double) :: miroir
 
-!a = 0
 k = 25
 miroir = 0.d0
 deci = n
@@ -39,10 +39,10 @@ end function bit_reversing
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(kind=8) function trinary_reversing( n )
+real(c_double) function trinary_reversing( n )
 
 integer :: deci, k, div, n
-real(kind=8) :: miroir
+real(c_double) :: miroir
 
 !a = 0
 k = 16
@@ -74,10 +74,10 @@ end function trinary_reversing
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-real(kind=8) function penta_reversing( n )
+real(c_double) function penta_reversing( n )
 
 integer :: deci, k, div, n
-real(kind=8) :: miroir
+real(c_double) :: miroir
 
 !a = 0
 k = 11
@@ -121,7 +121,7 @@ subroutine dichotomie_x( a, b, R, eps )
 
 ! il faut D(a)<R<D(b), on cherche x tq R=D(x), resu dans a 
 
-real(kind = prec) :: a, b, R, eps, x, D
+real(c_double) :: a, b, R, eps, x, D
 
 D = ( kx*a + alpha * sin(kx*a) ) / (2*pi)
 do while ( D<R-eps .or. D>R+eps )

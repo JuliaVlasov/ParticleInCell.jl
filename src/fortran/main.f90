@@ -1,4 +1,4 @@
-program VM_2D
+program vm2d2v
 
 use zone
 use particules
@@ -6,60 +6,55 @@ use maxwell
 
 implicit none
 
-type(mesh_fields) :: f0, f1
-type(particle) :: p
+real(c_double), allocatable :: f0(:,:,:), f1(:,:,:)
+real(c_double), allocatable :: j0(:,:,:), j1(:,:,:)
+real(c_double), allocatable :: p(:,:)
+real(c_double) :: time
 
-real(kind=prec) :: time
 integer :: istep
 integer :: i, j
 
 call init( )
 
 ! staggered grid for FDTD maxwell scheme
-
-allocate(f0%ex(0:nx-1,0:ny))
-allocate(f0%ey(0:nx,0:ny-1))
-allocate(f0%bz(0:nx-1,0:ny-1))
-allocate(f0%jx(0:nx-1,0:ny))
-allocate(f0%jy(0:nx,0:ny-1))
-
+allocate(f0(3,1:nx,1:ny))
+allocate(j0(2,1:nx,1:ny))
 
 ! Regular grid for particle interpolation and deposition
-
-allocate(f1%ex(0:nx,0:ny)) 
-allocate(f1%ey(0:nx,0:ny))
-allocate(f1%bz(0:nx,0:ny))
-allocate(f1%jx(0:nx,0:ny))
-allocate(f1%jy(0:nx,0:ny))
+allocate(f1(3,1:nx,1:ny)) 
+allocate(j1(2,1:nx,1:ny)) 
 
 time  = 0.d0
 
 istep = 1
 
-f0%ex = 0.d0; f0%ey = 0.d0; f0%bz = 0.d0
-do i=0,nx-1
-   do j=0,ny
-      f0%ex(i,j) = alpha/kx * sin(kx*x(i))
-   enddo
-enddo
+f0 = 0d0
+f1 = 0d0
+do i=1,nx
+   do j=1,ny+1
+      f0(1,i,j) = alpha/kx * sin(kx*x(i))
+   end do
+end do
 
 call plasma( p ) 
 
+call modeE( f0, 0, time )
+
 do istep = 1, nstep
 
-   if (istep > 1) call faraday( f0%ex, f0%ey, f0%bz, 0.5*dt )
+   if (istep > 1) call faraday( f0, 0.5*dt )
 
    call decalage( f0, f1 )
-   call interpol_eb( f1, p )
+   call interpolation( f1, p )
 
-   call avancee_vitesse( p )
+   call push_v( p )
 
-   call avancee_part( p, 0.5d0 )  ! x(n) --> x(n+1/2)
-   call calcul_j_cic( p, f0, f1 )
-   call avancee_part( p, 0.5d0 )  ! x(n+1/2) -- x(n+1)
+   call push_x( p, 0.5d0 )  ! x(n) --> x(n+1/2)
+   call deposition( p, j0, j1 )
+   call push_x( p, 0.5d0 )  ! x(n+1/2) -- x(n+1)
         
-   call faraday( f0%ex, f0%ey, f0%bz, 0.5*dt )
-   call ampere( f0%ex, f0%ey, f0%bz, f0%jx, f0%jy, dt ) 
+   call faraday( f0, 0.5*dt )
+   call ampere( f0, j0, dt ) 
 
    time = time + dt
    print*,'time = ',time, ' nbpart = ', nbpart
@@ -73,16 +68,15 @@ contains
 
 subroutine modeE( f, iplot, time )
 
-type(mesh_fields) :: f
-real(kind=prec) :: time, aux
+real(c_double) :: f(:,:,:)
+real(c_double) :: time, aux
 integer :: iplot, i, j
 
-
 open(34,file='modeE.dat',position="append")
-if (iplot==1) rewind(34)
-write(34,*) time, 0.5*log(sum(f%ex*f%ex)*dx*dy)
+if (iplot==0) rewind(34)
+write(34,*) time, 0.5*log(sum(f(1,1:nx,1:ny)*f(1,1:nx,1:ny))*dx*dy)
 close(34)
 
 end subroutine modeE
 
-end program VM_2D
+end program vm2d2v
