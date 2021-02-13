@@ -14,8 +14,8 @@ contains
     subroutine vm2d2v(nstep, time, energy) bind( C, name="vm2d2v" )
 
         integer(c_int32_t), intent(in) :: nstep
-        real(c_double), intent(out) :: time(:)
-        real(c_double), intent(out) :: energy(:)
+        real(c_double) :: time(nstep+1)
+        real(c_double) :: energy(nstep+1)
 
         real(c_double), allocatable :: f0(:,:,:), f1(:,:,:)
         real(c_double), allocatable :: j0(:,:,:), j1(:,:,:)
@@ -40,12 +40,15 @@ contains
         f0 = 0d0
         f1 = 0d0
         do i=1,nx
-           do j=1,ny+1
+           do j=1,ny
               f0(1,i,j) = alpha/kx * sin(kx*x(i))
            end do
         end do
+
+        nbpart = 100*(nx)*(ny)
+        allocate(p(7,nbpart))
         
-        call plasma( p ) 
+        call plasma( nbpart, p ) 
         
         time(1)  = 0.d0
         energy(1)  = compute_energy( f0 )
@@ -71,7 +74,7 @@ contains
            print*, istep, time(istep+1), energy(istep+1)
         
         end do
-        
+
     end subroutine vm2d2v
 
 end module pic

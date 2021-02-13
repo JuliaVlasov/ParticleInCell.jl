@@ -12,9 +12,10 @@ integer, private :: i, j
 
 CONTAINS
 
-subroutine plasma( p )
+subroutine plasma( nbpart,  p )
 
-real(c_double), allocatable :: p(:,:)
+integer, intent(in) :: nbpart
+real(c_double) :: p(:,:)
 real(c_double) :: speed, theta, vth, n
 real(c_double) :: a, b, eps, R
 integer :: k
@@ -22,10 +23,7 @@ integer :: k
 eps = 1.d-12
 
 vth =  1.
-nbpart = 100*(nx)*(ny)
 n = 1.d0/nbpart
-
-allocate(p(7, nbpart))
 
 do k=0,nbpart-1
 
@@ -86,7 +84,6 @@ end subroutine interpolation
 subroutine push_v( p ) bind(C, name="push_v")
 
 real(c_double) :: p(:,:)
-real(c_double) :: dum
 real(c_double) :: tantheta, sintheta
 real(c_double) :: hdt, v1, v2, e1, e2, b3
 
@@ -139,7 +136,7 @@ real(c_double) :: p(:,:), f0(:,:,:), f1(:,:,:)
 real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp
 integer :: ip1, jp1
 
-f1(4:5,:,:) = 0.d0
+f1(:,:,:) = 0.d0
 
 do ipart=1,nbpart
 
@@ -177,12 +174,12 @@ do ipart=1,nbpart
 end do
 
 do i=1,nx
-do j=1,ny+1
+do j=1,ny
    f0(1,i,j) = 0.5 * (f1(1,i,mod1(j,ny))+f1(1,mod1(i+1,nx),mod1(j,ny)))
 end do
 end do
 
-do i=1,nx+1
+do i=1,nx
 do j=1,ny
    f0(2,i,j) = 0.5 * (f1(2,mod1(i,nx),j)+f1(2,mod1(i,nx),mod1(j+1,ny)))
 end do
