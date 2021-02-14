@@ -8,11 +8,11 @@ function run( nstep )
     
     dt = 0.01
     alpha = 0.1
-    kx = 0.5
+    kx   = 0.5
     dimx = 2*pi/kx
     dimy = 1  
-    nx     = 128  # nombre de pts suivant x
-    ny     = 16   # nombre de pts suivant y
+    nx   = 128  # nombre de pts suivant x
+    ny   = 16   # nombre de pts suivant y
     mesh = Mesh( dimx, nx, dimy, ny)
     dx, dy = mesh.dx, mesh.dy
 
@@ -37,10 +37,10 @@ function run( nstep )
            @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
        @timeit to "interpolation" interpolation!(particles, fdtd)
-       @timeit to "pushv" push_v!( particles, dt )
-       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( fdtd, particles)
-       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "pushv" push_v!( particles, nbpart, dt )
+       @timeit to "pushx" push_x!( particles, dimx, dimy, 0.5dt) 
+       @timeit to "deposition" deposition!( fdtd, particles)
+       @timeit to "pushx" push_x!( particles, dimx, dimy, 0.5dt) 
        @timeit to "fdtd" faraday!(fdtd, 0.5dt)
        @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
        time = time + dt
@@ -48,7 +48,6 @@ function run( nstep )
        push!(energy, compute_energy(fdtd))
     
     end
-
    
     t, energy
     

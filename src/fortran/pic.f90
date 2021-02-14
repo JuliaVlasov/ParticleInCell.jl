@@ -53,11 +53,12 @@ end subroutine interpolation
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine push_v( nbpart, p, dt ) bind(C, name="push_v")
+pure subroutine push_v( nbpart, p, dt ) bind(C, name="push_v")
 
 integer(c_int32_t), intent(in) :: nbpart
+real(c_double), intent(inout) :: p(7,nbpart)
 real(c_double), intent(in) :: dt
-real(c_double) :: p(7,nbpart)
+
 real(c_double) :: tantheta, sintheta
 real(c_double) :: hdt, v1, v2, e1, e2, b3
 integer :: ipart
@@ -91,18 +92,19 @@ end subroutine push_v
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine push_x( nbpart, dimx, dimy, p, dt ) bind(C, name="push_x")
+pure subroutine push_x( nbpart, dimx, dimy, p, dt ) bind(C, name="push_x")
 
 integer(c_int32_t), intent(in) :: nbpart
 real(c_double), intent(in) :: dimx, dimy, dt
-real(c_double) :: p(7,nbpart)
+real(c_double), intent(inout) :: p(7,nbpart)
+real(c_double) ::  p1, p2
 integer :: ipart
 
 do ipart=1,nbpart
-   p(1,ipart) = p(1,ipart) + p(3,ipart) * dt 
-   p(2,ipart) = p(2,ipart) + p(4,ipart) * dt 
-   p(1,ipart) = modulo(p(1,ipart), dimx)
-   p(2,ipart) = modulo(p(2,ipart), dimy)
+   p1 = p(1,ipart) + p(3,ipart) * dt 
+   p2 = p(2,ipart) + p(4,ipart) * dt 
+   p(1,ipart) = modulo(p1, dimx)
+   p(2,ipart) = modulo(p2, dimy)
 end do   
 
 end subroutine push_x

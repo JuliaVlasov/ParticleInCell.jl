@@ -45,3 +45,19 @@ function deposition!( fdtd :: FDTD, particles :: Particles )
     ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, p, f, jx, jy)
 
 end
+
+function push_x!( p :: Particles, dimx, dimy, dt)
+
+    nbpart = Int32(p.nbpart)
+
+    ccall((:push_x, piclib), Cvoid, (Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ref{Float64}), nbpart, dimx, dimy, p.data, dt)
+
+end
+
+function push_v!( p :: Particles, nbpart, dt :: Float64)
+
+    nbpart = Int32(nbpart)
+
+    ccall((:push_v, piclib), Cvoid, (Ref{Int32}, Ptr{Float64}, Ref{Float64}), nbpart, p.data, dt)
+
+end
