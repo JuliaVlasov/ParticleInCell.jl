@@ -1,8 +1,8 @@
 using Libdl
 
-const piclib = joinpath(@__DIR__,"fortran", "libpic.dylib")
+const piclib = joinpath(@__DIR__, "libpic.dylib")
 
-open(joinpath(@__DIR__,"fortran", "pic.f90")) do f90file
+open(joinpath(@__DIR__, "pic.f90")) do f90file
     open(`gfortran -fPIC -w -O3 -shared -x f95 -o $(piclib * "." * Libdl.dlext) -`, "w") do f
         print(f, read(f90file, String))
     end

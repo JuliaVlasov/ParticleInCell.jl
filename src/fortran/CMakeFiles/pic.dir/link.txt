@@ -1,0 +1,1 @@
+/usr/local/bin/gfortran  -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -dynamiclib -Wl,-headerpad_max_install_names -o libpic.dylib -install_name @rpath/libpic.dylib CMakeFiles/pic.dir/pic.f90.o 
