@@ -26,3 +26,5 @@ Manifest.toml
 examples/.ipynb_checkpoints/
 test/particles.png
 modeE.dat
+*.mod
+*.dat
