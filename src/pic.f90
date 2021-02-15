@@ -20,9 +20,10 @@ integer(c_int32_t), intent(in) :: nbpart, nx, ny
 real(c_double), intent(in) :: dx, dy
 real(c_double), intent(inout) :: p(7,nbpart)
 real(c_double), intent(in) :: f(5,nx,ny)
+
 real(c_double) :: a1, a2, a3, a4
 real(c_double) :: xp, yp, dxp, dyp
-integer(c_int32_t) :: ip1, jp1, i, j, ipart
+integer(c_int32_t) :: i, j, ipart
 
 
 do ipart=1,nbpart
@@ -41,11 +42,8 @@ do ipart=1,nbpart
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   ip1 = mod1(i+1,nx)
-   jp1 = mod1(j+1,ny)
-
-   p(5:7,ipart) = a1 * f(1:3,i,j) + a2 * f(1:3,ip1,j) &
-                + a3 * f(1:3,ip1,jp1) + a4 * f(1:3,i,jp1) 
+   p(5:7,ipart) = a1 * f(1:3,i,j) + a2 * f(1:3,i+1,j) &
+                + a3 * f(1:3,i+1,j+1) + a4 * f(1:3,i,j+1) 
 
 end do
 
@@ -114,11 +112,11 @@ pure subroutine deposition( nbpart, nx, ny, dx, dy, p, f, jx, jy ) bind(C, name=
 integer(c_int32_t), intent(in) :: nbpart, nx, ny
 real(c_double), intent(in)  :: dx, dy
 real(c_double), intent(in)  :: p(7,nbpart)
-real(c_double), intent(out) :: f(5,nx,ny)
+real(c_double), intent(out) :: f(5,nx+1,ny+1)
 real(c_double), intent(out) :: jx(nx,ny)
 real(c_double), intent(out) :: jy(nx,ny)
+
 real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp
-integer :: ip1, jp1
 integer :: ipart, i, j
 
 f(4,:,:) = 0.d0
@@ -132,9 +130,6 @@ do ipart=1,nbpart
    i = floor( xp ) + 1
    j = floor( yp ) + 1
 
-   ip1 = mod1(i+1,nx)
-   jp1 = mod1(j+1,ny)
-
    dxp = xp - i + 1
    dyp = yp - j + 1
 
@@ -146,28 +141,37 @@ do ipart=1,nbpart
    dum = p(3,ipart) * (nx*ny) / nbpart
 
    f(4,i,j)     = f(4,i,j)     + a1*dum  
-   f(4,ip1,j)   = f(4,ip1,j)   + a2*dum 
-   f(4,ip1,jp1) = f(4,ip1,jp1) + a3*dum 
-   f(4,i,jp1)   = f(4,i,jp1)   + a4*dum 
+   f(4,i+1,j)   = f(4,i+1,j)   + a2*dum 
+   f(4,i+1,j+1) = f(4,i+1,j+1) + a3*dum 
+   f(4,i,j+1)   = f(4,i,j+1)   + a4*dum 
 
    dum = p(4,ipart) * (nx*ny) / nbpart
 
    f(5,i,j)     = f(5,i,j)     + a1*dum  
-   f(5,ip1,j)   = f(5,ip1,j)   + a2*dum 
-   f(5,ip1,jp1) = f(5,ip1,jp1) + a3*dum 
-   f(5,i,jp1)   = f(5,i,jp1)   + a4*dum 
+   f(5,i+1,j)   = f(5,i+1,j)   + a2*dum 
+   f(5,i+1,j+1) = f(5,i+1,j+1) + a3*dum 
+   f(5,i,j+1)   = f(5,i,j+1)   + a4*dum 
 
+end do
+
+do i=1,nx+1
+   f(4,i,1) = f(4,i,1)+f(4,i,ny+1)
+   f(4,i,ny+1) = f(4,i,1)
+   f(5,i,1) = f(5,i,1)+f(5,i,ny+1)
+   f(5,i,ny+1) = f(5,i,1)
+end do
+
+do j=1,ny+1
+   f(4,1,j) = f(4,1,j)+f(4,nx+1,j)
+   f(4,nx+1,j) = f(4,1,j)
+   f(5,1,j) = f(5,1,j)+f(5,nx+1,j)
+   f(5,nx+1,j) = f(5,1,j)
 end do
 
 do i=1,nx
 do j=1,ny
-   jx(i,j) = 0.5 * (f(4,i,mod1(j,ny))+f(4,mod1(i+1,nx),mod1(j,ny)))
-end do
-end do
-
-do i=1,nx
-do j=1,ny
-   jy(i,j) = 0.5 * (f(5,mod1(i,nx),j)+f(5,mod1(i,nx),mod1(j+1,ny)))
+   jx(i,j) = 0.5 * (f(4,i,j)+f(4,i+1,j))
+   jy(i,j) = 0.5 * (f(5,i,j)+f(5,i,j+1))
 end do
 end do
 
