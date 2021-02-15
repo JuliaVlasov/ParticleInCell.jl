@@ -4,16 +4,16 @@ struct FDTD
 
     m :: Mesh
     ebj :: Array{Float64, 3}
-    ex 
-    ey
-    bz
-    jx
-    jy
+    ex :: Array{Float64,2}
+    ey :: Array{Float64,2}
+    bz :: Array{Float64,2}
+    jx :: Array{Float64,2}
+    jy :: Array{Float64,2}
 
     function FDTD( mesh )
 
         nx, ny = mesh.nx, mesh.ny
-        ebj = zeros(5, nx,ny)
+        ebj = zeros(5, nx+1,ny+1)
         ex = zeros(nx,ny)
         ey = zeros(nx,ny)
         bz = zeros(nx,ny)
@@ -43,6 +43,13 @@ function faraday!( fdtd :: FDTD, dt )
       fdtd.ebj[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
                 + fdtd.bz[mod1(i-1,nx), j] + fdtd.bz[i, j]) / 4
    end
+
+   for i=1:nx+1
+      fdtd.ebj[3,i,ny+1] = fdtd.ebj[3,i,1] 
+   end
+   for j=1:ny+1
+      fdtd.ebj[3,nx+1,j] = fdtd.ebj[3,1,j] 
+   end
    
 end 
 
@@ -68,47 +75,55 @@ function ampere_maxwell!( fdtd :: FDTD, dt)
       fdtd.ebj[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
    end
 
+   for i=1:nx+1
+      fdtd.ebj[1,i,ny+1] = fdtd.ebj[1,i,1] 
+      fdtd.ebj[2,i,ny+1] = fdtd.ebj[2,i,1] 
+   end
+   for j=1:ny+1
+      fdtd.ebj[1,nx+1,j] = fdtd.ebj[1,1,j] 
+      fdtd.ebj[2,nx+1,j] = fdtd.ebj[2,1,j] 
+   end
+
 end 
 
 
 export interpol_eb!
 
-function interpol_eb!(p::Particles, fdtd::FDTD)
+function interpol_eb!(p :: Array{Float64,2}, nbpart :: Int, fdtd::FDTD)
 
-    nx, ny = fdtd.m.nx, fdtd.m.ny
-    dx, dy = fdtd.m.dx, fdtd.m.dy
+    nx = Int32(fdtd.m.nx)
+    ny = Int32(fdtd.m.ny)
+    dx = Float64(fdtd.m.dx)
+    dy = Float64(fdtd.m.dy)
 
-    @inbounds for ipart = 1:p.nbpart
+    @inbounds for ipart = 1:nbpart
 
-
-        xp = p.data[1, ipart] / dx
-        yp = p.data[2, ipart] / dy
+        xp = p[1, ipart] / dx
+        yp = p[2, ipart] / dy
 
         i = trunc(Int, xp ) + 1
         j = trunc(Int, yp ) + 1
 
-        dxp = i - xp
-        dyp = j - yp
+        dxp = xp - i + 1
+        dyp = yp - j + 1
+    
+        a1 = (1-dxp) * (1-dyp)
+        a2 = dxp * (1-dyp)
+        a3 = dxp * dyp
+        a4 = (1-dxp) * dyp
 
-        ip1 = mod1(i + 1, nx)
-        jp1 = mod1(j + 1, ny)
-
-        a1 = dxp * dyp
-        a2 = (1 - dxp) * dyp
-        a3 = (1 - dxp) * (1 - dyp)
-        a4 = dxp * (1 - dyp)
-
-        p.data[5,ipart] = a1 * fdtd.ebj[1, i, j] + a2 * fdtd.ebj[1, ip1, j] + a3 * fdtd.ebj[1, ip1, jp1] + a4 * fdtd.ebj[1, i, jp1]
-        p.data[6,ipart] = a1 * fdtd.ebj[2, i, j] + a2 * fdtd.ebj[2, ip1, j] + a3 * fdtd.ebj[2, ip1, jp1] + a4 * fdtd.ebj[2, i, jp1]
-        p.data[7,ipart] = a1 * fdtd.ebj[3, i, j] + a2 * fdtd.ebj[3, ip1, j] + a3 * fdtd.ebj[3, ip1, jp1] + a4 * fdtd.ebj[3, i, jp1]
+        p[5,ipart] = a1 * fdtd.ebj[1, i, j] + a2 * fdtd.ebj[1, i+1, j] + a3 * fdtd.ebj[1, i+1, j+1] + a4 * fdtd.ebj[1, i, j+1]
+        p[6,ipart] = a1 * fdtd.ebj[2, i, j] + a2 * fdtd.ebj[2, i+1, j] + a3 * fdtd.ebj[2, i+1, j+1] + a4 * fdtd.ebj[2, i, j+1]
+        p[7,ipart] = a1 * fdtd.ebj[3, i, j] + a2 * fdtd.ebj[3, i+1, j] + a3 * fdtd.ebj[3, i+1, j+1] + a4 * fdtd.ebj[3, i, j+1]
 
     end
+
 
 end
 
 export compute_current!
 
-function compute_current!( fdtd :: FDTD, p )
+function compute_current!( fdtd :: FDTD, p, nbpart )
 
     mesh = fdtd.m
     nx, ny = fdtd.m.nx, fdtd.m.ny
@@ -117,51 +132,55 @@ function compute_current!( fdtd :: FDTD, p )
     fdtd.ebj[4,:,:] .= 0
     fdtd.ebj[5,:,:] .= 0
 
-    factor = ( nx * ny ) / p.nbpart
+    factor = ( nx * ny ) / nbpart
     
-    for ipart=1:p.nbpart
+    for ipart=1:nbpart
     
-       xp = p.data[1,ipart] / dx
-       yp = p.data[2,ipart] / dy
+       xp = p[1,ipart] / dx
+       yp = p[2,ipart] / dy
 
        i = floor(Int, xp) + 1
        j = floor(Int, yp) + 1
     
-       dxp = i - xp
-       dyp = j - yp
-
-       ip1 = mod1(i + 1, nx)
-       jp1 = mod1(j + 1, ny)
-
-       a1 = dxp * dyp
-       a2 = (1 - dxp) * dyp
-       a3 = (1 - dxp) * (1 - dyp)
-       a4 = dxp * (1 - dyp)
+       dxp = xp - i + 1
+       dyp = yp - j + 1
     
-       w1 = p.data[3,ipart] * factor
-       w2 = p.data[4,ipart] * factor
+       a1 = (1-dxp) * (1-dyp)
+       a2 = dxp * (1-dyp)
+       a3 = dxp * dyp
+       a4 = (1-dxp) * dyp
+
+       w1 = p[3,ipart] * factor
+       w2 = p[4,ipart] * factor
     
        fdtd.ebj[4,i,j]     += a1*w1
        fdtd.ebj[5,i,j]     += a1*w2  
 
-       fdtd.ebj[4,ip1,j]   += a2*w1 
-       fdtd.ebj[5,ip1,j]   += a2*w2 
+       fdtd.ebj[4,i+1,j]   += a2*w1 
+       fdtd.ebj[5,i+1,j]   += a2*w2 
 
-       fdtd.ebj[4,ip1,jp1] += a3*w1 
-       fdtd.ebj[5,ip1,jp1] += a3*w2 
+       fdtd.ebj[4,i+1,j+1] += a3*w1 
+       fdtd.ebj[5,i+1,j+1] += a3*w2 
 
-       fdtd.ebj[4,i,jp1]   += a4*w1 
-       fdtd.ebj[5,i,jp1]   += a4*w2 
+       fdtd.ebj[4,i,j+1]   += a4*w1 
+       fdtd.ebj[5,i,j+1]   += a4*w2 
     
+    end
+
+    for i=1:nx+1
+      fdtd.ebj[4:5,i,1]  .+= fdtd.ebj[4:5,i,ny+1]
+    end
+    for j=1:ny+1
+      fdtd.ebj[4:5,1,j]  .+= fdtd.ebj[4:5,nx+1,j]
     end
 
     
     for i=1:nx, j=1:ny
-       fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,mod1(i+1,nx),j])
+       fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
     end
     
     for i=1:nx, j=1:ny
-       fdtd.jy[i,j] = 0.5 * (fdtd.ebj[5,i,j]+fdtd.ebj[5,i,mod1(j+1,ny)])
+       fdtd.jy[i,j] = 0.5 * (fdtd.ebj[5,i,j]+fdtd.ebj[5,i,j+1])
     end
 
 end 
