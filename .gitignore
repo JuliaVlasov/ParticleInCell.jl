@@ -29,3 +29,4 @@ modeE.dat
 *.mod
 *.dat
 .ipynb_checkpoints/fortran-julia-checkpoint.ipynb
+*.dylib
