@@ -36,11 +36,11 @@ function run( nstep )
        if istep > 1
            @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
-       @timeit to "interpolation" interpolation!(particles, fdtd)
-       @timeit to "pushv" push_v!( particles, nbpart, dt )
-       @timeit to "pushx" push_x!( particles, dimx, dimy, 0.5dt) 
-       @timeit to "deposition" deposition!( fdtd, particles)
-       @timeit to "pushx" push_x!( particles, dimx, dimy, 0.5dt) 
+       @timeit to "interpolation" interpol_eb!(particles, fdtd)
+       @timeit to "pushv" push_v!( particles, dt )
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "deposition" compute_current!( fdtd, particles)
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
        @timeit to "fdtd" faraday!(fdtd, 0.5dt)
        @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
        time = time + dt
@@ -58,7 +58,7 @@ t, energy = run( 1 )
 @time t, energy = run( nstep )
 show(to)
 
-open("modeE.dat", "w") do f
+open("results_jl.dat", "w") do f
 
     for i in 1:nstep
         println(f, t[i], " ", energy[i])
