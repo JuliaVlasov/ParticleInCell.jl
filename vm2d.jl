@@ -1,10 +1,13 @@
 using LinearAlgebra, ProgressMeter
-using ParticleInCell
-using TimerOutputs
+using TimerOutputs, Sobol
+
+include("src/mesh.jl")
+include("src/particles.jl")
+include("src/fdtd.jl")
 
 const to = TimerOutput()
 
-function run( nstep )
+function run( nstep; npm = 100 )
     
     dt = 0.01
     alpha = 0.1
@@ -16,9 +19,11 @@ function run( nstep )
     mesh = Mesh( dimx, nx, dimy, ny)
     dx, dy = mesh.dx, mesh.dy
 
-    @show nbpart = 100*nx*ny
-    particles = Particles(nbpart)
-    landau_sampling!( particles, alpha, kx )
+    nbpart = npm*nx*ny
+    println( " nbpart = $nbpart ")
+
+    particles = zeros(7,nbpart)
+    landau_sampling!( particles, nbpart, alpha, kx )
 
     fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny
@@ -36,11 +41,11 @@ function run( nstep )
        if istep > 1
            @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
-       @timeit to "interpolation" interpol_eb!(particles, fdtd)
-       @timeit to "pushv" push_v!( particles, dt )
-       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( fdtd, particles)
-       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "interpolation" interpol_eb!(particles, nbpart, fdtd)
+       @timeit to "pushv" push_v!( particles, nbpart, dt )
+       @timeit to "pushx" push_x!( particles, nbpart, mesh, 0.5dt) 
+       @timeit to "deposition" compute_current!( fdtd, particles, nbpart)
+       @timeit to "pushx" push_x!( particles, nbpart, mesh, 0.5dt) 
        @timeit to "fdtd" faraday!(fdtd, 0.5dt)
        @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
        time = time + dt
@@ -53,9 +58,9 @@ function run( nstep )
     
 end
 
-t, energy = run( 1 )
-@show nstep = 250
-@time t, energy = run( nstep )
+t, energy = run( 1 ) # trigger building
+@show nstep = 1000
+@time t, energy = run( nstep, npm = 500 )
 show(to)
 
 open("results_jl.dat", "w") do f
