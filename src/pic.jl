@@ -12,15 +12,13 @@ export f90_interpolation!
 
 function f90_interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
 
-    nx = Int32(fdtd.m.nx)
-    ny = Int32(fdtd.m.ny)
+    nx = Int32(fdtd.m.nx+1)
+    ny = Int32(fdtd.m.ny+1)
     dx = fdtd.m.dx
     dy = fdtd.m.dy
     nbpart = Int32(size(p)[2])
 
-    f = fdtd.ebj
-
-    ccall((:interpolation, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, f, p)
+    ccall((:interpolation, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, fdtd.ebj, p)
 
 end
 
@@ -42,6 +40,8 @@ function f90_deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
 
 end
 
+export f90_push_x!
+
 function f90_push_x!( p :: Array{Float64,2}, nbpart :: Int, dimx :: Float64, dimy :: Float64, dt :: Float64)
 
     nbpart = Int32(nbpart)
@@ -49,6 +49,8 @@ function f90_push_x!( p :: Array{Float64,2}, nbpart :: Int, dimx :: Float64, dim
     ccall((:push_x, piclib), Cvoid, (Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ref{Float64}), nbpart, dimx, dimy, p, dt)
 
 end
+
+export f90_push_v!
 
 function f90_push_v!( p :: Array{Float64, 2}, nbpart :: Int, dt :: Float64)
 
