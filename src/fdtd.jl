@@ -76,18 +76,16 @@ export interpol_eb!
 
 function interpol_eb!(p :: Array{Float64,2}, nbpart :: Int, fdtd::FDTD)
 
-    nx = Int32(fdtd.m.nx)
-    ny = Int32(fdtd.m.ny)
-    dx = Float64(fdtd.m.dx)
-    dy = Float64(fdtd.m.dy)
+    dx = fdtd.m.dx
+    dy = fdtd.m.dy
 
     @inbounds for ipart = 1:nbpart
 
         xp = p[1, ipart] / dx
         yp = p[2, ipart] / dy
 
-        i = trunc(Int, xp ) + 1
-        j = trunc(Int, yp ) + 1
+        i = floor(Int, xp ) + 1
+        j = floor(Int, yp ) + 1
 
         dxp = xp - i + 1
         dyp = yp - j + 1
@@ -159,7 +157,6 @@ function compute_current!( fdtd :: FDTD, p, nbpart )
       fdtd.ebj[4:5,1,j]  .+= fdtd.ebj[4:5,nx+1,j]
     end
 
-    
     for i=1:nx, j=1:ny+1
        fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
     end
@@ -172,4 +169,4 @@ end
 
 export compute_energy
 
-compute_energy( fdtd :: FDTD ) = 0.5 * log( sum(view(fdtd.ebj, 1, 1:nx, 1:ny).^2) * fdtd.m.dx * fdtd.m.dy)
+compute_energy( fdtd :: FDTD ) = 0.5 * log( sum(view(fdtd.ebj,1,:,:).^2) * fdtd.m.dx * fdtd.m.dy)
