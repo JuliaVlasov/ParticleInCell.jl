@@ -1,6 +1,6 @@
 using Libdl
 
-const piclib = joinpath(@__DIR__, "libpic.dylib")
+const piclib = joinpath(@__DIR__, "libpic")
 
 open(joinpath(@__DIR__, "pic.f90")) do f90file
     open(`gfortran -fPIC -w -O3 -shared -x f95 -o $(piclib * "." * Libdl.dlext) -`, "w") do f
@@ -20,13 +20,13 @@ end
 
 export interpolation!
 
-function interpolation!( p, fdtd :: FDTD )
+function interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
 
     nx = Int32(fdtd.m.nx)
     ny = Int32(fdtd.m.ny)
     dx = fdtd.m.dx
     dy = fdtd.m.dy
-    nbpart = Int32(size(particles)[2])
+    nbpart = Int32(size(p)[2])
 
     f = fdtd.ebj
 
@@ -36,13 +36,13 @@ end
 
 export deposition!
 
-function deposition!( fdtd :: FDTD, p )
+function deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
 
     nx = Int32(fdtd.m.nx)
     ny = Int32(fdtd.m.ny)
     dx = fdtd.m.dx
     dy = fdtd.m.dy
-    nbpart = Int32(size(particles)[2])
+    nbpart = Int32(size(p)[2])
 
     f = fdtd.ebj
     jx = fdtd.jx
@@ -52,15 +52,15 @@ function deposition!( fdtd :: FDTD, p )
 
 end
 
-function f90_push_x!( p, nbpart, dimx, dimy, dt)
+function f90_push_x!( p :: Array{Float64,2}, nbpart :: Int, dimx :: Float64, dimy :: Float64, dt :: Float64)
 
     nbpart = Int32(nbpart)
 
-    ccall((:push_x, piclib), Cvoid, (Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ref{Float64}), nbpart, dimx, dimy, p.data, dt)
+    ccall((:push_x, piclib), Cvoid, (Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ref{Float64}), nbpart, dimx, dimy, p, dt)
 
 end
 
-function f90_push_v!( p, nbpart, dt :: Float64)
+function f90_push_v!( p :: Array{Float64, 2}, nbpart :: Int, dt :: Float64)
 
     nbpart = Int32(nbpart)
 
