@@ -13,14 +13,14 @@ Generate a cartesians mesh on rectangle `dimx`x `dimy` with `nx` x `ny` points
 """
 struct Mesh
 
-    nx::Any
-    ny::Any
-    dimx::Any
-    dimy::Any
-    x::Any
-    y::Any
-    dx::Any
-    dy::Any
+    nx::Int
+    ny::Int
+    dimx::Float64
+    dimy::Float64
+    x::Vector{Float64}
+    y::Vector{Float64}
+    dx::Float64
+    dy::Float64
 
     function Mesh(dimx, nx, dimy, ny)
 
