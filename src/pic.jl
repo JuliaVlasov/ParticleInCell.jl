@@ -1,4 +1,12 @@
+using Libdl
+
 const piclib = joinpath(@__DIR__,"fortran", "libpic.dylib")
+
+open(joinpath(@__DIR__,"fortran", "pic.f90")) do f90file
+    open(`gfortran -fPIC -O3 -shared -x f95 -o $(piclib * "." * Libdl.dlext) -`, "w") do f
+        print(f, read(f90file, String))
+    end
+end
 
 export vm2d2v
 
