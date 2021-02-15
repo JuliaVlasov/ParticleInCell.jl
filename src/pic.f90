@@ -25,7 +25,6 @@ real(c_double) :: a1, a2, a3, a4
 real(c_double) :: xp, yp, dxp, dyp
 integer(c_int32_t) :: i, j, ipart
 
-
 do ipart=1,nbpart
 
    xp = p(1,ipart) / dx
@@ -42,8 +41,9 @@ do ipart=1,nbpart
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   p(5:7,ipart) = a1 * f(1:3,i,j) + a2 * f(1:3,i+1,j) &
-                + a3 * f(1:3,i+1,j+1) + a4 * f(1:3,i,j+1) 
+   p(5,ipart) = a1 * f(1,i,j) + a2 * f(1,i+1,j) + a3 * f(1,i+1,j+1) + a4 * f(1,i,j+1)
+   p(6,ipart) = a1 * f(2,i,j) + a2 * f(2,i+1,j) + a3 * f(2,i+1,j+1) + a4 * f(2,i,j+1)
+   p(7,ipart) = a1 * f(3,i,j) + a2 * f(3,i+1,j) + a3 * f(3,i+1,j+1) + a4 * f(3,i,j+1)
 
 end do
 
@@ -116,11 +116,13 @@ real(c_double), intent(out) :: f(5,nx+1,ny+1)
 real(c_double), intent(out) :: jx(nx,ny)
 real(c_double), intent(out) :: jy(nx,ny)
 
-real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp
+real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp, factor
 integer :: ipart, i, j
 
 f(4,:,:) = 0.d0
 f(5,:,:) = 0.d0
+
+factor = (nx * ny ) / nbpart
 
 do ipart=1,nbpart
 
@@ -138,14 +140,14 @@ do ipart=1,nbpart
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   dum = p(3,ipart) * (nx*ny) / nbpart
+   dum = p(3,ipart) * factor
 
    f(4,i,j)     = f(4,i,j)     + a1*dum  
    f(4,i+1,j)   = f(4,i+1,j)   + a2*dum 
    f(4,i+1,j+1) = f(4,i+1,j+1) + a3*dum 
    f(4,i,j+1)   = f(4,i,j+1)   + a4*dum 
 
-   dum = p(4,ipart) * (nx*ny) / nbpart
+   dum = p(4,ipart) * factor
 
    f(5,i,j)     = f(5,i,j)     + a1*dum  
    f(5,i+1,j)   = f(5,i+1,j)   + a2*dum 
