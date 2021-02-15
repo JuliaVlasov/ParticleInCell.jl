@@ -41,10 +41,10 @@ function run( nstep; npm :: Int = 100 )
        if istep > 1
            @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
        end
-       @timeit to "interpolation" interpolation!(particles, fdtd)
+       @timeit to "interpolation" f90_interpolation!(particles, fdtd)
        @timeit to "pushv" f90_push_v!( particles, nbpart, dt )
        @timeit to "pushx" f90_push_x!( particles, nbpart, dimx, dimy, 0.5dt) 
-       @timeit to "deposition" deposition!( fdtd, particles)
+       @timeit to "deposition" f90_deposition!( fdtd, particles)
        @timeit to "pushx" f90_push_x!( particles, nbpart, dimx, dimy, 0.5dt) 
        @timeit to "fdtd" faraday!(fdtd, 0.5dt)
        @timeit to "fdtd" ampere_maxwell!(fdtd, dt)

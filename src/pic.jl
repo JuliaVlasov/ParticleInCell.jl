@@ -8,19 +8,9 @@ open(joinpath(@__DIR__, "pic.f90")) do f90file
     end
 end
 
-export vm2d2v
+export f90_interpolation!
 
-function vm2d2v( nstep :: Int, time :: Vector{Float64}, energy :: Vector{Float64} )
-
-    nstep = Int32(nstep)
-
-    ccall((:vm2d2v, piclib), Cvoid, (Ref{Int32}, Ptr{Float64}, Ptr{Float64}), nstep, time, energy)
-
-end
-
-export interpolation!
-
-function interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
+function f90_interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
 
     nx = Int32(fdtd.m.nx)
     ny = Int32(fdtd.m.ny)
@@ -34,9 +24,9 @@ function interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
 
 end
 
-export deposition!
+export f90_deposition!
 
-function deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
+function f90_deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
 
     nx = Int32(fdtd.m.nx)
     ny = Int32(fdtd.m.ny)
