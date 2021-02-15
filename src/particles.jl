@@ -60,7 +60,7 @@ end
 
 export push_x!
 
-function push_x!(p, nbpart, mesh, dt)
+function push_x!(p, nbpart :: Int, mesh :: Mesh, dt :: Float64)
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
