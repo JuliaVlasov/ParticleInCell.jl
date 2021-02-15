@@ -1,4 +1,4 @@
-@testset "Landau Damping" begin
+@testset "Landau Damping Julia" begin
 
     nx = 128  # nombre de pts suivant x
     ny = 16   # nombre de pts suivant y
@@ -24,23 +24,23 @@
 
     nbpart = 100 * nx * ny
 
-    particles = Particles(nbpart)
+    particles = zeros(7, nbpart)
 
-    landau_sampling!(particles, alpha, kx)
+    landau_sampling!(particles, nbpart, alpha, kx)
 
     for istep = 1:10
 
         istep > 1 && faraday!(fdtd, 0.5dt)
 
-        interpol_eb!(particles, fdtd)
+        interpol_eb!(particles, nbpart, fdtd)
 
-        push_v!(particles, dt)
+        push_v!(particles, nbpart, dt)
 
-        push_x!(particles, mesh, 0.5dt)
+        push_x!(particles, nbpart, mesh, 0.5dt)
 
-        compute_current!(fdtd, particles)
+        compute_current!(fdtd, particles, nbpart)
 
-        push_x!(particles, mesh, 0.5dt) 
+        push_x!(particles, nbpart, mesh, 0.5dt) 
 
         faraday!(fdtd, 0.5dt)
 

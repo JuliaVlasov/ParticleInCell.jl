@@ -29,9 +29,9 @@ using ParticleInCell
 
     nbpart = 200 * nx * ny
 
-    particles = Particles(nbpart)
+    particles = zeros(7, nbpart)
 
-    landau_sampling!(particles, alpha, kx)
+    landau_sampling!(particles, nbpart, alpha, kx)
 
 
     @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-2

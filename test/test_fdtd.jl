@@ -15,10 +15,10 @@ using LinearAlgebra
 
     ω = sqrt(2)
 
-    xn = mesh.x[1:nx]
-    yn = mesh.y[1:ny] |> transpose
-    xc = ( mesh.x[1:nx] .+ mesh.x[2:nx+1] ) ./ 2
-    yc = ( mesh.y[1:ny] .+ mesh.y[2:ny+1] ) ./ 2 |> transpose
+    xn = mesh.x
+    yn = mesh.y |> transpose
+    xc = ( mesh.x[1:end-1] .+ mesh.x[2:end] ) ./ 2
+    yc = ( mesh.y[1:end-1] .+ mesh.y[2:end] ) ./ 2 |> transpose
 
     # Ex and Ey are set to zero at t = 0.0
     # Bz is set at  t = dt/2

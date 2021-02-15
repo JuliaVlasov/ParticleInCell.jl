@@ -14,11 +14,11 @@ struct FDTD
 
         nx, ny = mesh.nx, mesh.ny
         ebj = zeros(5, nx+1,ny+1)
-        ex = zeros(nx,ny)
-        ey = zeros(nx,ny)
+        ex = zeros(nx,ny+1)
+        ey = zeros(nx+1,ny)
         bz = zeros(nx,ny)
-        jx = zeros(nx,ny)
-        jy = zeros(nx,ny)
+        jx = zeros(nx,ny+1)
+        jy = zeros(nx+1,ny)
 
         new( mesh, ebj, ex, ey, bz, jx, jy )
 
@@ -39,18 +39,13 @@ function faraday!( fdtd :: FDTD, dt )
       fdtd.bz[i,j] += dt * (dex_dy - dey_dx)
    end
 
-   for i=1:nx, j=1:ny
-      fdtd.ebj[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] + fdtd.bz[i, mod1(j-1,ny)] 
-                + fdtd.bz[mod1(i-1,nx), j] + fdtd.bz[i, j]) / 4
+   for i=1:nx+1, j=1:ny+1
+      fdtd.ebj[3,i,j] = ( fdtd.bz[mod1(i-1,nx), mod1(j-1,ny)] 
+                        + fdtd.bz[mod1(i,  nx), mod1(j-1,ny)] 
+                        + fdtd.bz[mod1(i-1,nx), mod1(j,  ny)] 
+                        + fdtd.bz[mod1(i,  nx), mod1(j,  ny)]) / 4
    end
 
-   for i=1:nx+1
-      fdtd.ebj[3,i,ny+1] = fdtd.ebj[3,i,1] 
-   end
-   for j=1:ny+1
-      fdtd.ebj[3,nx+1,j] = fdtd.ebj[3,1,j] 
-   end
-   
 end 
 
 export ampere_maxwell!
@@ -60,32 +55,22 @@ function ampere_maxwell!( fdtd :: FDTD, dt)
    nx, ny = fdtd.m.nx, fdtd.m.ny
    dx, dy = fdtd.m.dx, fdtd.m.dy
 
-   for i=1:nx, j=1:ny
-      dbz_dy = (fdtd.bz[i,j]-fdtd.bz[i,mod1(j-1,ny)]) / dy
+   for i=1:nx, j=1:ny+1
+      dbz_dy = (fdtd.bz[i,mod1(j,ny)]-fdtd.bz[i,mod1(j-1,ny)]) / dy
       fdtd.ex[i,j] += dt * dbz_dy - dt * fdtd.jx[i,j]
    end
 
-   for i=1:nx, j=1:ny
-      dbz_dx = (fdtd.bz[i,j]-fdtd.bz[mod1(i-1,nx),j]) / dx
+   for i=1:nx+1, j=1:ny
+      dbz_dx = (fdtd.bz[mod1(i,nx),mod1(j,ny)]-fdtd.bz[mod1(i-1,nx),j]) / dx
       fdtd.ey[i,j] -= dt * dbz_dx - dt * fdtd.jy[i,j]
    end
 
-   for i=1:nx, j=1:ny
-      fdtd.ebj[1,i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[i,j] )
-      fdtd.ebj[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,j] )
-   end
-
-   for i=1:nx+1
-      fdtd.ebj[1,i,ny+1] = fdtd.ebj[1,i,1] 
-      fdtd.ebj[2,i,ny+1] = fdtd.ebj[2,i,1] 
-   end
-   for j=1:ny+1
-      fdtd.ebj[1,nx+1,j] = fdtd.ebj[1,1,j] 
-      fdtd.ebj[2,nx+1,j] = fdtd.ebj[2,1,j] 
+   for i=1:nx+1, j=1:ny+1
+      fdtd.ebj[1,i,j] = 0.5*( fdtd.ex[mod1(i-1,nx),j] + fdtd.ex[mod1(i,nx),j] )
+      fdtd.ebj[2,i,j] = 0.5*( fdtd.ey[i,mod1(j-1,ny)] + fdtd.ey[i,mod1(j,ny)])
    end
 
 end 
-
 
 export interpol_eb!
 
@@ -175,11 +160,11 @@ function compute_current!( fdtd :: FDTD, p, nbpart )
     end
 
     
-    for i=1:nx, j=1:ny
+    for i=1:nx, j=1:ny+1
        fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
     end
     
-    for i=1:nx, j=1:ny
+    for i=1:nx+1, j=1:ny
        fdtd.jy[i,j] = 0.5 * (fdtd.ebj[5,i,j]+fdtd.ebj[5,i,j+1])
     end
 
@@ -187,4 +172,4 @@ end
 
 export compute_energy
 
-compute_energy( fdtd :: FDTD ) = 0.5 * log( sum(fdtd.ex.^2) * fdtd.m.dx * fdtd.m.dy)
+compute_energy( fdtd :: FDTD ) = 0.5 * log( sum(view(fdtd.ebj, 1, 1:nx, 1:ny).^2) * fdtd.m.dx * fdtd.m.dy)
