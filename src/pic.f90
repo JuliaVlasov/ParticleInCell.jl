@@ -107,16 +107,14 @@ end do
 
 end subroutine push_x
 
-pure subroutine deposition( nbpart, nx, ny, dx, dy, p, f, jx, jy ) bind(C, name="deposition")
+pure subroutine deposition( nbpart, nx, ny, dx, dy, p, f ) bind(C, name="deposition")
 
 integer(c_int32_t), intent(in) :: nbpart, nx, ny
 real(c_double), intent(in)  :: dx, dy
-real(c_double), intent(in)  :: p(7,nbpart)
-real(c_double), intent(out) :: f(5,nx+1,ny+1)
-real(c_double), intent(out) :: jx(nx,ny)
-real(c_double), intent(out) :: jy(nx,ny)
+real(c_double), intent(in)  :: p(7,1:nbpart)
+real(c_double), intent(out) :: f(5,1:nx+1,1:ny+1)
 
-real(c_double) :: a1, a2, a3, a4, dum, xp, yp, dxp, dyp, factor
+real(c_double) :: a1, a2, a3, a4, w1, w2, xp, yp, dxp, dyp, factor
 integer :: ipart, i, j
 
 f(4,:,:) = 0.d0
@@ -140,41 +138,31 @@ do ipart=1,nbpart
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   dum = p(3,ipart) * factor
+   w1 = p(3,ipart) * factor
+   w2 = p(4,ipart) * factor
 
-   f(4,i,j)     = f(4,i,j)     + a1*dum  
-   f(4,i+1,j)   = f(4,i+1,j)   + a2*dum 
-   f(4,i+1,j+1) = f(4,i+1,j+1) + a3*dum 
-   f(4,i,j+1)   = f(4,i,j+1)   + a4*dum 
+   f(4,i,j)     = f(4,i,j)     + a1*w1  
+   f(5,i,j)     = f(5,i,j)     + a1*w2  
 
-   dum = p(4,ipart) * factor
+   f(4,i+1,j)   = f(4,i+1,j)   + a2*w1 
+   f(5,i+1,j)   = f(5,i+1,j)   + a2*w2 
 
-   f(5,i,j)     = f(5,i,j)     + a1*dum  
-   f(5,i+1,j)   = f(5,i+1,j)   + a2*dum 
-   f(5,i+1,j+1) = f(5,i+1,j+1) + a3*dum 
-   f(5,i,j+1)   = f(5,i,j+1)   + a4*dum 
+   f(4,i+1,j+1) = f(4,i+1,j+1) + a3*w1 
+   f(5,i+1,j+1) = f(5,i+1,j+1) + a3*w2 
+
+   f(4,i,j+1)   = f(4,i,j+1)   + a4*w1 
+   f(5,i,j+1)   = f(5,i,j+1)   + a4*w2 
 
 end do
 
 do i=1,nx+1
-   f(4,i,1) = f(4,i,1)+f(4,i,ny+1)
-   f(4,i,ny+1) = f(4,i,1)
-   f(5,i,1) = f(5,i,1)+f(5,i,ny+1)
-   f(5,i,ny+1) = f(5,i,1)
+   f(4:5,i,1) = f(4:5,i,1)+f(4:5,i,ny+1)
+   f(4:5,i,ny+1) = f(4:5,i,1)
 end do
 
 do j=1,ny+1
-   f(4,1,j) = f(4,1,j)+f(4,nx+1,j)
-   f(4,nx+1,j) = f(4,1,j)
-   f(5,1,j) = f(5,1,j)+f(5,nx+1,j)
-   f(5,nx+1,j) = f(5,1,j)
-end do
-
-do i=1,nx
-do j=1,ny
-   jx(i,j) = 0.5 * (f(4,i,j)+f(4,i+1,j))
-   jy(i,j) = 0.5 * (f(5,i,j)+f(5,i,j+1))
-end do
+   f(4:5,1,j) = f(4:5,1,j)+f(4:5,nx+1,j)
+   f(4:5,nx+1,j) = f(4:5,1,j)
 end do
 
 end subroutine deposition

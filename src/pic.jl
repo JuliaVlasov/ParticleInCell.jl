@@ -33,10 +33,16 @@ function f90_deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
     nbpart = Int32(size(p)[2])
 
     f = fdtd.ebj
-    jx = fdtd.jx
-    jy = fdtd.jy
 
-    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, p, f, jx, jy)
+    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, p, f)
+
+    for i=1:nx, j=1:ny+1
+       fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
+    end
+    
+    for i=1:nx+1, j=1:ny
+       fdtd.jy[i,j] = 0.5 * (fdtd.ebj[5,i,j]+fdtd.ebj[5,i,j+1])
+    end
 
 end
 

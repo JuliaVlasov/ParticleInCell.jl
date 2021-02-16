@@ -152,9 +152,11 @@ function compute_current!( fdtd :: FDTD, p, nbpart )
 
     for i=1:nx+1
       fdtd.ebj[4:5,i,1]  .+= fdtd.ebj[4:5,i,ny+1]
+      fdtd.ebj[4:5,i,ny+1]  .= fdtd.ebj[4:5,i,1]
     end
     for j=1:ny+1
       fdtd.ebj[4:5,1,j]  .+= fdtd.ebj[4:5,nx+1,j]
+      fdtd.ebj[4:5,nx+1,j]  .= fdtd.ebj[4:5,1,j]
     end
 
     for i=1:nx, j=1:ny+1

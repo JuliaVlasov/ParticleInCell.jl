@@ -6,7 +6,7 @@
     kx = 0.5
     ky = 0.0
     dimx = 2pi / kx
-    dimy = 1
+    dimy = 1.
 
     mesh = Mesh(dimx, nx, dimy, ny)
 
@@ -42,10 +42,23 @@
         @test all(particles1 .== particles2)
 
         push_v!(particles1, nbpart, dt)
+        f90_push_v!(particles2, nbpart, dt)
+        @test all(particles1 .== particles2)
 
         push_x!(particles1, nbpart, mesh, 0.5dt)
+        f90_push_x!(particles2, nbpart, dimx, dimy, 0.5dt)
+        @test all(particles1 .== particles2)
 
+        @show maximum(fdtd1.ebj .- fdtd2.ebj)
+        f90_deposition!(fdtd2, particles2)
         compute_current!(fdtd1, particles1, nbpart)
+        @show maximum(fdtd1.ebj[1,:,:] .- fdtd2.ebj[1,:,:])
+        @show maximum(fdtd1.ebj[2,:,:] .- fdtd2.ebj[2,:,:])
+        @show maximum(fdtd1.ebj[3,:,:] .- fdtd2.ebj[3,:,:])
+        @show maximum(fdtd1.ebj[4,:,:] .- fdtd2.ebj[4,:,:])
+        @show maximum(fdtd1.ebj[5,:,:] .- fdtd2.ebj[5,:,:])
+        @show maximum(fdtd1.jx .- fdtd2.jx)
+        @show maximum(fdtd1.jy .- fdtd2.jy)
 
         push_x!(particles1, nbpart, mesh, 0.5dt) 
 
