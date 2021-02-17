@@ -1,6 +1,8 @@
 using Random
+import ParticleInCell.F90
 
 @testset "deposition" begin
+
 
 dimx, dimy = 4π, 4π
 nx, ny = 128, 128
@@ -21,7 +23,7 @@ compute_current!( mesh, p)
 @test sum(mesh.jx) ≈ 2.5872575761191685
 @test sum(mesh.jy) ≈ 2.5872575761191685
 
-f90_compute_current!( mesh, p)
+F90.compute_current!( mesh, p)
 
 @test sum(mesh.jx) ≈ 2.5872575761191685
 @test sum(mesh.jy) ≈ 2.5872575761191685

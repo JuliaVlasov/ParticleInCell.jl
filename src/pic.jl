@@ -1,4 +1,8 @@
+
+module F90
+
 using Libdl
+import ..ParticleInCell: Mesh
 
 const piclib = joinpath(@__DIR__, "libpic")
 
@@ -8,9 +12,7 @@ open(joinpath(@__DIR__, "pic.f90")) do f90file
     end
 end
 
-export f90_interpolation!
-
-function f90_interpolation!( p :: Array{Float64,2}, m :: Mesh )
+function interpolation!( p :: Array{Float64,2}, m :: Mesh )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -22,9 +24,7 @@ function f90_interpolation!( p :: Array{Float64,2}, m :: Mesh )
 
 end
 
-export f90_compute_current!
-
-function f90_compute_current!( m :: Mesh, p :: Array{Float64, 2} )
+function compute_current!( m :: Mesh, p :: Array{Float64, 2} )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -45,9 +45,7 @@ function f90_compute_current!( m :: Mesh, p :: Array{Float64, 2} )
 
 end
 
-export f90_push_x!
-
-function f90_push_x!( p :: Array{Float64,2}, mesh :: Mesh, dt :: Float64)
+function push_x!( p :: Array{Float64,2}, mesh :: Mesh, dt :: Float64)
 
     nbpart = Int32(size(p)[2])
     dimx = mesh.dimx
@@ -57,12 +55,14 @@ function f90_push_x!( p :: Array{Float64,2}, mesh :: Mesh, dt :: Float64)
 
 end
 
-export f90_push_v!
+export push_v!
 
-function f90_push_v!( p :: Array{Float64, 2}, dt :: Float64)
+function push_v!( p :: Array{Float64, 2}, dt :: Float64)
 
     nbpart = Int32(size(p)[2])
 
     ccall((:push_v, piclib), Cvoid, (Ref{Int32}, Ptr{Float64}, Ref{Float64}), nbpart, p, dt)
+
+end
 
 end

@@ -1,4 +1,5 @@
 using Random
+import ParticleInCell.F90
 
 @testset "interpolation" begin
 
@@ -26,7 +27,7 @@ interpolation!( p, mesh)
 @test sum(view(p,6,:)) ≈ 499867.32386298594 
 @test sum(view(p,7,:)) ≈ 499867.32386298594 
 
-f90_interpolation!( p, mesh)
+F90.interpolation!( p, mesh)
 
 @test sum(view(p,5,:)) ≈ 499867.32386298594 
 @test sum(view(p,6,:)) ≈ 499867.32386298594 

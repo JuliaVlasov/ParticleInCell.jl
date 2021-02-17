@@ -1,4 +1,5 @@
 using Random
+import ParticleInCell.F90
 
 @testset "push"  begin
 
@@ -25,8 +26,8 @@ using Random
         push_v!( pj, dt)
         push_x!( pj, mesh, dt)
 
-        f90_push_v!( pf, dt)
-        f90_push_x!( pf, mesh, dt)
+        F90.push_v!( pf, dt)
+        F90.push_x!( pf, mesh, dt)
 
         @test all( pj .== pf)
     end

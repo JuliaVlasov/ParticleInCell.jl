@@ -1,3 +1,5 @@
+import ParticleInCell.F90
+
 @testset "Landau Damping Julia" begin
 
     nx = 128
@@ -39,28 +41,25 @@
         update_fields!(mesh2, fdtd2)
 
         interpolation!(particles1, mesh1)
-        f90_interpolation!(particles2, mesh2)
+        F90.interpolation!(particles2, mesh2)
         @test all(particles1 .== particles2)
 
         push_v!(particles1, dt)
-        f90_push_v!(particles2, dt)
+        F90.push_v!(particles2, dt)
         @test all(particles1 .== particles2)
 
         push_x!(particles1, mesh1, 0.5dt)
-        f90_push_x!(particles2, mesh2, 0.5dt)
+        F90.push_x!(particles2, mesh2, 0.5dt)
         @test all(particles1 .== particles2)
 
         compute_current!(mesh1, particles1)
-        f90_compute_current!(mesh2, particles2)
+        F90.compute_current!(mesh2, particles2)
 
         push_x!(particles1, mesh1, 0.5dt) 
         push_x!(particles2, mesh2, 0.5dt) 
 
         faraday!(fdtd1, mesh1, 0.5dt)
         faraday!(fdtd2, mesh2, 0.5dt)
-
-        update_currents!(fdtd1, mesh1)
-        update_currents!(fdtd2, mesh2)
 
         ampere_maxwell!(fdtd1, mesh1, dt)
         ampere_maxwell!(fdtd2, mesh2, dt)
