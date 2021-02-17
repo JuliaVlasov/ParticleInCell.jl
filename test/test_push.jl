@@ -22,11 +22,11 @@ using Random
 
     for istep in 1:50
         
-        push_v!( pj, nbpart, dt)
-        push_x!( pj, nbpart, mesh, dt)
+        push_v!( pj, dt)
+        push_x!( pj, mesh, dt)
 
-        f90_push_v!( pf, nbpart, dt)
-        f90_push_x!( pf, nbpart, dimx, dimy, dt)
+        f90_push_v!( pf, dt)
+        f90_push_x!( pf, mesh, dt)
 
         @test all( pj .== pf)
     end

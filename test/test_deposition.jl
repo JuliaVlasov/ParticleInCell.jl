@@ -16,7 +16,7 @@ p[3:4,:] .= (dimx * dimy) / nbpart
 @test sum(view(p,1,:)) / nbpart ≈ 2π atol=1e-2
 @test sum(view(p,2,:)) / nbpart ≈ 2π atol=1e-2
 
-compute_current!( fdtd, p, nbpart)
+compute_current!( fdtd, p)
 
 @test sum(view(fdtd.ebj,4,:,:)) ≈ 2.5872575761191685
 @test sum(view(fdtd.ebj,5,:,:)) ≈ 2.5872575761191685

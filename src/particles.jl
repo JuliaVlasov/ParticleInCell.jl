@@ -1,6 +1,8 @@
 export landau_sampling!
 
-function landau_sampling!(particles, nbpart, alpha, kx)
+function landau_sampling!(particles, alpha, kx)
+
+    nbpart = size(particles)[2]
 
     function newton(r)
         x0, x1 = 0.0, 1.0
@@ -31,7 +33,9 @@ export update_cells!
 
 export push_v!
 
-function push_v!(p, nbpart, dt)
+function push_v!(p, dt)
+
+    nbpart = size(p)[2]
 
     for ipart = 1:nbpart
 
@@ -60,7 +64,9 @@ end
 
 export push_x!
 
-function push_x!(p, nbpart :: Int, mesh :: Mesh, dt :: Float64)
+function push_x!(p, mesh :: Mesh, dt :: Float64)
+
+    nbpart = size(p)[2]
 
     dimx, dimy = mesh.dimx, mesh.dimy
 

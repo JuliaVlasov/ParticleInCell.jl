@@ -74,8 +74,9 @@ end
 
 export interpol_eb!
 
-function interpol_eb!(p :: Array{Float64,2}, nbpart :: Int, fdtd::FDTD)
+function interpol_eb!(p :: Array{Float64,2}, fdtd::FDTD)
 
+    nbpart = size(p)[2]
     dx = fdtd.m.dx
     dy = fdtd.m.dy
 
@@ -106,8 +107,9 @@ end
 
 export compute_current!
 
-function compute_current!( fdtd :: FDTD, p, nbpart )
+function compute_current!( fdtd :: FDTD, p )
 
+    nbpart = size(p)[2]
     mesh = fdtd.m
     nx, ny = fdtd.m.nx, fdtd.m.ny
     dx, dy = fdtd.m.dx, fdtd.m.dy

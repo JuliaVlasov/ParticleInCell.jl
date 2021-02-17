@@ -31,8 +31,7 @@ using ParticleInCell
 
     particles = zeros(7, nbpart)
 
-    landau_sampling!(particles, nbpart, alpha, kx)
-
+    landau_sampling!(particles, alpha, kx)
 
     @test maximum(abs.(rho .- compute_rho(particles, mesh))) < 1e-2
 

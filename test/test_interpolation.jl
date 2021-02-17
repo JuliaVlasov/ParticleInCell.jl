@@ -21,7 +21,7 @@ for i in 1:nx+1, j in 1:ny+1
     fdtd.ebj[3,i,j] = exp.(-0.5 * ( x^2 + y^2 ))
 end
 
-interpol_eb!( p, nbpart, fdtd)
+interpol_eb!( p, fdtd)
 
 @test sum(view(p,5,:)) ≈ 499867.32386298594
 @test sum(view(p,6,:)) ≈ 499867.32386298594 

@@ -111,8 +111,8 @@ pure subroutine deposition( nbpart, nx, ny, dx, dy, p, f ) bind(C, name="deposit
 
 integer(c_int32_t), intent(in) :: nbpart, nx, ny
 real(c_double), intent(in)  :: dx, dy
-real(c_double), intent(in)  :: p(7,1:nbpart)
-real(c_double), intent(out) :: f(5,1:nx+1,1:ny+1)
+real(c_double), intent(in)  :: p(7,nbpart)
+real(c_double), intent(out) :: f(5,nx,ny)
 
 real(c_double) :: a1, a2, a3, a4, w1, w2, xp, yp, dxp, dyp, factor
 integer :: ipart, i, j
@@ -120,7 +120,7 @@ integer :: ipart, i, j
 f(4,:,:) = 0.d0
 f(5,:,:) = 0.d0
 
-factor = (nx * ny ) / nbpart
+factor = (nx-1) * ( ny-1 ) / nbpart
 
 do ipart=1,nbpart
 
@@ -153,16 +153,6 @@ do ipart=1,nbpart
    f(4,i,j+1)   = f(4,i,j+1)   + a4*w1 
    f(5,i,j+1)   = f(5,i,j+1)   + a4*w2 
 
-end do
-
-do i=1,nx+1
-   f(4:5,i,1) = f(4:5,i,1)+f(4:5,i,ny+1)
-   f(4:5,i,ny+1) = f(4:5,i,1)
-end do
-
-do j=1,ny+1
-   f(4:5,1,j) = f(4:5,1,j)+f(4:5,nx+1,j)
-   f(4:5,nx+1,j) = f(4:5,1,j)
 end do
 
 end subroutine deposition

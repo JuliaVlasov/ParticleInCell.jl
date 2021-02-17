@@ -29,29 +29,29 @@
     particles1 = zeros(7, nbpart)
     particles2 = zeros(7, nbpart)
 
-    landau_sampling!(particles1, nbpart, alpha, kx)
-    landau_sampling!(particles2, nbpart, alpha, kx)
+    landau_sampling!(particles1, alpha, kx)
+    landau_sampling!(particles2, alpha, kx)
 
     for istep = 1:1
 
         istep > 1 && faraday!(fdtd1, 0.5dt)
         istep > 1 && faraday!(fdtd2, 0.5dt)
 
-        interpol_eb!(particles1, nbpart, fdtd1)
+        interpol_eb!(particles1, fdtd1)
         f90_interpolation!(particles2, fdtd2)
         @test all(particles1 .== particles2)
 
-        push_v!(particles1, nbpart, dt)
-        f90_push_v!(particles2, nbpart, dt)
+        push_v!(particles1, dt)
+        f90_push_v!(particles2, dt)
         @test all(particles1 .== particles2)
 
-        push_x!(particles1, nbpart, mesh, 0.5dt)
-        f90_push_x!(particles2, nbpart, dimx, dimy, 0.5dt)
+        push_x!(particles1, mesh, 0.5dt)
+        f90_push_x!(particles2, mesh, 0.5dt)
         @test all(particles1 .== particles2)
 
         @show maximum(fdtd1.ebj .- fdtd2.ebj)
         f90_deposition!(fdtd2, particles2)
-        compute_current!(fdtd1, particles1, nbpart)
+        compute_current!(fdtd1, particles1)
         @show maximum(fdtd1.ebj[1,:,:] .- fdtd2.ebj[1,:,:])
         @show maximum(fdtd1.ebj[2,:,:] .- fdtd2.ebj[2,:,:])
         @show maximum(fdtd1.ebj[3,:,:] .- fdtd2.ebj[3,:,:])
@@ -60,7 +60,7 @@
         @show maximum(fdtd1.jx .- fdtd2.jx)
         @show maximum(fdtd1.jy .- fdtd2.jy)
 
-        push_x!(particles1, nbpart, mesh, 0.5dt) 
+        push_x!(particles1, mesh, 0.5dt) 
 
         faraday!(fdtd1, 0.5dt)
 

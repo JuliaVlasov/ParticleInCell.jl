@@ -34,7 +34,16 @@ function f90_deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
 
     f = fdtd.ebj
 
-    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, p, f)
+    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx+1, ny+1, dx, dy, p, f)
+
+    for i=1:nx+1
+      fdtd.ebj[4:5,i,1]  .+= fdtd.ebj[4:5,i,ny+1]
+      fdtd.ebj[4:5,i,ny+1]  .= fdtd.ebj[4:5,i,1]
+    end
+    for j=1:ny+1
+      fdtd.ebj[4:5,1,j]  .+= fdtd.ebj[4:5,nx+1,j]
+      fdtd.ebj[4:5,nx+1,j]  .= fdtd.ebj[4:5,1,j]
+    end
 
     for i=1:nx, j=1:ny+1
        fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
@@ -48,9 +57,11 @@ end
 
 export f90_push_x!
 
-function f90_push_x!( p :: Array{Float64,2}, nbpart :: Int, dimx :: Float64, dimy :: Float64, dt :: Float64)
+function f90_push_x!( p :: Array{Float64,2}, mesh :: Mesh, dt :: Float64)
 
-    nbpart = Int32(nbpart)
+    nbpart = Int32(size(p)[2])
+    dimx = mesh.dimx
+    dimy = mesh.dimy
 
     ccall((:push_x, piclib), Cvoid, (Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ref{Float64}), nbpart, dimx, dimy, p, dt)
 
@@ -58,9 +69,9 @@ end
 
 export f90_push_v!
 
-function f90_push_v!( p :: Array{Float64, 2}, nbpart :: Int, dt :: Float64)
+function f90_push_v!( p :: Array{Float64, 2}, dt :: Float64)
 
-    nbpart = Int32(nbpart)
+    nbpart = Int32(size(p)[2])
 
     ccall((:push_v, piclib), Cvoid, (Ref{Int32}, Ptr{Float64}, Ref{Float64}), nbpart, p, dt)
 
