@@ -31,21 +31,27 @@ using LinearAlgebra
 
     for istep = 1:nstep # Loop over time
 
-        ampere_maxwell!(fdtd, dt)
+        ampere_maxwell!(fdtd, mesh, dt)
 
         t = t + 0.5dt
 
         @test maximum(abs.(fdtd.ex .- sol_ex(xc,yn) .* sin(ω * t))) < 1e-6
         @test maximum(abs.(fdtd.ey .- sol_ey(xn,yc) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(fdtd.ebj[1,:,:] .- sol_ex(xn,yn) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(fdtd.ebj[2,:,:] .- sol_ey(xn,yn) .* sin(ω * t))) < 1e-6
 
-        faraday!(fdtd, dt)
+        update_fields!(mesh, fdtd)
+
+        @test maximum(abs.(mesh.ex .- sol_ex(xn,yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(mesh.ey .- sol_ey(xn,yn) .* sin(ω * t))) < 1e-6
+
+        faraday!(fdtd, mesh, dt)
 
         t = t + 0.5dt
 
         @test maximum(abs.(fdtd.bz .- sol_bz(xc,yc) .* cos(ω * t))) < 1e-6
-        @test maximum(abs.(fdtd.ebj[3,:,:] .- sol_bz(xn,yn) .* cos(ω * t))) < 1e-3
+
+        update_fields!(mesh, fdtd)
+
+        @test maximum(abs.(mesh.bz .- sol_bz(xn,yn) .* cos(ω * t))) < 1e-3
 
     end # next time step
 

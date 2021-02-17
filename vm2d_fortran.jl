@@ -22,16 +22,14 @@ function run( nstep; npm :: Int = 100 )
 
     @show nbpart = npm*nx*ny
     particles = zeros(7,nbpart)
-    landau_sampling!( particles, nbpart, alpha, kx )
+    landau_sampling!( particles, alpha, kx )
 
     fdtd = FDTD(mesh)
-    for i=1:nx, j=1:ny
+    for i=1:nx, j=1:ny+1
         fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
-        fdtd.ey[i,j] = 0.0
-        fdtd.bz[i,j] = 0.0
     end
     time = 0
-    energy = Float64[compute_energy(fdtd)]
+    energy = Float64[compute_energy(fdtd, mesh)]
     t = Float64[time]
     
     reset_timer!()
@@ -39,18 +37,20 @@ function run( nstep; npm :: Int = 100 )
     @showprogress 1 for istep in 1:nstep
     
        if istep > 1
-           @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
+           @timeit to "fdtd" faraday!( fdtd, mesh, 0.5dt ) 
        end
-       @timeit to "interpolation" f90_interpolation!(particles, fdtd)
-       @timeit to "pushv" f90_push_v!( particles, nbpart, dt )
-       @timeit to "pushx" f90_push_x!( particles, nbpart, dimx, dimy, 0.5dt) 
-       @timeit to "deposition" f90_deposition!( fdtd, particles)
-       @timeit to "pushx" f90_push_x!( particles, nbpart, dimx, dimy, 0.5dt) 
-       @timeit to "fdtd" faraday!(fdtd, 0.5dt)
-       @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
+
+       update_fields!(mesh, fdtd)
+       @timeit to "interpolation" f90_interpolation!(particles, mesh)
+       @timeit to "pushv" f90_push_v!( particles, dt )
+       @timeit to "pushx" f90_push_x!( particles, mesh, 0.5dt) 
+       @timeit to "deposition" f90_compute_current!( mesh, particles)
+       @timeit to "pushx" f90_push_x!( particles, mesh, 0.5dt) 
+       @timeit to "fdtd" faraday!(fdtd, mesh, 0.5dt)
+       @timeit to "fdtd" ampere_maxwell!(fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
-       push!(energy, compute_energy(fdtd))
+       push!(energy, compute_energy(fdtd, mesh))
     
     end
    

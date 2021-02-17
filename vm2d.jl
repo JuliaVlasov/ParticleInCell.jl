@@ -1,9 +1,6 @@
 using LinearAlgebra, ProgressMeter
 using TimerOutputs, Sobol
-
-include("src/mesh.jl")
-include("src/particles.jl")
-include("src/fdtd.jl")
+using ParticleInCell
 
 const to = TimerOutput()
 
@@ -23,34 +20,33 @@ function run( nstep; npm = 100 )
     println( " nbpart = $nbpart ")
 
     particles = zeros(7,nbpart)
-    landau_sampling!( particles, nbpart, alpha, kx )
+    landau_sampling!( particles, alpha, kx )
 
     fdtd = FDTD(mesh)
-    for i=1:nx, j=1:ny
+    for i=1:nx, j=1:ny+1
         fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
-        fdtd.ey[i,j] = 0.0
-        fdtd.bz[i,j] = 0.0
     end
     time = 0
-    energy = Float64[compute_energy(fdtd)]
+    energy = Float64[compute_energy(fdtd, mesh)]
     t = Float64[time]
     
     reset_timer!()
     @showprogress 1 for istep in 1:nstep
     
        if istep > 1
-           @timeit to "fdtd" faraday!( fdtd, 0.5dt ) 
+           @timeit to "fdtd" faraday!( fdtd, mesh, 0.5dt ) 
        end
-       @timeit to "interpolation" interpol_eb!(particles, nbpart, fdtd)
-       @timeit to "pushv" push_v!( particles, nbpart, dt )
-       @timeit to "pushx" push_x!( particles, nbpart, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( fdtd, particles, nbpart)
-       @timeit to "pushx" push_x!( particles, nbpart, mesh, 0.5dt) 
-       @timeit to "fdtd" faraday!(fdtd, 0.5dt)
-       @timeit to "fdtd" ampere_maxwell!(fdtd, dt)
+       update_fields!(mesh, fdtd)
+       @timeit to "interpolation" interpolation!(particles, mesh)
+       @timeit to "pushv" push_v!( particles, dt )
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "deposition" compute_current!( mesh, particles)
+       @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
+       @timeit to "fdtd" faraday!(fdtd, mesh, 0.5dt)
+       @timeit to "fdtd" ampere_maxwell!(fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
-       push!(energy, compute_energy(fdtd))
+       push!(energy, compute_energy(fdtd, mesh))
     
     end
    

@@ -24,6 +24,8 @@ struct Mesh
     ex::Array{Float64,2}
     ey::Array{Float64,2}
     bz::Array{Float64,2}
+    jx::Array{Float64,2}
+    jy::Array{Float64,2}
 
     function Mesh(dimx, nx, dimy, ny)
 
@@ -36,8 +38,10 @@ struct Mesh
         ex = zeros(nx+1,ny+1)
         ey = zeros(nx+1,ny+1)
         bz = zeros(nx+1,ny+1)
+        jx = zeros(nx+1,ny+1)
+        jy = zeros(nx+1,ny+1)
 
-        new(nx, ny, dimx, dimy, x, y, dx, dy, ex, ey, bz)
+        new(nx, ny, dimx, dimy, x, y, dx, dy, ex, ey, bz, jx, jy)
 
     end
 

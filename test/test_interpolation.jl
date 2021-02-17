@@ -5,7 +5,6 @@ using Random
 dimx, dimy = 4π, 4π
 nx, ny = 128, 128
 mesh = Mesh( dimx, nx, dimy, ny)
-fdtd = FDTD( mesh )
 rng = MersenneTwister(1234)
 nbpart = 1_000_000
 p = zeros(7,nbpart)
@@ -16,18 +15,18 @@ p[3:7,:] .= 0
 for i in 1:nx+1, j in 1:ny+1
     x =  mesh.x[i] - 2π
     y =  mesh.y[j] - 2π
-    fdtd.ebj[1,i,j] = exp.(-0.5 * ( x^2 + y^2 ))
-    fdtd.ebj[2,i,j] = exp.(-0.5 * ( x^2 + y^2 ))
-    fdtd.ebj[3,i,j] = exp.(-0.5 * ( x^2 + y^2 ))
+    mesh.ex[i,j] = exp.(-0.5 * ( x^2 + y^2 ))
+    mesh.ey[i,j] = exp.(-0.5 * ( x^2 + y^2 ))
+    mesh.bz[i,j] = exp.(-0.5 * ( x^2 + y^2 ))
 end
 
-interpol_eb!( p, fdtd)
+interpolation!( p, mesh)
 
 @test sum(view(p,5,:)) ≈ 499867.32386298594
 @test sum(view(p,6,:)) ≈ 499867.32386298594 
 @test sum(view(p,7,:)) ≈ 499867.32386298594 
 
-f90_interpolation!( p, fdtd)
+f90_interpolation!( p, mesh)
 
 @test sum(view(p,5,:)) ≈ 499867.32386298594 
 @test sum(view(p,6,:)) ≈ 499867.32386298594 

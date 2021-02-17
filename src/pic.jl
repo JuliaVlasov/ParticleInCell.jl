@@ -10,47 +10,37 @@ end
 
 export f90_interpolation!
 
-function f90_interpolation!( p :: Array{Float64,2}, fdtd :: FDTD )
+function f90_interpolation!( p :: Array{Float64,2}, m :: Mesh )
 
-    nx = Int32(fdtd.m.nx+1)
-    ny = Int32(fdtd.m.ny+1)
-    dx = fdtd.m.dx
-    dy = fdtd.m.dy
+    nx = Int32(m.nx)
+    ny = Int32(m.ny)
+    dx = m.dx
+    dy = m.dy
     nbpart = Int32(size(p)[2])
 
-    ccall((:interpolation, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, fdtd.ebj, p)
+    ccall((:interpolation, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, m.ex, m.ey, m.bz, p)
 
 end
 
-export f90_deposition!
+export f90_compute_current!
 
-function f90_deposition!( fdtd :: FDTD, p :: Array{Float64, 2} )
+function f90_compute_current!( m :: Mesh, p :: Array{Float64, 2} )
 
-    nx = Int32(fdtd.m.nx)
-    ny = Int32(fdtd.m.ny)
-    dx = fdtd.m.dx
-    dy = fdtd.m.dy
+    nx = Int32(m.nx)
+    ny = Int32(m.ny)
+    dx = m.dx
+    dy = m.dy
     nbpart = Int32(size(p)[2])
 
-    f = fdtd.ebj
-
-    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx+1, ny+1, dx, dy, p, f)
+    ccall((:deposition, piclib), Cvoid, (Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Float64}, Ref{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Float64}), nbpart, nx, ny, dx, dy, p, m.jx, m.jy)
 
     for i=1:nx+1
-      fdtd.ebj[4:5,i,1]  .+= fdtd.ebj[4:5,i,ny+1]
-      fdtd.ebj[4:5,i,ny+1]  .= fdtd.ebj[4:5,i,1]
+      m.jx[i,1] += m.jx[i,ny+1]
+      m.jx[i,ny+1] = m.jx[i,1]
     end
     for j=1:ny+1
-      fdtd.ebj[4:5,1,j]  .+= fdtd.ebj[4:5,nx+1,j]
-      fdtd.ebj[4:5,nx+1,j]  .= fdtd.ebj[4:5,1,j]
-    end
-
-    for i=1:nx, j=1:ny+1
-       fdtd.jx[i,j] = 0.5 * (fdtd.ebj[4,i,j]+fdtd.ebj[4,i+1,j])
-    end
-    
-    for i=1:nx+1, j=1:ny
-       fdtd.jy[i,j] = 0.5 * (fdtd.ebj[5,i,j]+fdtd.ebj[5,i,j+1])
+      m.jx[1,j] += m.jx[nx+1,j]
+      m.jx[nx+1,j] = m.jx[1,j]
     end
 
 end
