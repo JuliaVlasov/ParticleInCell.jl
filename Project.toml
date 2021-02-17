@@ -1,6 +1,6 @@
 name = "ParticleInCell"
 uuid = "b2a21095-fe39-467b-95a1-deb4cd10d2e0"
-authors = ["Pierre Navaro <pierre.navaro@math.cnrs.fr>"]
+authors = "JuliaVlasov"
 version = "0.1.0"
 
 [deps]

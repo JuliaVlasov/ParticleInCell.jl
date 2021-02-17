@@ -21,6 +21,9 @@ struct Mesh
     y::Vector{Float64}
     dx::Float64
     dy::Float64
+    ex::Array{Float64,2}
+    ey::Array{Float64,2}
+    bz::Array{Float64,2}
 
     function Mesh(dimx, nx, dimy, ny)
 
@@ -30,7 +33,11 @@ struct Mesh
         dx = dimx / nx
         dy = dimy / ny
 
-        new(nx, ny, dimx, dimy, x, y, dx, dy)
+        ex = zeros(nx+1,ny+1)
+        ey = zeros(nx+1,ny+1)
+        bz = zeros(nx+1,ny+1)
+
+        new(nx, ny, dimx, dimy, x, y, dx, dy, ex, ey, bz)
 
     end
 

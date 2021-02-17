@@ -23,7 +23,7 @@ compute_current!( fdtd, p)
 
 f90_deposition!( fdtd, p)
 
-@test sum(view(fdtd.ebj,4,:,:)) ≈ 0.0
-@test sum(view(fdtd.ebj,5,:,:)) ≈ 0.0
+@test sum(view(fdtd.ebj,4,:,:)) ≈ 2.5872575761191685
+@test sum(view(fdtd.ebj,5,:,:)) ≈ 2.5872575761191685
 
 end
