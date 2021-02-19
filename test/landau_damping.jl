@@ -10,8 +10,8 @@ import ParticleInCell.F90
     dimx = 2pi / kx
     dimy = 1.
 
-    mesh1 = Mesh(dimx, nx, dimy, ny)
-    mesh2 = Mesh(dimx, nx, dimy, ny)
+    mesh1 = TwoDGrid(dimx, nx, dimy, ny)
+    mesh2 = TwoDGrid(dimx, nx, dimy, ny)
 
     fdtd1 = FDTD(mesh1)
     fdtd2 = FDTD(mesh2)

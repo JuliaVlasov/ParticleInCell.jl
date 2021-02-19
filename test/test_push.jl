@@ -5,7 +5,7 @@ import ParticleInCell.F90
 
     dimx, dimy = 1.0, 1.0
     nx, ny = 100, 100
-    mesh = Mesh( dimx, nx, dimy, ny)
+    mesh = TwoDGrid( dimx, nx, dimy, ny)
     e = 1.0
     b = 2.0
     nbpart = 1

@@ -12,5 +12,7 @@ include("compute_rho.jl")
 include("fdtd.jl")
 include("particle_mesh.jl")
 include("pic.jl")
+include("low_level_bsplines.jl")
+include("maxwell_1d_fem.jl")
 
 end

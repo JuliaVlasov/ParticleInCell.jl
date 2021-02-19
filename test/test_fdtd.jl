@@ -9,7 +9,7 @@ using LinearAlgebra
     dt = 1e-4
     nstep = 8
 
-    mesh = Mesh(dimx, nx, dimy, ny)
+    mesh = TwoDGrid(dimx, nx, dimy, ny)
 
     fdtd = FDTD(mesh)
 

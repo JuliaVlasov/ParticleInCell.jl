@@ -6,7 +6,7 @@ import ParticleInCell.F90
 
 dimx, dimy = 4π, 4π
 nx, ny = 128, 128
-mesh = Mesh( dimx, nx, dimy, ny)
+mesh = TwoDGrid( dimx, nx, dimy, ny)
 fdtd = FDTD( mesh )
 rng = MersenneTwister(1234)
 nbpart = 1_000_000

@@ -64,7 +64,7 @@ end
 
 export push_x!
 
-function push_x!(p, mesh :: Mesh, dt :: Float64)
+function push_x!(p, mesh :: TwoDGrid, dt :: Float64)
 
     nbpart = size(p)[2]
 

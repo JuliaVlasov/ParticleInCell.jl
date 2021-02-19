@@ -2,7 +2,7 @@
 module F90
 
 using Libdl
-import ..ParticleInCell: Mesh
+import ..ParticleInCell: TwoDGrid
 
 const piclib = joinpath(@__DIR__, "libpic")
 
@@ -12,7 +12,7 @@ open(joinpath(@__DIR__, "pic.f90")) do f90file
     end
 end
 
-function interpolation!( p :: Array{Float64,2}, m :: Mesh )
+function interpolation!( p :: Array{Float64,2}, m :: TwoDGrid )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -24,7 +24,7 @@ function interpolation!( p :: Array{Float64,2}, m :: Mesh )
 
 end
 
-function compute_current!( m :: Mesh, p :: Array{Float64, 2} )
+function compute_current!( m :: TwoDGrid, p :: Array{Float64, 2} )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -45,7 +45,7 @@ function compute_current!( m :: Mesh, p :: Array{Float64, 2} )
 
 end
 
-function push_x!( p :: Array{Float64,2}, mesh :: Mesh, dt :: Float64)
+function push_x!( p :: Array{Float64,2}, mesh :: TwoDGrid, dt :: Float64)
 
     nbpart = Int32(size(p)[2])
     dimx = mesh.dimx

@@ -10,7 +10,7 @@ using ParticleInCell
     dimx = 2 * pi / kx
     dimy = 1
 
-    mesh = Mesh(dimx, nx, dimy, ny)
+    mesh = TwoDGrid(dimx, nx, dimy, ny)
 
     dx = mesh.dx
     dy = mesh.dy

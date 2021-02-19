@@ -1,6 +1,6 @@
 export interpolation!
 
-function interpolation!(p :: Array{Float64,2}, m :: Mesh)
+function interpolation!(p :: Array{Float64,2}, m :: TwoDGrid)
 
     nbpart = size(p)[2]
     dx = m.dx
@@ -33,7 +33,7 @@ end
 
 export compute_current!
 
-function compute_current!( m :: Mesh, p )
+function compute_current!( m :: TwoDGrid, p )
 
     nbpart = size(p)[2]
     nx, ny = m.nx, m.ny

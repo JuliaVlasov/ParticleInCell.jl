@@ -21,7 +21,7 @@ end
 
 export faraday!
 
-function faraday!( fdtd :: FDTD, m :: Mesh, dt )
+function faraday!( fdtd :: FDTD, m :: TwoDGrid, dt )
 
    nx, ny = m.nx, m.ny
    dx, dy = m.dx, m.dy
@@ -37,7 +37,7 @@ end
 
 export ampere_maxwell!
 
-function ampere_maxwell!( fdtd :: FDTD, m :: Mesh, dt)
+function ampere_maxwell!( fdtd :: FDTD, m :: TwoDGrid, dt)
 
    nx, ny = m.nx, m.ny
    dx, dy = m.dx, m.dy
@@ -56,7 +56,7 @@ end
 
 export update_fields!
 
-function update_fields!(m :: Mesh, fdtd :: FDTD)
+function update_fields!(m :: TwoDGrid, fdtd :: FDTD)
 
     nx, ny = m.nx, m.ny
 
@@ -76,4 +76,4 @@ end
 
 export compute_energy
 
-compute_energy( fdtd :: FDTD, m :: Mesh ) = 0.5 * log( sum(fdtd.ex.^2) * m.dx * m.dy)
+compute_energy( fdtd :: FDTD, m :: TwoDGrid ) = 0.5 * log( sum(fdtd.ex.^2) * m.dx * m.dy)

@@ -1,6 +1,8 @@
-using Test
+using LinearAlgebra
 using ParticleInCell
+using Test
 
+include("test_maxwell_1d_fem.jl")
 include("test_deposition.jl")
 include("landau_damping.jl")
 include("test_interpolation.jl")
