@@ -45,11 +45,11 @@ function uniform_bsplines_eval_basis( spline_degree :: Int,
     bspl = zeros(Float64, spline_degree+1)
 
     bspl[1] = 1.0
-    for j = 1:spline_degree
-       xx     = -normalized_offset    :: Float64
-       j_real = Float64(j)            :: Float64
-       inv_j  = 1.0 / j_real          :: Float64
-       saved  = 0.0                   :: Float64
+    @inbounds for j = 1:spline_degree
+       xx     = -normalized_offset   
+       j_real = Float64(j)          
+       inv_j  = 1.0 / j_real       
+       saved  = 0.0               
        for r = 0:j-1
           xx        = xx + 1.0
           temp      = bspl[r+1] * inv_j
@@ -68,10 +68,10 @@ function uniform_bsplines_eval_basis!( bspl::Vector{Float64}, spline_degree :: I
 
     bspl[1] = 1.0
     @inbounds for j = 1:spline_degree
-       xx     = -normalized_offset    :: Float64
-       j_real = Float64(j)            :: Float64
-       inv_j  = 1.0 / j_real          :: Float64
-       saved  = 0.0                   :: Float64
+       xx     = -normalized_offset 
+       j_real = Float64(j)        
+       inv_j  = 1.0 / j_real     
+       saved  = 0.0             
        for r = 0:j-1
           xx        = xx + 1.0
           temp      = bspl[r+1] * inv_j
@@ -104,7 +104,7 @@ function eval_uniform_periodic_spline_curve( degree :: Int,
     for i = 1:n
        val = 0.0
        for j=1:degree
-          imj = mod(i-1-j+n,n) + 1 
+          imj = mod1(i-j+n,n)
           val = val + bspl[j] * scoef[imj]
        end
        sval[i] = val 
