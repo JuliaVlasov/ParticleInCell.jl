@@ -1,7 +1,7 @@
 using LinearAlgebra, ProgressMeter
 using TimerOutputs, Sobol
 
-import ParticleInCell: Mesh, landau_sampling!, FDTD, faraday!, ampere_maxwell!
+import ParticleInCell: TwoDGrid, landau_sampling!, FDTD, faraday!, ampere_maxwell!
 import ParticleInCell: compute_energy, update_fields!
 import ParticleInCell.F90: interpolation!, compute_current!, push_x!, push_v!
 

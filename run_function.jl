@@ -9,7 +9,7 @@ function run( nstep; npm = 100 )
     dimy = 1  
     nx   = 128  # nombre de pts suivant x
     ny   = 16   # nombre de pts suivant y
-    mesh = Mesh( dimx, nx, dimy, ny)
+    mesh = TwoDGrid( dimx, nx, dimy, ny)
     dx, dy = mesh.dx, mesh.dy
 
     nbpart = npm*nx*ny
