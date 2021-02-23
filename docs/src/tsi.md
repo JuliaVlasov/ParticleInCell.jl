@@ -15,21 +15,21 @@ const nx = 320       # Number of grid cells
 const np = nx * 20   # Number of particles
 
 
-mesh = Mesh1D( 0, 20π, nx)
+mesh = Mesh( 0, 20π, nx)
 rng = MersenneTwister(42)
 poisson = Poisson1D( mesh )
 particles = tsi(rng, mesh, np )
-pm = ParticleMeshCoupling1D(particles, mesh)
+pm = ParticleMeshCoupling(particles, mesh)
 ```
 
 ```@example tsi
 function main()
 
-    mesh = Mesh1D( 0, 20π, nx)
+    mesh = Mesh( 0, 20π, nx)
     poisson = Poisson1D( mesh )
     rng = MersenneTwister(42)
     pa = tsi(rng, mesh, np )
-    pm = ParticleMeshCoupling1D(pa, mesh)
+    pm = ParticleMeshCoupling(pa, mesh)
     energy = Float64[]
     e = zeros(Float64, nx)
     ρ = zeros(Float64, nx)

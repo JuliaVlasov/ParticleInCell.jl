@@ -103,8 +103,12 @@ integer :: ipart
 do ipart=1,nbpart
    p1 = p(1,ipart) + p(3,ipart) * dt 
    p2 = p(2,ipart) + p(4,ipart) * dt 
-   p(1,ipart) = modulo(p1, dimx)
-   p(2,ipart) = modulo(p2, dimy)
+   if ( p1 > dimx ) p1 = p1 - dimx
+   if ( p1 < 0.0  ) p1 = p1 + dimx
+   if ( p2 > dimy ) p2 = p2 - dimy
+   if ( p2 < 0.0  ) p2 = p2 + dimy
+   p(1,ipart) = p1
+   p(2,ipart) = p2
 end do   
 
 end subroutine push_x

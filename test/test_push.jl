@@ -10,7 +10,7 @@ import ParticleInCell.F90
     b = 2.0
     nbpart = 1
     pj = zeros(7, 1)
-    dt   = 1.0
+    dt   = 0.1
     x0, y0 = 0.1, 0.1
     pj[1,1] = x0
     pj[2,1] = y0
@@ -21,8 +21,7 @@ import ParticleInCell.F90
 
     time = 0
 
-    for istep in 1:50
-        
+    for istep = 1:50
         push_v!( pj, dt)
         push_x!( pj, mesh, dt)
 

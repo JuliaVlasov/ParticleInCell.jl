@@ -37,7 +37,7 @@ values_grid[:,1,2] .= [7.0312500000000000e-002,
                        0.31510416666666663,        
                        2.6041666666666665E-003 ]
 
-kernel = ParticleMeshCoupling( mesh, n_particles, spline_degree, :collocation)
+kernel = ParticleMeshCoupling1D( mesh, n_particles, spline_degree, :collocation)
 
 # Accumulate rho
 rho_dofs  = zeros(Float64, n_cells)

@@ -1,6 +1,25 @@
-import ParticleInCell: set_x, set_v, set_weights
+using Test
 
 @testset "ParticleMeshCoupling 2D" begin
+
+  using LinearAlgebra
+  using Random
+  using SparseArrays
+  import Sobol
+  
+  include("../src/mesh.jl")
+  include("../src/particle_1d1v.jl")
+  include("../src/particles.jl")
+  include("../src/compute_rho.jl")
+  include("../src/fdtd.jl")
+  include("../src/particle_mesh.jl")
+  include("../src/low_level_bsplines.jl")
+  include("../src/maxwell_1d_fem.jl")
+  include("../src/splinepp.jl")
+  include("../src/splinepp_2d.jl")
+  include("../src/particle_group.jl")
+  include("../src/particle_mesh_coupling_1d.jl")
+  include("../src/particle_mesh_coupling_2d.jl")
 
   rho_dofs = zeros(Float64, 100)
   rho_dofs1 = zeros(Float64, 100)
@@ -11,30 +30,32 @@ import ParticleInCell: set_x, set_v, set_weights
   n_particles = 4 # Number of particles
   spline_degree = 3 # Spline degree
 
-  domain = [0.0 2.0; 0.0 1.0] 
+  mesh = TwoDGrid( 2.0, n_cells, 1.0, n_cells )
 
-  volume = (domain[1,2]-domain[1,1])*(domain[2,2]-domain[2,1])
+  volume = 2.0
 
-  x_vec = [0.1 0.65 0.7 1.5; 0.0 0.0 0.0 0.0]' 
-  v_vec = [1.5 0.00 0.0 0.0; 0.0 0.5 0.0 0.0]'
+  x_vec = [0.1 0.65 0.7 1.5; 0.0 0.0 0.0 0.0]
+  v_vec = [1.5 0.00 0.0 0.0; 0.0 0.5 0.0 0.0]
 
-#=
-  #! We need to initialize the particle group
-  particle_group = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
+  pg = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
+
+  @show size(pg.array)
   
   for i_part = 1:n_particles
-     xi = x_vec[i_part,:]
-     set_x(particle_group, i_part, xi)
-     set_weights(particle_group, i_part, [1.0])
-     xi = v_vec[i_part,:]
-     set_v(particle_group, i_part, xi)
+     pg.array[1, i_part] = x_vec[1,i_part]
+     pg.array[2, i_part] = x_vec[2,i_part]
+     pg.array[3, i_part] = v_vec[1,i_part]
+     pg.array[4, i_part] = v_vec[2,i_part]
+     pg.array[5, i_part] = 1.0
   end 
 
   # Initialize the kernel
-  kernel = ParticleMeshCoupling( domain, [n_cells, n_cells], n_particles, spline_degree, :collocation)
+  kernel = ParticleMeshCoupling2D( pg, mesh, spline_degree)
 
   # Compute the shape factors
   compute_shape_factors(kernel, particle_group)
+
+#=
 
   # Reference values of the shape factors
   index_grid = [-2 1 1 5; -3 -3 -3 -3]'

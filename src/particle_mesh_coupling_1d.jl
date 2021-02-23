@@ -1,7 +1,7 @@
-export ParticleMeshCoupling
+export ParticleMeshCoupling1D
 
 """
-    ParticleMeshCoupling( mesh, no_particles, spline_degree, 
+    ParticleMeshCoupling1D( mesh, no_particles, spline_degree, 
                           smoothing_type )
     
 Kernel smoother with splines of arbitrary degree placed on a uniform mesh.
@@ -23,7 +23,7 @@ Spline with index i starts at point i
     Only 1D version is implemented for now
 
 """
-struct ParticleMeshCoupling 
+struct ParticleMeshCoupling1D
 
     dims            :: Int
     delta_x         :: Float64 
@@ -42,10 +42,10 @@ struct ParticleMeshCoupling
     xmin            :: Float64
     Lx              :: Float64
 
-    function ParticleMeshCoupling( mesh           :: OneDGrid, 
-                                   no_particles   :: Int, 
-                                   spline_degree  :: Int, 
-                                   smoothing_type :: Symbol )
+    function ParticleMeshCoupling1D( mesh           :: OneDGrid, 
+                                     no_particles   :: Int, 
+                                     spline_degree  :: Int, 
+                                     smoothing_type :: Symbol )
         dims    = 1
         n_grid  = mesh.nx
         n_dofs  = n_grid
@@ -97,7 +97,7 @@ Add charge of one particle
 - `rho_dofs`      : Coefficient vector of the charge distribution
 """
 function add_charge_pp!(rho_dofs :: Vector{Float64}, 
-                        p        :: ParticleMeshCoupling, 
+                        p        :: ParticleMeshCoupling1D, 
                         position :: Float64, 
                         marker_charge)
     
@@ -128,7 +128,7 @@ Add current for one particle and update v
 (according to `H_p1` part in Hamiltonian splitting)
 """
 function add_current_update_v_pp!( j_dofs        :: AbstractArray, 
-                                   p             :: ParticleMeshCoupling, 
+                                   p             :: ParticleMeshCoupling1D, 
                                    position_old, 
                                    position_new, 
                                    marker_charge :: Float64, 
@@ -192,7 +192,7 @@ end
 Helper function for `add_current_update_v`.
 """
 function update_jv_pp!( j_dofs         :: AbstractArray,
-                        p              :: ParticleMeshCoupling, 
+                        p              :: ParticleMeshCoupling1D, 
                         lower          :: Float64, 
                         upper          :: Float64, 
                         index          :: Int64, 
@@ -234,7 +234,7 @@ Evaluate field at `position` using horner scheme
 - `field_value` : Value(s) of the electric fields at given position
 
 """ 
-function evaluate_pp(p             :: ParticleMeshCoupling, 
+function evaluate_pp(p             :: ParticleMeshCoupling1D, 
                      position      :: Float64, 
                      field_dofs_pp :: Array{Float64,2})
 
@@ -257,7 +257,7 @@ Add charge of one particle
 - `rho_dofs`      : Coefficient vector of the charge distribution
 """
 function add_charge!( rho_dofs      :: Vector{Float64},
-                      p             :: ParticleMeshCoupling,
+                      p             :: ParticleMeshCoupling1D,
                       position      :: Float64, 
                       marker_charge :: Float64) 
 
@@ -293,7 +293,7 @@ particle contributes to, and `r_old`, its position (normalized to cell size one)
 
 """
 function add_current_update_v!( j_dofs        :: AbstractArray,
-                                p             :: ParticleMeshCoupling, 
+                                p             :: ParticleMeshCoupling1D, 
                                 position_old  :: Float64, 
                                 position_new  :: Float64, 
                                 marker_charge :: Float64, 
@@ -361,7 +361,7 @@ end
 Helper function for `add_current_update_v`.
 """
 function update_jv!(j_dofs        :: AbstractArray, 
-                    p             :: ParticleMeshCoupling, 
+                    p             :: ParticleMeshCoupling1D, 
                     lower         :: Float64, 
                     upper         :: Float64, 
                     index         :: Int64, 
@@ -413,7 +413,7 @@ Evaluate field at `position`
 - `field_value` : Value(s) of the electric fields at given position
 
 """
-function evaluate(p          :: ParticleMeshCoupling, 
+function evaluate(p          :: ParticleMeshCoupling1D, 
                   position   :: Float64, 
                   field_dofs :: Vector{Float64})
 

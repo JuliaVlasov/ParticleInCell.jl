@@ -1,13 +1,18 @@
-export Mesh1D
+# This is a temporary implementation of PIC 1D simulation
+# It will be remove and replaced
+# I keep it just for benchmark purpose
 
-struct Mesh1D
+
+export Mesh
+
+struct Mesh
 
     xmin::Any
     xmax::Any
     nx::Any
     dx::Any
 
-    function Mesh1D(xmin, xmax, nx)
+    function Mesh(xmin, xmax, nx)
 
         dx = (xmax - xmin) / nx
 
@@ -130,9 +135,9 @@ function solve!(e, poisson, ρ)
     e .= (circshift(e, 1) .- circshift(e, -1)) ./ (2dx)
 end
 
-export ParticleMeshCoupling1D
+export ParticleMeshCoupling
 
-struct ParticleMeshCoupling1D
+struct ParticleMeshCoupling
 
     np::Any
     nx::Any
@@ -141,7 +146,7 @@ struct ParticleMeshCoupling1D
     f::Vector{Float64}
     p::Any
 
-    function ParticleMeshCoupling1D(p, mesh)
+    function ParticleMeshCoupling(p, mesh)
         np = p.np
         g = zeros(Int, np)
         f = zeros(Float64, np)

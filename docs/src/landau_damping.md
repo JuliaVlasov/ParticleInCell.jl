@@ -15,13 +15,13 @@ function main(nt, dt)
     
     nx = 50
     np = 10000 * nx
-    mesh = Mesh1D( 0, 4π, nx)
+    mesh = Mesh( 0, 4π, nx)
     poisson = Poisson1D( mesh )
     rng = MersenneTwister(42)
     α = 0.5
     kx = 0.5
     pa = landau_damping(rng, mesh, np, α, kx )
-    pm = ParticleMeshCoupling1D(pa, mesh)
+    pm = ParticleMeshCoupling(pa, mesh)
     energy = Float64[]
     e = zeros(Float64, nx)
     ρ = zeros(Float64, nx)
