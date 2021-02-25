@@ -65,7 +65,6 @@ end
 
 function uniform_bsplines_eval_basis!( bspl::Vector{Float64}, spline_degree :: Int, 
                                       normalized_offset :: Float64 )
-
     bspl[1] = 1.0
     @inbounds for j = 1:spline_degree
        xx     = -normalized_offset 
@@ -80,8 +79,6 @@ function uniform_bsplines_eval_basis!( bspl::Vector{Float64}, spline_degree :: I
        end
        bspl[j+1] = saved
     end
-
-    bspl
 
 end 
 
