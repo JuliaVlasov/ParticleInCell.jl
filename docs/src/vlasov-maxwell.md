@@ -27,7 +27,7 @@ time  = 0
 for i=1:nx, j=1:ny
     fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
 end
-surface!(fdtd.ex )
+surface(fdtd.ex )
 ```
 
 ```@example vm2d
@@ -89,7 +89,7 @@ end
 
 ```@example vm2d
 dt = 0.01
-nstep = 250
+nstep = 1000
 t, energy = run( fdtd, particles, mesh, nstep, dt)
-plot(t, energy, m=:o)
+plot(t, energy)
 ```

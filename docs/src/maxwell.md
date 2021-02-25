@@ -1,27 +1,22 @@
-# Maxwell solver
+# Maxwell solver using Yee scheme
+
+``L_x,L_y`` domain dimensions and M,N are integers.
 
 ```math
-$L_x,L_y$ domain dimensions and M,N are integers.
-
-$$
 \omega = \sqrt{(\frac{M\pi}{L_x})^2+(\frac{N\pi}{L_y})^2}
-$$
-
-$$
-B_z(x,y,t) =   - \cos(M \pi \frac{x}{L_x})  \cos(N \pi \frac{y}{L_y}) \cos(\omega t)
-$$
-
-$$
-E_x(x,y,t) = \frac{c^2 N \pi }{\omega Ly} cos(M \pi \frac{x}{L_x}) \sin(N \pi  \frac{y}{L_y}) \sin(\omega t)
-$$
-
-$$
-E_y(x,y,t) = - \frac{c^2 M \pi }{\omega Lx} \sin (M \pi \frac{x}{L_x}) \cos (N \pi  \frac{y}{L_y}) \sin(\omega t)
-$$
 ```
 
+```math
+B_z(x,y,t) =   - \cos(M \pi \frac{x}{L_x})  \cos(N \pi \frac{y}{L_y}) \cos(\omega t)
+```
 
+```math
+E_x(x,y,t) = \frac{c^2 N \pi }{\omega Ly} cos(M \pi \frac{x}{L_x}) \sin(N \pi  \frac{y}{L_y}) \sin(\omega t)
+```
 
+```math
+E_y(x,y,t) = - \frac{c^2 M \pi }{\omega Lx} \sin (M \pi \frac{x}{L_x}) \cos (N \pi  \frac{y}{L_y}) \sin(\omega t)
+```
 
 ```@setup maxwell
 using Plots
