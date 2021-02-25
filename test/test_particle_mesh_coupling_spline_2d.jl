@@ -11,8 +11,10 @@ using ParticleInCell
   n_cells = 10 # Number of cells
   n_particles = 4 # Number of particles
   spline_degree = 3 # Spline degree
+  xmin, xmax, nx = 0.0, 2.0, n_cells
+  ymin, ymax, ny = 0.0, 1.0, n_cells
 
-  mesh = TwoDGrid( 2.0, n_cells, 1.0, n_cells )
+  mesh = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny)
 
   volume = 2.0
 
@@ -34,37 +36,32 @@ using ParticleInCell
   # Initialize the kernel
   kernel = ParticleMeshCoupling2D( pg, mesh, spline_degree, :collocation)
 
-#=
-
-  # Compute the shape factors
-  compute_shape_factors(kernel, particle_group)
-
-
   # Reference values of the shape factors
   index_grid = [-2 1 1 5; -3 -3 -3 -3]'
 
   values_grid = zeros(Float64,(4,2,4))
-  values_grid[:,1,1] = [ 2.0833333333333332E-002, 0.47916666666666663, 
+  values_grid[:,1,1] .= [ 2.0833333333333332E-002, 0.47916666666666663, 
                          0.47916666666666663, 2.0833333333333332E-002]
-  values_grid[:,1,3] = values_grid[:,1,1]
-  values_grid[:,1,4] = values_grid[:,1,1] 
-  values_grid[:,1,2] = [ 7.0312500000000000E-002, 0.61197916666666663, 
+  values_grid[:,1,3] .= values_grid[:,1,1]
+  values_grid[:,1,4] .= values_grid[:,1,1] 
+  values_grid[:,1,2] .= [ 7.0312500000000000E-002, 0.61197916666666663, 
                          0.31510416666666663, 2.6041666666666665E-003]
-  values_grid[1,2,:] = 0.0
-  values_grid[2,2,:] = 1.0/6.0
-  values_grid[3,2,:] = 2.0/3.0
-  values_grid[4,2,:] = 1.0/6.0
-
+  values_grid[1,2,:] .= 0.0
+  values_grid[2,2,:] .= 1.0/6.0
+  values_grid[3,2,:] .= 2.0/3.0
+  values_grid[4,2,:] .= 1.0/6.0
+  
+  @test true
+#=
 
   # Accumulate rho
   for i_part in 1:n_particles
-     xi = get_x(particle_group, i_part)
-     wi = get_charge(particle_group, i_part)
+     xi = get_x(pg, i_part)
+     wi = get_charge(pg, i_part)
      add_charge(kernel, xi, wi, rho_dofs)
      add_charge(kernel, xi, wi, rho_dofs1)
   end
 
-  # rho_dofs = rho_dofs
 
   rho_dofs_ref[8:10] .= values_grid[1:3,1,1]
   rho_dofs_ref[1]     = values_grid[4,1,1]

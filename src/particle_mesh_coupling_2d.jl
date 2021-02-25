@@ -14,6 +14,8 @@ struct ParticleMeshCoupling2D
     npart :: Int
     spline1 :: SplinePP
     spline2 :: SplinePP
+    spline_degree :: Int
+    spline_val :: Array{Float64,2}
 
     function ParticleMeshCoupling2D( pg :: ParticleGroup{2,2}, grid :: TwoDGrid, 
                                      spline_degree :: Int, smoothing_type  )
@@ -34,13 +36,12 @@ struct ParticleMeshCoupling2D
 
         spline_val = zeros( n_span, 2)
     
-        new( grid,  npart, spline1, spline2 )
+        new( grid,  npart, spline1, spline2, spline_degree, spline_val )
 
     end
 
 end
 
-#=
 
 """
    compute_shape_factor_spline_2d(self, position, indices)
@@ -50,14 +51,21 @@ Helper function computing shape factor
 """
 function compute_shape_factor(pm :: ParticleMeshCoupling2D, position, indices)
 
-    x1 = position / pm.grid.delta_x
-    indices = ceiling.([xi(1:2))
-    xi(1:2) = xi(1:2) - real(indices -1,f64)
-    indices =  indices - self%spline_degree
-    uniform_bsplines_eval_basis(pm.spline_degree, x1, pm.spline_val(1:self%n_span,1))
-    uniform_bsplines_eval_basis(pm.spline_degree, x2, pm.spline_val(1:self%n_span,2))
+    x = (position - pm.grid.xmin) / pm.grid.dx
+    y = (position - pm.grid.ymin) / pm.grid.dy
+    i = ceiling(x)
+    j = ceiling(y)
+    offset_x = x - (i-1)
+    offset_y = y - (j-1)
+    indices[1] =  i - pm.spline_degree
+    indices[2] =  j - pm.spline_degree
+
+    pm.spline_val[:,1] .= uniform_bsplines_eval_basis(pm.spline_degree, offset_x) 
+    pm.spline_val[:,2] .= uniform_bsplines_eval_basis(pm.spline_degree, offset_y) 
 
 end 
+
+#=
 
 """
     add_charge_single_spline_pp_2d(self, position, marker_charge, rho_dofs)
