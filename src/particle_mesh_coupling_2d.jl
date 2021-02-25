@@ -12,7 +12,8 @@ struct ParticleMeshCoupling2D
 
     grid :: TwoDGrid
     npart :: Int
-    spline :: Vector{SplinePP}
+    spline1 :: SplinePP
+    spline2 :: SplinePP
 
     function ParticleMeshCoupling2D( pg :: ParticleGroup{2,2}, grid :: TwoDGrid, 
                                      spline_degree :: Int, smoothing_type  )
@@ -23,9 +24,9 @@ struct ParticleMeshCoupling2D
 
         n_span = spline_degree + 1
 
-        if smoothing_type == :collocation)
+        if smoothing_type == :collocation
            scaling = 1.0/( grid.dx * grid.dy )
-        elseif (smoothing_type == :galerkin)
+        elseif smoothing_type == :galerkin
            scaling = 1.0
         else
            println( "Smoothing Type $smoothing_type not implemented for kernel_smoother_spline_2d. ")
@@ -33,11 +34,13 @@ struct ParticleMeshCoupling2D
 
         spline_val = zeros( n_span, 2)
     
-        new( grid,  npart, [spline1, spline2] )
+        new( grid,  npart, spline1, spline2 )
 
     end
 
 end
+
+#=
 
 """
    compute_shape_factor_spline_2d(self, position, indices)
@@ -291,3 +294,5 @@ function index_1dto2d_column_major(self, index1d)
     return index2d
 
 end 
+
+=#

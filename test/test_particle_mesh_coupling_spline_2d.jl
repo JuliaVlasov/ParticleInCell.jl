@@ -1,25 +1,7 @@
 using Test
+using ParticleInCell
 
 @testset "ParticleMeshCoupling 2D" begin
-
-  using LinearAlgebra
-  using Random
-  using SparseArrays
-  import Sobol
-  
-  include("../src/mesh.jl")
-  include("../src/particle_1d1v.jl")
-  include("../src/particles.jl")
-  include("../src/compute_rho.jl")
-  include("../src/fdtd.jl")
-  include("../src/particle_mesh.jl")
-  include("../src/low_level_bsplines.jl")
-  include("../src/maxwell_1d_fem.jl")
-  include("../src/splinepp.jl")
-  include("../src/splinepp_2d.jl")
-  include("../src/particle_group.jl")
-  include("../src/particle_mesh_coupling_1d.jl")
-  include("../src/particle_mesh_coupling_2d.jl")
 
   rho_dofs = zeros(Float64, 100)
   rho_dofs1 = zeros(Float64, 100)
@@ -50,12 +32,13 @@ using Test
   end 
 
   # Initialize the kernel
-  kernel = ParticleMeshCoupling2D( pg, mesh, spline_degree)
+  kernel = ParticleMeshCoupling2D( pg, mesh, spline_degree, :collocation)
+
+#=
 
   # Compute the shape factors
   compute_shape_factors(kernel, particle_group)
 
-#=
 
   # Reference values of the shape factors
   index_grid = [-2 1 1 5; -3 -3 -3 -3]'

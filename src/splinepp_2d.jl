@@ -21,6 +21,7 @@ function spline_pp_b_to_pp_2d_periodic( self, n_cells, b_coeffs, pp_coeffs)
 end 
 
 
+#=
 """
     spline_pp_b_to_pp_2d( self, n_cells, b_coeffs, pp_coeffs)
 
@@ -32,12 +33,11 @@ Convert 2d spline in B form to spline in pp form
 function spline_pp_b_to_pp_2d( self, n_cells, b_coeffs, pp_coeffs)
 
 
-    degree1= self%spline1%degree
-    degree2= self%spline2%degree
-    n_coeffs(1) = self%spline1%n_coeffs
-    n_coeffs(2) = self%spline2%n_coeffs
+    degree1 = self.spline1.degree
+    degree2 = self.spline2.degree
+    n_coeffs1 = self.spline1.n_coeffs
+	n_coeffs2 = self.spline2.n_coeffs
 
-#=
     select case ( self%spline1%boundary_conditions )
     case (sll_p_boundary_periodic )
        offset1 = -degree1
@@ -177,7 +177,6 @@ function spline_pp_b_to_pp_2d( self, n_cells, b_coeffs, pp_coeffs)
           end
        end
     end
-=#
 
 end 
 
@@ -204,13 +203,13 @@ function spline_pp_b_to_pp_2d_cell(spline1,spline2,n_cells, b_coeffs, pp_coeffs,
        if(j>degree2)
           for l=0:degree2
              spline1.scratch_b=b_coeffs(i-degree1+(j-degp2+l)*n_cells(1):i+(j-degp2+l)*n_cells(1))
-             call sll_s_spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
+             spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
           end
        else 
           # use of modulo for boundary cells in second dimension 
           for l=0,degree2
              spline1.scratch_b=b_coeffs(i-degree1+modulo(j-degp2+l,n_cells(2))*n_cells(1):i+modulo(j-degp2+l,n_cells(2))*n_cells(1))
-             call sll_s_spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
+             spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
           end
        end
     else 
@@ -220,7 +219,7 @@ function spline_pp_b_to_pp_2d_cell(spline1,spline2,n_cells, b_coeffs, pp_coeffs,
              spline1.scratch_b(k+1)=b_coeffs(modulo(i-degp1+k,n_cells(1))+1+modulo(j-degp2+l,n_cells(2))*n_cells(1))
           end
 
-          call sll_s_spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
+          spline_pp_b_to_pp_1d_cell(spline1, spline1.scratch_b, pp_coeffs(1+l*degp1:degp1*(l+1),i+n_cells(1)*(j-1)))
        end
     end
 
@@ -275,3 +274,4 @@ function spline_pp_horner_2d(degree, pp_coeffs, x, indices, n_cells)
     spline_pp_horner_1d(degree(2), pp_coeffs_1d, x(2),1)
 
 end 
+=#
