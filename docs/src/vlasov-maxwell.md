@@ -19,7 +19,7 @@ dimx = 2*pi/kx
 dimy = 1  
 poids = dimx * dimy 
 
-mesh = Mesh( dimx, nx, dimy, ny)
+mesh = TwoDGrid( dimx, nx, dimy, ny)
 fdtd = FDTD(mesh)
 
 time  = 0
@@ -32,23 +32,22 @@ surface!(fdtd.ex )
 
 ```@example vm2d
 nbpart = 100*nx*ny
-particles = Particles(nbpart)
+particles = zeros(7, nbpart)
 landau_sampling!( particles, alpha, kx )
-update_cells!( particles, mesh )
 
 p = plot(layout=4)
-histogram!(p[1], particles.pos[1,:], normalize=true, label="x")
-histogram!(p[2], particles.pos[2,:], normalize=true, label="y")
-histogram!(p[3], particles.vit[1,:], normalize=true, label="vx")
-histogram!(p[4], particles.vit[2,:], normalize=true, label="vy")
+histogram!(p[1], particles[1,:], normalize=true, label="x")
+histogram!(p[2], particles[2,:], normalize=true, label="y")
+histogram!(p[3], particles[3,:], normalize=true, label="vx")
+histogram!(p[4], particles[4,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
-compute_current!( fdtd, particles)
+compute_current!( mesh, particles)
 
 p = plot(layout=2)
-surface!(p[1], fdtd.jx)
-surface!(p[2], fdtd.jy)
+surface!(p[1], mesh.jx)
+surface!(p[2], mesh.jy)
 ```
 
 ```@example vm2d
@@ -57,7 +56,6 @@ function run( fdtd, particles, mesh, nstep, dt)
     alpha = 0.1
     kx = 0.5
     landau_sampling!( particles, alpha, kx )
-    update_cells!( particles, mesh )
     for i=1:nx, j=1:ny
         fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
         fdtd.ey[i,j] = 0.0
@@ -70,14 +68,14 @@ function run( fdtd, particles, mesh, nstep, dt)
     
     for istep in 1:nstep
     
-       istep > 1 && faraday!( fdtd, 0.5dt ) 
-       interpol_eb!( particles, fdtd )
+       istep > 1 && faraday!( fdtd, mesh, 0.5dt ) 
+       interpolation!( particles, mesh )
        push_v!( particles, dt )
        push_x!( particles, mesh, 0.5dt) 
-       compute_current!( fdtd, particles)
+       compute_current!( mesh, particles)
        push_x!( particles, mesh, 0.5dt) 
-       faraday!(fdtd, 0.5dt)
-       ampere_maxwell!(fdtd, dt)
+       faraday!(fdtd, mesh, 0.5dt)
+       ampere_maxwell!(fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
        push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))

@@ -35,7 +35,7 @@ nx, ny = 64, 64
 md, nd = 2, 2  
 dt = 0.001
 nstep = 1 ÷ dt
-mesh = Mesh( dimx, nx, dimy, ny )
+mesh = TwoDGrid( dimx, nx, dimy, ny )
 maxwell = FDTD( mesh ) 
 omega = sqrt((md*pi/dimx)^2+(nd*pi/dimy)^2)
 
@@ -61,9 +61,9 @@ function run(mesh, maxwell, nstep)
     
     @gif for istep = 1:nstep # Loop over time
     
-        faraday!(maxwell, dt)     
+        faraday!(maxwell, mesh, dt)     
     
-        ampere_maxwell!(maxwell, dt) 
+        ampere_maxwell!(maxwell, mesh, dt) 
     
         surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1))
 

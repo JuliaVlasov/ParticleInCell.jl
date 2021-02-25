@@ -7,7 +7,8 @@ Generate a cartesians mesh on rectangle `dimx`x `dimy` with `nx` x `ny` points
 
 - `nx` : indices are in [1:nx]
 - `ny` : indices are in [1:ny]
-- `dimx` x `dimy`: mesh area
+- `dimx = xmax - xmin`
+- `dimy = ymax - ymin`
 - `x, y` : node positions
 - `dx, dy` : step size
 """
@@ -15,6 +16,10 @@ struct TwoDGrid
 
     nx::Int
     ny::Int
+    xmin::Float64
+    xmax::Float64
+    ymin::Float64
+    ymax::Float64
     dimx::Float64
     dimy::Float64
     x::Vector{Float64}
@@ -27,7 +32,10 @@ struct TwoDGrid
     jx::Array{Float64,2}
     jy::Array{Float64,2}
 
-    function TwoDGrid(dimx, nx, dimy, ny)
+    function TwoDGrid(xmin, xmax, nx, ymin, ymax, ny)
+
+        dimx = xmax - xmin
+        dimy = ymax - ymin
 
         x = LinRange(0, dimx, nx + 1) |> collect
         y = LinRange(0, dimy, ny + 1) |> collect
@@ -41,12 +49,13 @@ struct TwoDGrid
         jx = zeros(nx+1,ny+1)
         jy = zeros(nx+1,ny+1)
 
-        new(nx, ny, dimx, dimy, x, y, dx, dy, ex, ey, bz, jx, jy)
+        new(nx, ny, xmin, xmax, ymin, ymax, dimx, dimy, x, y, dx, dy, ex, ey, bz, jx, jy)
 
     end
 
 end
 
+TwoDGrid(dimx, nx :: Int, dimy, ny :: Int) = TwoDGrid(0.0, dimx, nx, 0.0, dimy, ny)
 
 export OneDGrid
 
