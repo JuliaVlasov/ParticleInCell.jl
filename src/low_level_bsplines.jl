@@ -82,6 +82,34 @@ function uniform_bsplines_eval_basis!( bspl::Vector{Float64}, spline_degree :: I
 
 end 
 
+function uniform_bsplines_eval_basis!( bspl::Array{Float64,2}, spline_degree :: Int, 
+                                       normalized_offset_x :: Float64 ,
+                                       normalized_offset_y :: Float64 )
+    bspl[1,1] = 1.0
+    bspl[1,2] = 1.0
+    @inbounds for j = 1:spline_degree
+       xx     = -normalized_offset_x 
+       yy     = -normalized_offset_y 
+       j_real = Float64(j)        
+       inv_j  = 1.0 / j_real     
+       saved_x  = 0.0             
+       saved_y  = 0.0             
+       for r = 0:j-1
+          xx        = xx + 1
+          yy        = yy + 1
+          temp_x    = bspl[r+1,1] * inv_j
+          temp_y    = bspl[r+1,2] * inv_j
+          bspl[r+1,1] = saved_x + xx * temp_x
+          bspl[r+1,2] = saved_y + yy * temp_y
+          saved_x   = (j_real - xx) * temp_x
+          saved_y   = (j_real - yy) * temp_y
+       end
+       bspl[j+1,1] = saved_x
+       bspl[j+1,2] = saved_y
+    end
+
+end
+
 export eval_uniform_periodic_spline_curve
 
 """

@@ -3,10 +3,6 @@ using ParticleInCell
 
 @testset "ParticleMeshCoupling 2D" begin
 
-  rho_dofs = zeros(Float64, 100)
-  rho_dofs1 = zeros(Float64, 100)
-  rho_dofs_ref = zeros(Float64, 100)
-  rho_dofs_pp = zeros(Float64, (16,100))
 
   n_cells = 10 # Number of cells
   n_particles = 4 # Number of particles
@@ -16,7 +12,7 @@ using ParticleInCell
 
   mesh = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny)
 
-  volume = 2.0
+  volume = (xmax - xmin) * (ymax - ymin)
 
   x_vec = [0.1 0.65 0.7 1.5; 0.0 0.0 0.0 0.0]
   v_vec = [1.5 0.00 0.0 0.0; 0.0 0.5 0.0 0.0]
@@ -30,18 +26,21 @@ using ParticleInCell
      pg.array[2, i_part] = x_vec[2,i_part]
      pg.array[3, i_part] = v_vec[1,i_part]
      pg.array[4, i_part] = v_vec[2,i_part]
-     pg.array[5, i_part] = 1.0
+     pg.array[5, i_part] = 1.0 / n_particles
   end 
 
   # Initialize the kernel
   kernel = ParticleMeshCoupling2D( pg, mesh, spline_degree, :collocation)
 
   # Reference values of the shape factors
-  index_grid = [-2 1 1 5; -3 -3 -3 -3]'
+  index_grid = zeros(Int, (2, 4))
+  index_grid[1,:] .= [-2, 1, 1, 5]
+  index_grid[2,:] .= [-3, -3, -3, -3]
+  
 
   values_grid = zeros(Float64,(4,2,4))
   values_grid[:,1,1] .= [ 2.0833333333333332E-002, 0.47916666666666663, 
-                         0.47916666666666663, 2.0833333333333332E-002]
+                          0.47916666666666663, 2.0833333333333332E-002]
   values_grid[:,1,3] .= values_grid[:,1,1]
   values_grid[:,1,4] .= values_grid[:,1,1] 
   values_grid[:,1,2] .= [ 7.0312500000000000E-002, 0.61197916666666663, 
@@ -51,17 +50,21 @@ using ParticleInCell
   values_grid[3,2,:] .= 2.0/3.0
   values_grid[4,2,:] .= 1.0/6.0
   
-  @test true
-#=
+  @show values_grid
+
+  rho_dofs = zeros(Float64, 100)
+  rho_dofs1 = zeros(Float64, 100)
+  rho_dofs_ref = zeros(Float64, 100)
+  rho_dofs_pp = zeros(Float64, (16,100))
 
   # Accumulate rho
   for i_part in 1:n_particles
-     xi = get_x(pg, i_part)
-     wi = get_charge(pg, i_part)
-     add_charge(kernel, xi, wi, rho_dofs)
-     add_charge(kernel, xi, wi, rho_dofs1)
+     x = pg.array[1,i_part]
+     y = pg.array[2,i_part]
+     w = pg.array[5,i_part]
+     add_charge!(rho_dofs,  kernel, x, y, w)
+     # add_charge_pp!(rho_dofs1, kernel, x, y, w)
   end
-
 
   rho_dofs_ref[8:10] .= values_grid[1:3,1,1]
   rho_dofs_ref[1]     = values_grid[4,1,1]
@@ -73,13 +76,12 @@ using ParticleInCell
   rho_dofs_ref[91:100] .= rho_dofs_ref[1:10] ./ 6.0
   rho_dofs_ref[1:10]   .= 0.0
 
-  rho_dofs_ref .*= n_cells^2 / volume/ n_particles
-  error  = maximum(abs.(rho_dofs  .- rho_dofs_ref))
-  error1 = maximum(abs.(rho_dofs1 .- rho_dofs_ref))
-  
-  @test error  < 1e-14
-  @test error1 < 1e-14 
+  rho_dofs_ref .*= n_cells^2 / volume / n_particles
 
+  @test maximum(abs.(rho_dofs  .- rho_dofs_ref)) < 1e-14
+  # @test maximum(abs.(rho_dofs1 .- rho_dofs_ref)) < 1e-14 
+
+#=
   spline_pp_b_to_pp_2d(kernel.spline_pp,[n_cells,n_cells],rho_dofs,rho_dofs_pp)
   
   # Test function evaluation

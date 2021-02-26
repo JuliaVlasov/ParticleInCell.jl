@@ -14,7 +14,9 @@ struct ParticleMeshCoupling2D
     npart :: Int
     spline1 :: SplinePP
     spline2 :: SplinePP
+    n_span :: Int
     spline_degree :: Int
+    scaling :: Float64
     spline_val :: Array{Float64,2}
 
     function ParticleMeshCoupling2D( pg :: ParticleGroup{2,2}, grid :: TwoDGrid, 
@@ -36,7 +38,7 @@ struct ParticleMeshCoupling2D
 
         spline_val = zeros( n_span, 2)
     
-        new( grid,  npart, spline1, spline2, spline_degree, spline_val )
+        new( grid, npart, spline1, spline2, n_span, spline_degree, scaling, spline_val )
 
     end
 
@@ -49,24 +51,69 @@ end
 Helper function computing shape factor
 - pm : kernel smoother object
 """
-function compute_shape_factor(pm :: ParticleMeshCoupling2D, position, indices)
+function compute_shape_factor!(pm :: ParticleMeshCoupling2D, xp, yp)
 
-    x = (position - pm.grid.xmin) / pm.grid.dx
-    y = (position - pm.grid.ymin) / pm.grid.dy
-    i = ceiling(x)
-    j = ceiling(y)
-    offset_x = x - (i-1)
-    offset_y = y - (j-1)
-    indices[1] =  i - pm.spline_degree
-    indices[2] =  j - pm.spline_degree
+    xp = (xp - pm.grid.xmin) / pm.grid.dx
+    yp = (yp - pm.grid.ymin) / pm.grid.dy
+    ip = ceil(Int, xp)
+    jp = ceil(Int, yp)
+    dxp = xp - (ip-1)
+    dyp = yp - (jp-1)
 
-    pm.spline_val[:,1] .= uniform_bsplines_eval_basis(pm.spline_degree, offset_x) 
-    pm.spline_val[:,2] .= uniform_bsplines_eval_basis(pm.spline_degree, offset_y) 
+    uniform_bsplines_eval_basis!( pm.spline_val, pm.spline_degree, dxp, dyp) 
+
+    return (ip - pm.spline_degree, jp - pm.spline_degree)
 
 end 
 
-#=
+"""
+    index_1dto2d_column_major(pm, index1d) 
 
+Self function computes the index of a 1D array that stores 2D data in column major ordering. 
+It also takes periodic boundary conditions into account.
+- index1d_1 !< indice along x (start counting with zero).
+- index1d_2 !< indice along y (start counting with zero).
+- index2d   !< Corresponding index in 1d array representing 2d data (start counting with one).
+"""
+function index_1dto2d_column_major(pm, index1d_1, index1d_2)
+
+    index1d_1 = mod(index1d_1, pm.grid.nx)
+    index1d_2 = mod(index1d_2, pm.grid.ny)
+    index2d = index1d_1 + index1d_2 * pm.grid.nx + 1
+
+    return index2d
+
+end 
+
+
+export add_charge!
+
+"""
+    add_charge(self, x_position, y_position marker_charge, rho_dofs)
+
+Add charge of single particle
+- position : Particle position
+- marker_charge : Particle weight times charge
+- rho_dofs : spline coefficient of accumulated density
+"""
+function add_charge!(rho_dofs, pm ::  ParticleMeshCoupling2D , xp, yp, marker_charge)
+    
+    ind_x, ind_y = compute_shape_factor!(pm, xp, yp )
+
+    for i1 = 1:pm.n_span
+       index1d_1 = ind_x + i1 - 2
+       for i2 = 1:pm.n_span
+          index1d_2 = ind_y + i2 -2
+          index2d = index_1dto2d_column_major(pm, index1d_1, index1d_2)
+          @show pm.spline_val[i1,1], pm.spline_val[i2,2], marker_charge, pm.scaling
+          rho_dofs[index2d] += ( marker_charge * pm.scaling * pm.spline_val[i1,1] * pm.spline_val[i2,2])
+       end
+    end
+
+end
+
+
+export add_charge_pp!
 """
     add_charge_single_spline_pp_2d(self, position, marker_charge, rho_dofs)
 
@@ -85,124 +132,33 @@ end
 - rho_dofs : spline coefficient of accumulated density
     
 """
-function add_charge_single_spline_pp_2d(self, position, marker_charge, rho_dofs)
+function add_charge_pp!(rho_dofs, pm :: ParticleMeshCoupling2D, xp, yp, marker_charge)
 
-    xi(1:2) = (position(1:2) - self%domain(:,1)) /self%delta_x
-    indices = floor(xi(1:2))+1
-    xi(1:2) = xi(1:2) - real(indices -1,f64)
-    indices =  indices - self%spline_degree
+    xp = (xp - pm.grid.xmin) / pm.grid.dx
+    yp = (yp - pm.grid.ymin) / pm.grid.dy
+    ip = floor(Int, xp)+1
+    jp = floor(Int, yp)+1
+    dxp = xp - (ip-1)
+    dyp = yp - (jp-1)
+
+    ip =  ip - pm.spline_degree
+    jp =  jp - pm.spline_degree
     
-    spline_pp_horner_m_2d(self%spline_pp, self%spline_val,[self%spline_degree,self%spline_degree], xi)
+    horner_m_2d!(pm.spline1, pm.spline2, pm.spline_val, pm.spline_degree, dxp, dyp)
 
-    do i1 = 1, self%n_span
-       index1d(1) = indices(1)+i1-2
-       do i2 = 1, self%n_span
-          index1d(2) = indices(2)+i2-2
-          index2d = index_1dto2d_column_major(self,index1d)
-          rho_dofs(index2d) = rho_dofs(index2d) +&
-               ( marker_charge* self%scaling * &
-               self%spline_val(i1,1) * self%spline_val(i2,2))
+    for i1 = 1:pm.n_span
+       index1d_1 = ip+i1-2
+       for i2 = 1:pm.n_span
+          index1d_2 = jp+i2-2
+          index2d = index_1dto2d_column_major(pm, index1d_1, index1d_2)
+          rho_dofs[index2d] += ( marker_charge * pm.scaling * pm.spline_val[i1,1] * pm.spline_val[i2,2])
        end
     end
 
 end 
 
-"""
-    add_charge_single_spline_2d(self, position, marker_charge, rho_dofs)
 
-Add charge of single particle
-- position : Particle position
-- marker_charge : Particle weight times charge
-- rho_dofs : spline coefficient of accumulated density
-"""
-function add_charge_single_spline_2d(self, position, marker_charge, rho_dofs)
-    
-    call compute_shape_factor_spline_2d(self, position, indices)
-    do i1 = 1, self%n_span
-       index1d(1) = indices(1)+i1-2
-       do i2 = 1, self%n_span
-          index1d(2) = indices(2)+i2-2
-          index2d = index_1dto2d_column_major(self,index1d)
-          rho_dofs(index2d) = rho_dofs(index2d) +&
-               ( marker_charge* self%scaling * &
-               self%spline_val(i1,1) * self%spline_val(i2,2))
-       end
-    end
-
-end
-
-
-"""
-     add_current_spline_2d( self, position_old, position_new, marker_charge, j_dofs )
-
-## Add current with integration over x
-
-- position_old : Position of the particle
-- position_new : Position of the particle
-- marker_charge : Particle weights time charge
-- j_dofs : Coefficient vector of the current density
-
-"""
-function add_current_spline_2d( self, position_old, position_new, marker_charge, j_dofs )
-
-    print("Running function at ",$("$(__source__.file)"),":",$("$(__source__.line)"))
-
-    error("unimplemented")
-    
-end 
-  
-
-"""
-    add_current_update_v_spline_2d (self, position_old, position_new, marker_charge, qoverm, bfield_dofs, vi, j_dofs)
-
-## Add current and update v for single particle
-- position_old(self%dim) !< Position at time t
-- position_new(self%dim) !< Position at time t+\Delta t
-- marker_charge !< Particle weight time charge
-- qoverm !< Charge over mass ratio
-- bfield_dofs(self%n_dofs) !< Coefficient of B-field expansion
-- vi(:) !< Velocity of the particle
-- j_dofs(self%n_dofs) !< Coefficient of current expansion
-
-"""
-function add_current_update_v_spline_2d (self, position_old, position_new, marker_charge, qoverm, bfield_dofs, vi, j_dofs)
-
-    error("unimplemented")
-
-end 
-
-  
-"""
-    add_particle_mass_spline_2d(self, position, marker_charge, particle_mass) 
-"""
-function add_particle_mass_spline_2d(self, position, marker_charge, particle_mass) 
-    class (sll_t_particle_mesh_coupling_spline_2d), intent( inout ) :: self !< Kernel smoother object
-    sll_real64,                    intent( in )    :: position(self%dim) !< Position of the particle
-    sll_real64,                    intent( in )    :: marker_charge !< Particle weight times charge
-    sll_real64,                    intent( inout ) :: particle_mass(:,:) !< Coefficient vector of the charge distribution
-    
-    error("unimplemented")
-    
-end 
-
-     
-"""
-    add_current_update_v_spline_pp_2d (self, position_old, position_new, marker_charge, qoverm, bfield_dofs, vi, j_dofs)
-
-Add current and update v for single particle
-- position_old(self%dim) !< Position at time t
-- position_new(self%dim) !< Position at time t+\Delta t
-- marker_charge !< Particle weight time charge
-- qoverm !< Charge over mass ratio
-- bfield_dofs(self%n_dofs) !< Coefficient of B-field expansion
-- vi(:) !< Velocity of the particle
-- j_dofs(self%n_dofs) !< Coefficient of current expansion
-"""
-function add_current_update_v_spline_pp_2d (self, position_old, position_new, marker_charge, qoverm, bfield_dofs, vi, j_dofs)
-
-    error("unimplemented")
-
-end
+#=
 
 """
     evaluate_field_single_spline_pp_2d(self, position, field_dofs_pp, field_value)
@@ -285,22 +241,5 @@ function evaluate_multiple_spline_2d(self, position, components, field_dofs, fie
 
 end
 
-
-"""
-    index_1dto2d_column_major(self, index1d) 
-
-Self function computes the index of a 1D array that stores 2D data in column major ordering. It also takes periodic boundary conditions into account.
-- index1d(2) !< 2d array with indices along each of the two directions (start counting with zero).
-- index2d    !< Corresponding index in 1d array representing 2d data (start counting with one).
-"""
-function index_1dto2d_column_major(self, index1d)
-
-    index1d(1) = modulo(index1d(1), self%n_grid(1))
-    index1d(2) = modulo(index1d(2), self%n_grid(2))
-    index2d = index1d(1) + index1d(2)*self%n_grid(1) + 1
-
-    return index2d
-
-end 
 
 =#
