@@ -297,26 +297,26 @@ Perform a 2d hornerschema on the pp_coeffs at the indices
 - ncells(2) : number of gridcells
 - res : value of the splinefunction at position
 """
-function horner_2d(degrees, pp_coeffs, position, indices, ncells) 
+function horner_2d(degrees, pp, position, indices, ncells) 
 
     x1, x2 = position
     d1, d2 = degrees
     i1, i2 = indices
     n1, n2 = ncells
 
-    pp_coeffs_1d = zeros(d2+1,1)
+    pp_1d = zeros(d2+1,1)
 
     for i=0:d2
        istart = 1+i*(d1+1)
        istop = (d1+1)*(i+1)
        jstart = 1+(i2-1)*n1
        jstop = n1*i2
-       pp_coeffs_1d[i+1,1] = horner_1d(d1, pp_coeffs[istart:istop,jstart:jstop], x1, i1 )
+       pp_1d[i+1,1] = horner_1d(d1, view(pp,istart:istop,jstart:jstop), x1, i1 )
     end
 
-    @show res = pp_coeffs_1d[1,1]
+    res = pp_1d[1,1]
     for i=1:d2
-       res = res * x2 + pp_coeffs_1d[i+1,1]
+       res = res * x2 + pp_1d[i+1,1]
     end
 
     res
