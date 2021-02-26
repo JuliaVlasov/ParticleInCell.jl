@@ -63,7 +63,7 @@ using ParticleInCell
      y = pg.array[2,i_part]
      w = pg.array[5,i_part]
      add_charge!(rho_dofs,  kernel, x, y, w)
-     # add_charge_pp!(rho_dofs1, kernel, x, y, w)
+     add_charge_pp!(rho_dofs1, kernel, x, y, w)
   end
 
   rho_dofs_ref[8:10] .= values_grid[1:3,1,1]
@@ -79,7 +79,7 @@ using ParticleInCell
   rho_dofs_ref .*= n_cells^2 / volume / n_particles
 
   @test maximum(abs.(rho_dofs  .- rho_dofs_ref)) < 1e-14
-  # @test maximum(abs.(rho_dofs1 .- rho_dofs_ref)) < 1e-14 
+  @test maximum(abs.(rho_dofs1 .- rho_dofs_ref)) < 1e-14 
 
 #=
   spline_pp_b_to_pp_2d(kernel.spline_pp,[n_cells,n_cells],rho_dofs,rho_dofs_pp)
