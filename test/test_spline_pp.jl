@@ -63,10 +63,6 @@ end
     b_coeffs = zeros(ncells*ncells)
     pp_coeffs = zeros((degree+1)*(degree+1),ncells*ncells)
        
-    val1 = zeros(degree+1)
-    val2 = zeros(degree+1)
-
-  
     dx = 2π / ncells
     dy = 2π / ncells
 
@@ -89,31 +85,30 @@ end
     xi -= (ind_x-1)
     yi -= (ind_y-1)
 
-    res = ParticleInCell.horner_2d((degree, degree), pp_coeffs, (xi, yi), (ind_x, ind_y), (ncells, ncells))
+    res1 = ParticleInCell.horner_2d((degree, degree), pp_coeffs, 
+          (xi, yi), (ind_x, ind_y), (ncells, ncells))
+
+    @show res1
     
-    #indices = indices - degree
-    #
-    #call sll_s_uniform_bsplines_eval_basis(degree(1), xi(1), val1(:))
-    #call sll_s_uniform_bsplines_eval_basis(degree(2), xi(2), val2(:))
-    #
-    #
-    #res2 = 0.0_f64
-    #do i = 1, degree(1)+1
-    #   index1d(1) = modulo(indices(1)+i-2, n_cells(1)) 
-    #   do j = 1, degree(2)+1
-    #      index1d(2) = modulo( indices(2)+j-2, n_cells(2))
-    #      index2d = index1d(1) + index1d(2)*n_cells(1) + 1
-    #      res2 = res2 + b_coeffs(index2d) * val1(i) * val2(j)
-    #   end do
-    #end do
-    #!print*, 'res-res2=', res-res2
-    #!write(*,*) 'Fehler horner vs normal:', abs(res-res2)
-    #if(abs(res-res2)>1E-15) then
-    #   fail=.true.
-    #   print*,'error in evaluate'
-    #end if
-    #
-    #!test horner for arbitrary polynomials
+    ind_x -= degree
+    ind_y -= degree
+    
+    val1 = uniform_bsplines_eval_basis(degree, xi)
+    val2 = uniform_bsplines_eval_basis(degree, yi)
+    
+    res2 = 0.0
+    for i = 1:degree+1
+       idx1 = mod(ind_x+i-2, ncells) 
+       for j = 1:degree+1
+          idx2 = mod( ind_y+j-2, ncells)
+          index2d = idx1 + idx2*ncells + 1
+          res2 += b_coeffs[index2d] * val1[i] * val2[j]
+       end
+    end
+
+    @show res2
+    @test abs(res1-res2) < 1e-15
+    
     #call random_seed()
     #call random_number(xp)
     #res=sll_f_spline_pp_horner_2d(degree, pp_coeffs, xp,[1,1],[1,1])

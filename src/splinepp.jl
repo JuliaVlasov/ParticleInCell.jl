@@ -113,20 +113,20 @@ periodic boundary conditions
 """
 function b_to_pp( self :: SplinePP, ncells :: Int, b_coeffs :: Vector{Float64})
 
-    degp1     = self.degree+1
-    pp_coeffs = zeros(Float64, (degp1,ncells)) 
-    coeffs    = zeros(Float64, degp1) 
+    dp1     = self.degree+1
+    pp_coeffs = zeros(Float64, (dp1,ncells)) 
+    coeffs    = zeros(Float64, dp1) 
        
     @inbounds for i=1:self.degree   
         coeffs .= vcat(b_coeffs[end-self.degree+i:end],b_coeffs[1:i]) 
-        for j=1:degp1
+        for j=1:dp1
             pp_coeffs[j, i] = sum(coeffs .* self.poly_coeffs[j,:])
         end
     end
     
     @inbounds for i=self.degree+1:ncells
         coeffs .= b_coeffs[i-self.degree:i]
-        for j=1:degp1
+        for j=1:dp1
             pp_coeffs[j, i] = sum(coeffs .* self.poly_coeffs[j,:])
         end
     end
@@ -184,6 +184,23 @@ function horner_m_2d!(val, spline1 :: SplinePP, spline2 :: SplinePP, degree, x, 
 end 
 
 
+"""
+    b_to_pp_1d_cell( self, b_coeffs, pp_coeffs )
+
+Convert 1d spline in B form in a cell to spline in pp form with periodic boundary conditions
+- spline : arbitrary degree 1d spline 
+- b_coeffs(self%degree+1) : coefficients of spline in B-form
+- pp_coeffs(self%degree+1) : coefficients of spline in pp-form
+"""
+function b_to_pp_1d_cell!( pp, spline, b )
+
+    dp1 = spline.degree+1
+    fill!(pp, 0.0)
+    for i=1:dp1, j=1:dp1
+        pp[j] += b[i] * spline.poly_coeffs[j,i]
+    end
+
+end
 
 """
     b_to_pp_2d_cell(spline1, spline2, b_coeffs, pp_coeffs, i, j)
@@ -196,74 +213,58 @@ Convert 2d spline in B form in a cell to spline in pp form with periodic boundar
 - b_coeffs(n_cells(1)*n_cells(2)) : coefficients of spline in B-form
 - pp_coeffs((spline1.degree+1)*(spline2.degree+1),n_cells(1)*n_cells(2)) : coefficients of spline in pp-form
 """
-function b_to_pp_2d_cell!(pp_coeffs, spline1, spline2, b_coeffs, i, j)
+function b_to_pp_2d_cell!(pp, spline1 :: SplinePP, spline2 :: SplinePP, b, i, j)
 
-    degree1 = spline1.degree
-    degree2 = spline2.degree
-    degp1 = degree1+1
-    degp2 = degree2+1
-    ncells1 = spline1.ncells
-    ncells2 = spline2.ncells
+    n1 = spline1.ncells
+    n2 = spline2.ncells
+    d1 = spline1.degree
+    d2 = spline2.degree
+    dp1=d1+1
+    dp2=d2+1
 
+    b1 = zeros(dp1)
+    b2 = zeros(dp2)
+    p2 = zeros(dp2)
     # convert b-coefficients in pp-coefficients in first dimension
-    if (i>degree1)
-        if(j>degree2)
-            for l=0:degree2
-
-                scratch_b = view(b_coeffs,i-degree1+(j-degp2+l)*ncells1:i+(j-degp2+l)*ncells1)
-                pp_coeffs1 = view(pp_coeffs, 1+l*degp1:degp1*(l+1),i+ncells1*(j-1))
-
-                fill!(pp_coeffs1, 0.0)
-                for i=1:degp1, j=1:degp1                                                                        
-                    pp_coeffs1[j] += scratch_b[i] * spline1.poly_coeffs[j,i]
-                end
-
+    if i>d1
+        if j>d2
+            for l=0:d2
+                k = i + (j-dp2+l) * n1
+                b1 .= b[k-d1:k]
+                b_to_pp_1d_cell!( view(pp,1+l*dp1:dp1*(l+1),i+n1*(j-1)),
+                                  spline1, b1)
             end
         else 
-            # use of modulo for boundary cells in second dimension 
-            for l=0:degree2
-               scratch_b = view(b_coeffs,i-degree1+mod(j-degp2+l,ncells2)*ncells1:i+mod(j-degp2+l,ncells2)*ncells1)
-               pp_coeffs1 = view(pp_coeffs,1+l*degp1:degp1*(l+1),i+ncells1*(j-1))
-
-               fill!(pp_coeffs1, 0.0)
-               for i=1:degp1, j=1:degp1                                                                        
-                   pp_coeffs1[j] += scratch_b[i] * spline.poly_coeffs[j,i]
-               end
+             # use of modulo for boundary cells in second dimension 
+            for l=0:d2
+                k = i + mod(j-dp2+l,n2) * n1
+                b1 .= b[k-d1:k]
+                b_to_pp_1d_cell!( view(pp, 1+l*dp1:dp1*(l+1),i+n1*(j-1)), 
+                                  spline1, b1) 
             end
         end
     else 
-        # use of modulo for boundary cells in both dimensions 
-        for l=0:degree2
-             scratch_b = view(b_coeffs,i-degree1+mod(j-degp2+l,ncells2)*ncells1:i+mod(j-degp2+l,ncells2)*ncells1)
-             for k=0:degree1
-                scratch_b[k+1]=b_coeffs[mod(i-degp1+k,ncells1)+1+mod(j-degp2+l,ncells2)*ncells1]
-             end
-             pp_coeffs1 = view(pp_coeffs,1+l*degp1:degp1*(l+1),i+ncells1*(j-1))
-
-             fill!(pp_coeffs, 0.0)
-             for i=1:degp1, j=1:degp1                                                                        
-                 pp_coeffs[j] += b_coeffs[i] * spline1.poly_coeffs[j,i]
-             end
-        end
+       # use of modulo for boundary cells in both dimensions 
+       for l=0:d2
+           for k=0:d1
+               b1[k+1]=b[mod(i-dp1+k,n1)+1+mod(j-dp2+l,n2)*n1]
+           end
+           b_to_pp_1d_cell!( view(pp,1+l*dp1:dp1*(l+1),i+n1*(j-1)), 
+                             spline1, b1)
+       end
     end
 
-# convert b-coefficients in pp_coefficients in second dimension
-    for k=1:degp1
-        for l=1:degp2
-           spline2.scratch_b[l]=pp_coeffs[k+degp1*(l-1),i+ncells1*(j-1)]
-        end
-        b_to_pp_1d_cell(spline2, spline2.scratch_b, spline2.scratch_p)
-
-              fill!(pp_coeffs, 0.0)
-              for i=1:degp1, j=1:degp1                                                                        
-                  pp_coeffs[j] += b_coeffs[i] * spline.poly_coeffs[j,i]
-              end
-
-        for l=1:degp2
-           pp_coeffs[k+degp1*(l-1),i+ncells1*(j-1)] = spline2.scratch_p[l]
-        end
-
+    # convert b-coefficients in pp_coefficients in second dimension
+    for k=1:dp1
+       for l=1:dp2
+           b2[l]=pp[k+dp1*(l-1),i+n1*(j-1)]
+       end
+       b_to_pp_1d_cell!(p2, spline2, b2)
+       for l=1:dp2
+           pp[k+dp1*(l-1),i+n1*(j-1)] = p2[l]
+       end
     end
+
 end 
 
 """
@@ -279,22 +280,22 @@ function b_to_pp_2d!( pp_coeffs, spline1 :: SplinePP, spline2 :: SplinePP, b_coe
     ncells1 = spline1.ncells
     ncells2 = spline2.ncells
 
-    #for j=1:ncells2, i=1:ncells1
-    #    b_to_pp_2d_cell!( pp_coeffs, spline1, spline2, b_coeffs, i, j)
-    #end
+    for j=1:ncells2, i=1:ncells1
+        b_to_pp_2d_cell!( pp_coeffs, spline1, spline2, b_coeffs, i, j)
+    end
 
 end 
 
 """
-    horner_2d(degree, pp_coeffs, x, indices, ncells) 
+    horner_2d(degree, pp_coeffs, position, indices, ncells) 
 
 Perform a 2d hornerschema on the pp_coeffs at the indices
 - degree : degree of the spline
 - pp_coeffs : coefficients of spline in pp-form
-- x : point at which we evaluate our spline
+- position(2) : point at which we evaluate our spline
 - indices(2) : indices of cell in which is x
 - ncells(2) : number of gridcells
-- res : value of the splinefunction at point x
+- res : value of the splinefunction at position
 """
 function horner_2d(degrees, pp_coeffs, position, indices, ncells) 
 
@@ -306,10 +307,14 @@ function horner_2d(degrees, pp_coeffs, position, indices, ncells)
     pp_coeffs_1d = zeros(d2+1,1)
 
     for i=0:d2
-       pp_coeffs_1d[i+1,1] = horner_1d(d1, pp_coeffs[1+i*(d1+1):(d1+1)*(i+1),1+(i2-1)*n1:n1*i2], x1, i1 )
+       istart = 1+i*(d1+1)
+       istop = (d1+1)*(i+1)
+       jstart = 1+(i2-1)*n1
+       jstop = n1*i2
+       pp_coeffs_1d[i+1,1] = horner_1d(d1, pp_coeffs[istart:istop,jstart:jstop], x1, i1 )
     end
 
-    res = pp_coeffs_1d[1,1]
+    @show res = pp_coeffs_1d[1,1]
     for i=1:d2
        res = res * x2 + pp_coeffs_1d[i+1,1]
     end
