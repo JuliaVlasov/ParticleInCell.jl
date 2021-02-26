@@ -81,14 +81,14 @@ using ParticleInCell
   @test maximum(abs.(rho_dofs  .- rho_dofs_ref)) < 1e-14
   @test maximum(abs.(rho_dofs1 .- rho_dofs_ref)) < 1e-14 
 
-#=
-  spline_pp_b_to_pp_2d(kernel.spline_pp,[n_cells,n_cells],rho_dofs,rho_dofs_pp)
+  ParticleInCell.b_to_pp_2d(kernel.spline1, kernel.spline2, rho_dofs, rho_dofs_pp)
   
   # Test function evaluation
   for i_part = 1:n_particles
-     xi = get_x(particle_group, i_part)
-     evaluate( kernel, xi, rho_dofs, particle_values[i_part])
-     evaluate_pp(kernel, xi, rho_dofs_pp, particle_values1[i_part])
+     xp = pg.array[1, i_part]
+     yp = pg.array[2, i_part]
+     evaluate( kernel, xp, yp, rho_dofs, particle_values[i_part])
+     #evaluate_pp(kernel, xp, yp, rho_dofs_pp, particle_values1[i_part])
   end
   particle_values_ref = [1.1560058593749998, 2.3149278428819446,
                          2.2656250000000000, 1.1512586805555554] ./ volume
@@ -106,11 +106,7 @@ using ParticleInCell
      end
   end
 
-  error  = maximum(abs.(particle_values  .- particle_values_ref))
-  error1 = maximum(abs.(particle_values1 .- particle_values_ref))
+  @test maximum(abs.(particle_values  .- particle_values_ref)) < 1.e-14
+  #@test maximum(abs.(particle_values1 .- particle_values_ref)) < 1.e-14
 
-  @test error  < 1.e-14
-  @test error1 < 1.e-14
-
-=#
 end 
