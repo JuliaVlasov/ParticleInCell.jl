@@ -1,11 +1,11 @@
 export ParticleMeshCoupling2D
 
 """
-    ParticleMeshCoupling2D( pg, grid, spline_degree)
+    ParticleMeshCoupling2D( pg, grid, degree)
 - n_grid(2) : no. of spline coefficients
 - domain(2,2) : lower and upper bounds of the domain
 - no_particles : no. of particles
-- spline_degree : Degree of smoothing kernel spline
+- degree : Degree of smoothing kernel spline
 - smoothing_type : Define if Galerkin or collocation smoothing for right scaling in accumulation routines 
 """
 struct ParticleMeshCoupling2D
@@ -15,18 +15,18 @@ struct ParticleMeshCoupling2D
     spline1 :: SplinePP
     spline2 :: SplinePP
     n_span :: Int
-    spline_degree :: Int
+    degree :: Int
     scaling :: Float64
-    spline_val :: Array{Float64,2}
+    values :: Array{Float64,2}
 
     function ParticleMeshCoupling2D( pg :: ParticleGroup{2,2}, grid :: TwoDGrid, 
-                                     spline_degree :: Int, smoothing_type  )
+                                     degree :: Int, smoothing_type  )
 
         npart = pg.n_particles
-        spline1 = SplinePP(spline_degree, grid.nx)
-        spline2 = SplinePP(spline_degree, grid.ny)
+        spline1 = SplinePP(degree, grid.nx)
+        spline2 = SplinePP(degree, grid.ny)
 
-        n_span = spline_degree + 1
+        n_span = degree + 1
 
         if smoothing_type == :collocation
            scaling = 1.0/( grid.dx * grid.dy )
@@ -36,9 +36,9 @@ struct ParticleMeshCoupling2D
            println( "Smoothing Type $smoothing_type not implemented for kernel_smoother_spline_2d. ")
         end
 
-        spline_val = zeros( n_span, 2)
+        values = zeros( n_span, 2)
     
-        new( grid, npart, spline1, spline2, n_span, spline_degree, scaling, spline_val )
+        new( grid, npart, spline1, spline2, n_span, degree, scaling, values )
 
     end
 
@@ -46,7 +46,7 @@ end
 
 
 """
-   compute_shape_factor_spline_2d(self, position, indices)
+   compute_shape_factor_spline_2d(pm, position, indices)
 
 Helper function computing shape factor
 - pm : kernel smoother object
@@ -60,9 +60,9 @@ function compute_shape_factor!(pm :: ParticleMeshCoupling2D, xp, yp)
     dxp = xp - (ip-1)
     dyp = yp - (jp-1)
 
-    uniform_bsplines_eval_basis!( pm.spline_val, pm.spline_degree, dxp, dyp) 
+    uniform_bsplines_eval_basis!( pm.values, pm.degree, dxp, dyp) 
 
-    return (ip - pm.spline_degree, jp - pm.spline_degree)
+    return (ip - pm.degree, jp - pm.degree)
 
 end 
 
@@ -89,14 +89,14 @@ end
 export add_charge!
 
 """
-    add_charge(self, x_position, y_position marker_charge, rho_dofs)
+    add_charge(pm, x_position, y_position wp, ρ_dofs)
 
 Add charge of single particle
 - position : Particle position
-- marker_charge : Particle weight times charge
-- rho_dofs : spline coefficient of accumulated density
+- wp : Particle weight times charge
+- ρ_dofs : spline coefficient of accumulated density
 """
-function add_charge!(rho_dofs, pm ::  ParticleMeshCoupling2D , xp, yp, marker_charge)
+function add_charge!(ρ_dofs, pm ::  ParticleMeshCoupling2D , xp, yp, wp)
     
     ind_x, ind_y = compute_shape_factor!(pm, xp, yp )
 
@@ -105,17 +105,16 @@ function add_charge!(rho_dofs, pm ::  ParticleMeshCoupling2D , xp, yp, marker_ch
        for i2 = 1:pm.n_span
           index1d_2 = ind_y + i2 -2
           index2d = index_1dto2d_column_major(pm, index1d_1, index1d_2)
-          @show pm.spline_val[i1,1], pm.spline_val[i2,2], marker_charge, pm.scaling
-          rho_dofs[index2d] += ( marker_charge * pm.scaling * pm.spline_val[i1,1] * pm.spline_val[i2,2])
+          ρ_dofs[index2d] += ( wp * pm.scaling * pm.values[i1,1] * pm.values[i2,2])
        end
     end
 
 end
 
-
 export add_charge_pp!
+
 """
-    add_charge_single_spline_pp_2d(self, position, marker_charge, rho_dofs)
+    add_charge_single_spline_pp_2d(pm, position, wp, ρ_dofs)
 
 ## Add charge of single particle
 
@@ -124,15 +123,15 @@ export add_charge_pp!
   *  domain(2,2) : Definition of the domain: domain(1,1) = x1_min, domain(2,1) = x2_min,  domain(1,2) = x1_max, domain(2,2) = x2_max
 - Information about the particles
   * no_particles : Number of particles of underlying PIC method (processor local)
-  * n_span : Number of intervals where spline non zero (spline_degree + 1)
+  * n_span : Number of intervals where spline non zero (degree + 1)
   * scaling
   
 - position : Particle position
-- marker_charge : Particle weight times charge
-- rho_dofs : spline coefficient of accumulated density
+- wp : Particle weight times charge
+- ρ_dofs : spline coefficient of accumulated density
     
 """
-function add_charge_pp!(rho_dofs, pm :: ParticleMeshCoupling2D, xp, yp, marker_charge)
+function add_charge_pp!(ρ_dofs, pm :: ParticleMeshCoupling2D, xp, yp, wp)
 
     xp = (xp - pm.grid.xmin) / pm.grid.dx
     yp = (yp - pm.grid.ymin) / pm.grid.dy
@@ -141,101 +140,107 @@ function add_charge_pp!(rho_dofs, pm :: ParticleMeshCoupling2D, xp, yp, marker_c
     dxp = xp - (ip-1)
     dyp = yp - (jp-1)
 
-    ip =  ip - pm.spline_degree
-    jp =  jp - pm.spline_degree
+    ip =  ip - pm.degree
+    jp =  jp - pm.degree
     
-    horner_m_2d!(pm.spline1, pm.spline2, pm.spline_val, pm.spline_degree, dxp, dyp)
+    horner_m_2d!(pm.values, pm.spline1, pm.spline2, pm.degree, dxp, dyp)
 
     for i1 = 1:pm.n_span
        index1d_1 = ip+i1-2
        for i2 = 1:pm.n_span
           index1d_2 = jp+i2-2
           index2d = index_1dto2d_column_major(pm, index1d_1, index1d_2)
-          rho_dofs[index2d] += ( marker_charge * pm.scaling * pm.spline_val[i1,1] * pm.spline_val[i2,2])
+          ρ_dofs[index2d] += ( wp * pm.scaling * pm.values[i1,1] * pm.values[i2,2])
        end
     end
 
 end 
 
+export evaluate_pp, evaluate
+
+"""
+    evaluate_pp(pm, position, field_dofs_pp)
+
+Evaluate field at position using horner scheme
+- pm : kernel smoother object    
+- position : Position where to evaluate
+- field_dofs_pp(:,:) : Degrees of freedom in kernel representation.
+- field_value : Value of the field
+
+"""
+function evaluate_pp(pm :: ParticleMeshCoupling2D, xp, yp, pp)
+       
+    xi = (xp - pm.grid.xmin) / pm.grid.dx
+    yi = (yp - pm.grid.ymin) / pm.grid.dy
+
+    idx = floor(Int, xi)+1
+    idy = floor(Int, yi)+1
+
+    xi = xi - (idx-1)
+    yi = yi - (idy-1)
+     
+    d = pm.degree
+
+    nx = pm.grid.nx
+    ny = pm.grid.ny
+
+    horner_2d((d,d), pp, (xi,yi), (idx, idy), (nx, ny))
+        
+end 
+   
+
+"""
+    evaluate_field_single_spline_2d(pm, position, field_dofs)
+
+- position(pm.dim) : Position where to evaluate
+- field_dofs(pm.n_dofs) : Degrees of freedom in kernel representation.
+- field_value : Value of the field
+
+Evaluate field with given dofs at position
+"""
+function evaluate(pm, xp, yp, field_dofs)
+    
+    ix, iy = compute_shape_factor!(pm, xp, yp)
+
+    value = 0.0
+    for i1 = 1:pm.n_span
+       index1d_1 = ix+i1-2
+       for i2 = 1:pm.n_span
+          index1d_2 = iy+i2-2
+          index2d = index_1dto2d_column_major(pm,index1d_1, index1d_2)
+          value += field_dofs[index2d] * pm.values[i1,1] * pm.values[i2,2]
+       end
+    end
+
+    value
+
+end
 
 #=
 
 """
-    evaluate_field_single_spline_pp_2d(self, position, field_dofs_pp, field_value)
-
-Evaluate field at at position \a position using horner scheme
-
-"""
-function evaluate_field_single_spline_pp_2d(self, position, field_dofs_pp, field_value)
-    class( sll_t_particle_mesh_coupling_spline_2d), intent(inout)  :: self !< kernel smoother object    
-    sll_real64,                              intent( in )   :: position(self%dim) !< Position where to evaluate
-    sll_real64,                              intent(in)     :: field_dofs_pp(:,:) !< Degrees of freedom in kernel representation.
-    sll_real64,                              intent(out)    :: field_value !< Value of the field
-       
-    !local variables
-    sll_real64 :: xi(2)
-    sll_int32  :: indices(2)
-   
-    xi(1:2) = (position(1:2) - self%domain(:,1)) /self%delta_x
-    indices = floor(xi(1:2))+1
-    xi(1:2) = xi(1:2) - real(indices -1,f64)
-     
-    field_value = sll_f_spline_pp_horner_2d([self%spline_degree,self%spline_degree], field_dofs_pp, xi, indices,self%n_grid)
-        
-end subroutine evaluate_field_single_spline_pp_2d
-   
-
-"""
-    evaluate_field_single_spline_2d(self, position, field_dofs, field_value)
-
-- position(self%dim) : Position where to evaluate
-- field_dofs(self%n_dofs) : Degrees of freedom in kernel representation.
-- field_value : Value of the field
-
-Evaluate field with given dofs at position \a position
-"""
-function evaluate_field_single_spline_2d(self, position, field_dofs, field_value)
-    
-    compute_shape_factor_spline_2d(self, position, indices)
-
-    field_value = 0.0_f64
-    do i1 = 1, self%n_span
-       index1d(1) = indices(1)+i1-2
-       do i2 = 1, self%n_span
-          index1d(2) = indices(2)+i2-2
-          index2d = index_1dto2d_column_major(self,index1d)
-          field_value = field_value + &
-               field_dofs(index2d) *  &
-               self%spline_val(i1,1) *&
-               self%spline_val(i2,2)
-       end
-    end
-
-end
-
-"""
-    evaluate_multiple_spline_2d(self, position, components, field_dofs, field_value)
+    evaluate_multiple_spline_2d(pm, position, components, field_dofs, field_value)
 
 ## Evaluate multiple fields at position \a position
-- position(self%dim) : Position where to evaluate
+- position(pm%dim) : Position where to evaluate
 - components(:) : Components of the field that shall be evaluated
 - field_dofs(:,:) : Degrees of freedom in kernel representation.
 - field_value(:) : Value of the field
 """
-function evaluate_multiple_spline_2d(self, position, components, field_dofs, field_value)
+function evaluate_multiple_spline_2d(pm, position, components, field_dofs, field_value)
     
-    compute_shape_factor_spline_2d(self, position, indices)
+    compute_shape_factor_spline_2d(pm, position, indices)
 
     field_value = 0.0_f64
-    do i1 = 1, self%n_span
+    do i1 = 1, pm%n_span
        index1d(1) = indices(1)+i1-2
-       do i2 = 1, self%n_span
+       do i2 = 1, pm%n_span
           index1d(2) = indices(2)+i2-2
-          index2d = index_1dto2d_column_major(self,index1d)
+          index2d = index_1dto2d_column_major(pm,index1d)
           field_value = field_value + &
                field_dofs(index2d,components) *  &
-               self%spline_val(i1,1) *&
-               self%spline_val(i2,2)
+               pm%values(i1,1) *&
+               pm%values(i2,2)
        end
     end
 

@@ -167,18 +167,18 @@ end
 
 
 """
-    horner_m_2d(spl, val, degree, x)
+    horner_m_2d!(val, spl1, spl2, degree, x)
 
 Perform two times a 1d hornerschema on the poly_coeffs
 - val : array of values
 - degree : degree of the spline
 - x : point at which we evaluate our spline
 """
-function horner_m_2d!(val, spline1 :: SplinePP, spline2 :: SplinePP, degree, x, y)
+function horner_m_2d!(val, spl1 :: SplinePP, spl2 :: SplinePP, degree, x, y)
 
     for i=1:degree+1
-       val[i,1] = horner_1d(degree, spline1.poly_coeffs, x, i)
-       val[i,2] = horner_1d(degree, spline2.poly_coeffs, y, i)
+       val[i,1] = horner_1d(degree, spl1.poly_coeffs, x, i)
+       val[i,2] = horner_1d(degree, spl2.poly_coeffs, y, i)
     end
 
 end 
@@ -268,26 +268,26 @@ function b_to_pp_2d_cell!(pp, spline1 :: SplinePP, spline2 :: SplinePP, b, i, j)
 end 
 
 """
-    b_to_pp_2d( spl, n_cells, b_coeffs, pp_coeffs)
+    b_to_pp_2d!( pp, spl1, spl2, b)
 
 Convert 2d spline in B form to spline in pp form   
 - n_cells(2) : number of gridcells
 - b_coeffs   : coefficients of spline in B-form
 - pp_coeffs  : coefficients of spline in pp-form
 """
-function b_to_pp_2d!( pp_coeffs, spline1 :: SplinePP, spline2 :: SplinePP, b_coeffs)
+function b_to_pp_2d!( pp, spl1 :: SplinePP, spl2 :: SplinePP, b)
 
-    ncells1 = spline1.ncells
-    ncells2 = spline2.ncells
+    ncells1 = spl1.ncells
+    ncells2 = spl2.ncells
 
     for j=1:ncells2, i=1:ncells1
-        b_to_pp_2d_cell!( pp_coeffs, spline1, spline2, b_coeffs, i, j)
+        b_to_pp_2d_cell!( pp, spl1, spl2, b, i, j)
     end
 
 end 
 
 """
-    horner_2d(degree, pp_coeffs, position, indices, ncells) 
+    horner_2d(degrees, pp_coeffs, position, indices, ncells) 
 
 Perform a 2d hornerschema on the pp_coeffs at the indices
 - degree : degree of the spline
