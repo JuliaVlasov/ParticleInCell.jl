@@ -216,8 +216,6 @@ function evaluate(pm, xp, yp, field_dofs)
 
 end
 
-#=
-
 """
     evaluate_multiple_spline_2d(pm, position, components, field_dofs, field_value)
 
@@ -227,24 +225,20 @@ end
 - field_dofs(:,:) : Degrees of freedom in kernel representation.
 - field_value(:) : Value of the field
 """
-function evaluate_multiple_spline_2d(pm, position, components, field_dofs, field_value)
+function evaluate_multiple(pm, position)
     
-    compute_shape_factor_spline_2d(pm, position, indices)
+    indices = compute_shape_factor(pm, position...)
 
-    field_value = 0.0_f64
-    do i1 = 1, pm%n_span
-       index1d(1) = indices(1)+i1-2
-       do i2 = 1, pm%n_span
-          index1d(2) = indices(2)+i2-2
+    field_value = 0.0
+    for i1 = 1:pm.n_span
+       index1d_1 = indices[1]+i1-2
+       for i2 = 1:pm.n_span
+          index1d_2 = indices[2]+i2-2
           index2d = index_1dto2d_column_major(pm,index1d)
-          field_value = field_value + &
-               field_dofs(index2d,components) *  &
-               pm%values(i1,1) *&
-               pm%values(i2,2)
+          field_value += field_dofs[index2d,components] * pm.values[i1,1] * pm.values[i2,2]
        end
     end
 
+    field_value
+
 end
-
-
-=#
