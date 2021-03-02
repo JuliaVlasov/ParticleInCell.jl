@@ -18,5 +18,6 @@ include("splinepp.jl")
 include("particle_group.jl")
 include("particle_mesh_coupling_1d.jl")
 include("particle_mesh_coupling_2d.jl")
+include("poisson_2d.jl")
 
 end
