@@ -6,89 +6,83 @@ eta2_min = .0; eta2_max = 2π
 
 nc_eta1 = 128; nc_eta2 = 128
 
-ex = zeros(nc_eta1+1,nc_eta2+1)
-ey = zeros(nc_eta1+1,nc_eta2+1)
-ex_exact = zeros(nc_eta1+1,nc_eta2+1)
-ey_exact = zeros(nc_eta1+1,nc_eta2+1)
-rhs = zeros(nc_eta1+1,nc_eta2+1)
-rho = zeros(nc_eta1+1,nc_eta2+1)
-phi = zeros(nc_eta1+1,nc_eta2+1)
-phi_exact = zeros(nc_eta1+1,nc_eta2+1)
+ex = zeros(Float64, nc_eta1,nc_eta2)
+ey = zeros(Float64, nc_eta1,nc_eta2)
 
-println(" eta1_min, eta1_max, nc_eta1 ", eta1_min, eta1_max, nc_eta1)
-println(" eta2_min, eta2_max, nc_eta2 ", eta2_min, eta2_max, nc_eta2)
+rho = zeros(Float64, nc_eta1,nc_eta2)
+phi = zeros(Float64, nc_eta1,nc_eta2)
+
+ex_exact = zeros(nc_eta1,nc_eta2)
+ey_exact = zeros(nc_eta1,nc_eta2)
+phi_exact = zeros(nc_eta1,nc_eta2)
 
 grid = TwoDGrid( eta1_min, eta1_max, nc_eta1, 
                  eta2_min, eta2_max, nc_eta2) 
 
-poisson = TwoDPoissonPeriodic( grid )
+poisson = Poisson2DPeriodic( grid )
 
 mode = 2
-for i = 1:nc_eta1+1
-   for j = 1:nc_eta2+1
-      x1 = (i-1)*(eta1_max-eta1_min)/nc_eta1
-      x2 = (j-1)*(eta2_max-eta2_min)/nc_eta2
-      phi_exact[i,j] = real(mode,f64) * sin(mode*x1) * cos(mode*x2)
-      ex_exact[i,j]  =  1._f64*real(mode,f64)**2*cos(mode*x1)*cos(mode*x2)
-      ey_exact[i,j]  = -1._f64*real(mode,f64)**2*sin(mode*x1)*sin(mode*x2)
-      rho[i,j] = -2._f64 * real(mode,f64)**3 * sin(mode*x1)*cos(mode*x2)
-   end
+for i = 1:nc_eta1, j = 1:nc_eta2
+    x1 = eta1_min + (i-1)*(eta1_max-eta1_min)/nc_eta1
+    x2 = eta2_min + (j-1)*(eta2_max-eta2_min)/nc_eta2
+    phi_exact[i,j] = -mode   * sin(mode*x1) * cos(mode*x2)
+    ex_exact[i,j]  =  mode^2 * cos(mode*x1) * cos(mode*x2)
+    ey_exact[i,j]  = -mode^2 * sin(mode*x1) * sin(mode*x2)
+    rho[i,j] = -2 * mode^3 * sin(mode*x1) * cos(mode*x2)
 end
 
-rhs = rho
-solve( poisson, phi, rhs)
-error =  maximum(abs(phi_exact+phi))
-rhs = rho
-solve( poisson, phi, rhs)
-error = maxval(abs(phi_exact+phi))
-rhs = rho
-solve( poisson, ex, ey, rhs)
-error = maxval(abs(ex_exact-ex))
-error = maxval(abs(ey_exact-ey))
-rhs = rho
-solve( poisson, ex, ey, rhs)
-error = maxval(abs(ex_exact-ex))
-error = maxval(abs(ey_exact-ey))
+rhs = copy(rho)
+solve!( phi, poisson, rhs)
+@test phi_exact ≈ phi
 
-x1_min = 0._f64
-x1_max = 1._f64
+rhs = copy(rho)
+solve!( ex, ey, poisson, rhs)
+@test ex_exact ≈ ex
+@test ey_exact ≈ ey
 
-x2_min = 0._f64
-x2_max = 1._f64
+x1_min = 0
+x1_max = 1
 
-Nc_x1 = 32
-Nc_x2 = 64
+x2_min = 0
+x2_max = 1
 
-phi = zeros(Nc_x1+1,Nc_x2+1)
-E1 = zeros(Nc_x1+1,Nc_x2+1)
-E2 = zeros(Nc_x1+1,Nc_x2+1)
-rho = zeros(Nc_x1+1,Nc_x2+1)
+nc_x1 = 32
+nc_x2 = 64
 
-rho = 1
+phi = zeros(nc_x1,nc_x2)
+e1 = zeros(nc_x1,nc_x2)
+e2 = zeros(nc_x1,nc_x2)
+rho = ones(nc_x1,nc_x2)
+
+grid = TwoDGrid( x1_min, x1_max, nc_x1, 
+                 x2_min, x2_max, nc_x2) 
 
 poisson = Poisson2DPeriodic(grid)
 
-compute_phi_from_rho( phi, rho )
+solve!( phi, poisson, rho )
 
-compute_e_from_rho( E1, E2, rho )
+solve!( e1, e2, poisson, rho )
 
-  nx, ny = 32, 32
-  xmin, xmax = 0.0, 2π
-  ymin, ymax = 0.0, 2π
-  degree_smoother = 3
-  n_particles = 1000
+nx, ny = 32, 32
+xmin, xmax = 0.0, 2π
+ymin, ymax = 0.0, 2π
+degree_smoother = 3
+n_particles = 1000
 
-  grid = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny)
-  poisson = TwoDPoissonPeriodic( grid )
+particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
+
+grid = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny)
+
+poisson = Poisson2DPeriodic( grid )
   
-  # Initialize the kernel smoother
-  kernel_smoother = ParticleMeshCoupling2D( grid, n_particles, degree_smoother, :collocation)
+# Initialize the kernel smoother
+kernel_smoother = ParticleMeshCoupling2D( particles, grid, degree_smoother, :collocation)
 
-  @test true
+@test true
   
-  # Initialize the PIC field solver
-  pic_poisson = ( poisson, num_cells, kernel_smoother)
+# Initialize the PIC field solver
+pic_poisson = ( poisson, kernel_smoother)
 
-  @test true
+@test true
 
 end

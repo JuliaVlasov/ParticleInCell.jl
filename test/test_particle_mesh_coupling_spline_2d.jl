@@ -34,7 +34,6 @@ using ParticleInCell
   index_grid[1,:] .= [-2, 1, 1, 5]
   index_grid[2,:] .= [-3, -3, -3, -3]
   
-
   v_grid = zeros(Float64,(4,2,4))
   v_grid[:,1,1] .= [ 2.0833333333333332E-002, 0.47916666666666663, 
                           0.47916666666666663, 2.0833333333333332E-002]
@@ -57,7 +56,7 @@ using ParticleInCell
      x = pg.array[1,i_part]
      y = pg.array[2,i_part]
      w = pg.array[5,i_part]
-     add_charge!(ρ_dofs,  kernel, x, y, w)
+     add_charge!(ρ_dofs, kernel, x, y, w)
      add_charge_pp!(ρ_dofs1, kernel, x, y, w)
   end
 
