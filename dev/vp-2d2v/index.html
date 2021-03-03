@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Vlasov-Poisson · ParticleInCell.jl</title><link rel="canonical" href="https://juliavlasov.github.io/ParticleInCell.jl/vp-2d2v/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ParticleInCell.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../maxwell/">Maxwell solver</a></li><li><a class="tocitem" href="../landau_damping/">Landau damping</a></li><li><a class="tocitem" href="../tsi/">Two-stream instability</a></li><li><a class="tocitem" href="../vlasov-maxwell/">Vlasov-Maxwell 2D</a></li><li><a class="tocitem" href="../types/">Types</a></li><li><a class="tocitem" href="../functions/">Functions</a></li><li><a class="tocitem" href="../contents/">Contents</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Vlasov-Poisson</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Vlasov-Poisson</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaVlasov/ParticleInCell.jl/blob/master/docs/src/vp-2d2v.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Vlasov-Poisson"><a class="docs-heading-anchor" href="#Vlasov-Poisson">Vlasov-Poisson</a><a id="Vlasov-Poisson-1"></a><a class="docs-heading-anchor-permalink" href="#Vlasov-Poisson" title="Permalink"></a></h1><p>Simulation of 2d2v Vlasov-Poisson with simple PIC method, periodic boundary conditions and Landau initial values along x1 only.</p><pre><code class="language-julia">using Pkg, Plots
+Pkg.activate(&quot;/Users/navaro/JuliaProjects/ParticleInCell.jl/&quot;)
+using Revise</code></pre><pre><code class="language-julia">using ParticleInCell
+
+delta_t = 0.1
+n_time_steps = 100
+alpha = 0.1
+kx = 1.0
+
+ng_x1 = 32
+ng_x2 = 32
+x1_min = 0.0
+x2_min = 0.0
+x1_max = 4π
+x2_max = 4π
+
+n_particles = 100000
+degree_smoother = 1
+
+mesh = TwoDGrid( x1_min, x1_max, ng_x1, x2_min, x2_max, ng_x2)
+
+particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
+
+sampler = LandauDamping( alpha, kx )
+
+sample!( particles, sampler)</code></pre><pre><code class="language-julia">histogram( particles.array[1,:], normalized=true)</code></pre><pre><code class="language-julia">histogram( particles.array[2,:], normalized=true)</code></pre><pre><code class="language-julia">histogram( particles.array[3,:], normalized=true)
+xlims!(-6,6)</code></pre><pre><code class="language-julia">histogram( particles.array[4,:], normalized=true)
+xlims!(-6,6)</code></pre><pre><code class="language-julia">poisson = Poisson2DPeriodic( mesh )
+kernel = ParticleMeshCoupling2D( particles, mesh, 1, :collocation)
+
+ex = zeros(ng_x1, ng_x2)
+ey = zeros(ng_x1, ng_x2)
+rho_dofs = zeros(ng_x1*ng_x2)
+
+for i_part = 1:particles.n_particles
+    xi = particles.array[1, i_part]
+    yi = particles.array[2, i_part]
+    wi = particles.array[5, i_part]
+    ParticleInCell.add_charge!(rho_dofs, kernel, (xi, yi), wi)
+end</code></pre><pre><code class="language-julia">solve!(ex, ey, poisson, rho)</code></pre><pre><code class="language-julia">kernel = ParticleMeshCoupling( particles, mesh, degree_smoother, :collocation)
+
+problem = PicPoisson2DPeriodic( kernel, poisson )
+
+propagator = SplittingOperator( pic ) 
+
+energy = Float64[]
+
+for j=1:nsteps
+
+    strang_splitting!( propagator, delta_t)
+
+    push!(energy, compute_field_energy(pic))
+          
+end
+
+energy</code></pre></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 3 March 2021 17:31">Wednesday 3 March 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
