@@ -20,7 +20,7 @@ struct ParticleMeshCoupling2D
     values :: Array{Float64,2}
 
     function ParticleMeshCoupling2D( pg :: ParticleGroup{2,2}, grid :: TwoDGrid, 
-                                     degree :: Int, smoothing_type  )
+                                     degree :: Int, smoothing_type :: Symbol  )
 
         npart = pg.n_particles
         spline1 = SplinePP(degree, grid.nx)
@@ -46,12 +46,12 @@ end
 
 
 """
-   compute_shape_factor_spline_2d(pm, position, indices)
+   compute_shape_factor(pm, xp, yp)
 
 Helper function computing shape factor
 - pm : kernel smoother object
 """
-function compute_shape_factor!(pm :: ParticleMeshCoupling2D, xp, yp)
+function compute_shape_factor(pm :: ParticleMeshCoupling2D, xp, yp)
 
     xp = (xp - pm.grid.xmin) / pm.grid.dx
     yp = (yp - pm.grid.ymin) / pm.grid.dy
@@ -98,7 +98,7 @@ Add charge of single particle
 """
 function add_charge!(ρ_dofs, pm ::  ParticleMeshCoupling2D , xp, yp, wp)
     
-    ind_x, ind_y = compute_shape_factor!(pm, xp, yp )
+    ind_x, ind_y = compute_shape_factor(pm, xp, yp )
 
     for i1 = 1:pm.n_span
        index1d_1 = ind_x + i1 - 2
@@ -200,7 +200,7 @@ Evaluate field with given dofs at position
 """
 function evaluate(pm, xp, yp, field_dofs)
     
-    ix, iy = compute_shape_factor!(pm, xp, yp)
+    ix, iy = compute_shape_factor(pm, xp, yp)
 
     value = 0.0
     for i1 = 1:pm.n_span
@@ -217,7 +217,7 @@ function evaluate(pm, xp, yp, field_dofs)
 end
 
 """
-    evaluate_multiple_spline_2d(pm, position, components, field_dofs, field_value)
+    evaluate_multiple(pm, position, components, field_dofs)
 
 ## Evaluate multiple fields at position \a position
 - position(pm%dim) : Position where to evaluate
@@ -225,20 +225,23 @@ end
 - field_dofs(:,:) : Degrees of freedom in kernel representation.
 - field_value(:) : Value of the field
 """
-function evaluate_multiple(pm, position)
+function evaluate_multiple(pm, position, field_dofs)
     
     indices = compute_shape_factor(pm, position...)
 
-    field_value = 0.0
+    field_value1 = 0.0
+    field_value2 = 0.0
     for i1 = 1:pm.n_span
        index1d_1 = indices[1]+i1-2
        for i2 = 1:pm.n_span
           index1d_2 = indices[2]+i2-2
-          index2d = index_1dto2d_column_major(pm,index1d)
-          field_value += field_dofs[index2d,components] * pm.values[i1,1] * pm.values[i2,2]
+          index2d = index_1dto2d_column_major(pm,index1d_1, index1d_2)
+          c = pm.values[i1,1] * pm.values[i2,2]
+          field_value1 += field_dofs[1][index2d] * c
+          field_value2 += field_dofs[2][index2d] * c
        end
     end
 
-    field_value
+    field_value1, field_value2
 
 end
