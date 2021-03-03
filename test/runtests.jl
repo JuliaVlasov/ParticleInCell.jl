@@ -2,6 +2,7 @@ using LinearAlgebra
 using ParticleInCell
 using Test
 
+include("test_particle_group.jl")
 include("test_splitting.jl")
 include("test_poisson_2d.jl")
 include("test_particle_mesh_coupling_spline_2d.jl")
