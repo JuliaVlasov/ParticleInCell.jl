@@ -61,7 +61,6 @@ struct Poisson2DPeriodic
 
 end
 
-l2norm_squarred_2d_periodic(poisson, coefs_dofs) = sum(coefs_dofs.^2) * poisson.dx * poisson.dy
 
 export solve!
     
@@ -327,10 +326,10 @@ export charge_deposition!
 function charge_deposition!(split :: SplittingOperator)
 
     for i_part = 1:split.pg.n_particles
-       xi = split.pg.array[1, i_part]
-       yi = split.pg.array[2, i_part]
-       wi = split.pg.array[5, i_part]
-       add_charge!(split.pic, (xi, yi), wi)
+       xp = split.pg.array[1, i_part]
+       yp = split.pg.array[2, i_part]
+       wp = split.pg.array[5, i_part]
+       add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
     end
 
 end
@@ -343,12 +342,14 @@ Solve Poisson's equation for the electric field
 solve_fields!(split :: SplittingOperator) = solve_fields!( split.pic )
 
 
+export strang_splitting!
+
 """
 Strang splitting
 - split :: time splitting object 
 - dt   :: time step
 """
-function strang_splitting(split :: SplittingOperator, dt)
+function strang_splitting!(split :: SplittingOperator, dt)
 
     operator_t!(split, 0.5dt)
     charge_deposition!(split)
@@ -357,3 +358,12 @@ function strang_splitting(split :: SplittingOperator, dt)
     operator_t!(split, 0.5dt)
 
 end
+
+export compute_field_energy
+
+"""
+    compute_field_energy
+
+Compute the squared l2 norm of electric field
+"""
+compute_field_energy(pic :: PICPoisson2D, component :: Int) = sum(pic.efield_dofs[component].^2) * pic.poisson.grid.dx * pic.poisson.grid.dy
