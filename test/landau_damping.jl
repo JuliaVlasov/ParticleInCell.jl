@@ -8,7 +8,7 @@ import ParticleInCell.F90
     kx = 0.5
     ky = 0.0
     dimx = 2pi / kx
-    dimy = 1.
+    dimy = 1.0
 
     mesh1 = TwoDGrid(dimx, nx, dimy, ny)
     mesh2 = TwoDGrid(dimx, nx, dimy, ny)
@@ -33,7 +33,6 @@ import ParticleInCell.F90
     landau_sampling!(particles2, alpha, kx)
 
     for istep = 1:1
-
         istep > 1 && faraday!(fdtd1, mesh1, 0.5dt)
         istep > 1 && faraday!(fdtd2, mesh2, 0.5dt)
 
@@ -55,8 +54,8 @@ import ParticleInCell.F90
         compute_current!(mesh1, particles1)
         F90.compute_current!(mesh2, particles2)
 
-        push_x!(particles1, mesh1, 0.5dt) 
-        push_x!(particles2, mesh2, 0.5dt) 
+        push_x!(particles1, mesh1, 0.5dt)
+        push_x!(particles2, mesh2, 0.5dt)
 
         faraday!(fdtd1, mesh1, 0.5dt)
         faraday!(fdtd2, mesh2, 0.5dt)

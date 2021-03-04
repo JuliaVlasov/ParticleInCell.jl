@@ -17,13 +17,13 @@ using LinearAlgebra
 
     xn = mesh.x
     yn = mesh.y |> transpose
-    xc = ( mesh.x[1:end-1] .+ mesh.x[2:end] ) ./ 2
-    yc = ( mesh.y[1:end-1] .+ mesh.y[2:end] ) ./ 2 |> transpose
+    xc = (mesh.x[1:end-1] .+ mesh.x[2:end]) ./ 2
+    yc = (mesh.y[1:end-1] .+ mesh.y[2:end]) ./ 2 |> transpose
 
     # Ex and Ey are set to zero at t = 0.0
     # Bz is set at  t = dt/2
     t = 0.5dt
-    fdtd.bz .= - cos.(xc) .* cos.(yc) .* cos(ω * t)
+    fdtd.bz .= -cos.(xc) .* cos.(yc) .* cos(ω * t)
 
     sol_ex(x, y) = +cos.(x) .* sin.(y) ./ ω
     sol_ey(x, y) = -sin.(x) .* cos.(y) ./ ω
@@ -35,23 +35,23 @@ using LinearAlgebra
 
         t = t + 0.5dt
 
-        @test maximum(abs.(fdtd.ex .- sol_ex(xc,yn) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(fdtd.ey .- sol_ey(xn,yc) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(fdtd.ex .- sol_ex(xc, yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(fdtd.ey .- sol_ey(xn, yc) .* sin(ω * t))) < 1e-6
 
         update_fields!(mesh, fdtd)
 
-        @test maximum(abs.(mesh.ex .- sol_ex(xn,yn) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(mesh.ey .- sol_ey(xn,yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(mesh.ex .- sol_ex(xn, yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(mesh.ey .- sol_ey(xn, yn) .* sin(ω * t))) < 1e-6
 
         faraday!(fdtd, mesh, dt)
 
         t = t + 0.5dt
 
-        @test maximum(abs.(fdtd.bz .- sol_bz(xc,yc) .* cos(ω * t))) < 1e-6
+        @test maximum(abs.(fdtd.bz .- sol_bz(xc, yc) .* cos(ω * t))) < 1e-6
 
         update_fields!(mesh, fdtd)
 
-        @test maximum(abs.(mesh.bz .- sol_bz(xn,yn) .* cos(ω * t))) < 1e-3
+        @test maximum(abs.(mesh.bz .- sol_bz(xn, yn) .* cos(ω * t))) < 1e-3
 
     end # next time step
 

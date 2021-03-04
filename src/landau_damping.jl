@@ -49,7 +49,7 @@ with
 P(x) = \\int_0^x (1 + \\alpha cos(k_x y)) dy = x + \\frac{\\alpha}{k_x} sin(k_x x)
 ```
 """
-function sample!(pg :: ParticleGroup{1,2}, d::LandauDamping)
+function sample!(pg::ParticleGroup{1,2}, d::LandauDamping)
 
     alpha, kx = d.alpha, d.kx
 
@@ -77,7 +77,7 @@ f_0(x,v,t) = \\frac{n_0}{2π v_{th}^2} ( 1 + \\alpha cos(k_x x))
  exp( - \\frac{v_x^2+v_y^2}{2 v_{th}^2})
 ```
 """
-function sample!(pg :: ParticleGroup{2,2}, d::LandauDamping)
+function sample!(pg::ParticleGroup{2,2}, d::LandauDamping)
 
     alpha, kx = d.alpha, d.kx
 

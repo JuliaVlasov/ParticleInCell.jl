@@ -38,7 +38,6 @@ function push_v!(p, dt)
     nbpart = size(p)[2]
 
     for ipart = 1:nbpart
-
         v1 = p[3, ipart]
         v2 = p[4, ipart]
         e1 = p[5, ipart]
@@ -52,7 +51,7 @@ function push_v!(p, dt)
         sintheta = 2 * tantheta / (1 + tantheta * tantheta)
 
         v1 += v2 * tantheta
-        v2 += - v1 * sintheta
+        v2 += -v1 * sintheta
         v1 += v2 * tantheta
 
         p[3, ipart] = v1 + 0.5dt * e1
@@ -64,21 +63,21 @@ end
 
 export push_x!
 
-function push_x!(p, mesh :: TwoDGrid, dt :: Float64)
+function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
     nbpart = size(p)[2]
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
-    for i in 1:nbpart
-        p1 = p[1,i] + dt * p[3,i]
-        p2 = p[2,i] + dt * p[4,i]
-        p1 > dimx && ( p1 -= dimx )   
-        p2 > dimy && ( p2 -= dimy )   
-        p1 < 0.0  && ( p1 += dimx )   
-        p2 < 0.0  && ( p2 += dimy )   
-        p[1,i] = p1
-        p[2,i] = p2
+    for i = 1:nbpart
+        p1 = p[1, i] + dt * p[3, i]
+        p2 = p[2, i] + dt * p[4, i]
+        p1 > dimx && (p1 -= dimx)
+        p2 > dimy && (p2 -= dimy)
+        p1 < 0.0 && (p1 += dimx)
+        p2 < 0.0 && (p2 += dimy)
+        p[1, i] = p1
+        p[2, i] = p2
     end
 
 end

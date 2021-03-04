@@ -9,8 +9,8 @@ using Plots, LinearAlgebra
 ```@example vm2d
 using ParticleInCell
 
-nx = 128 
-ny = 16   
+const nx = 128 
+const ny = 16   
 
 alpha = 0.1
 kx = 0.5
@@ -24,7 +24,7 @@ fdtd = FDTD(mesh)
 
 time  = 0
 
-for i=1:nx, j=1:ny
+for i=1:nx, j=1:ny+1
     fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
 end
 surface(fdtd.ex )
@@ -43,33 +43,39 @@ histogram!(p[4], particles[4,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
-compute_current!( mesh, particles)
-
-p = plot(layout=2)
-surface!(p[1], mesh.jx)
-surface!(p[2], mesh.jy)
-```
-
-```@example vm2d
-function run( fdtd, particles, mesh, nstep, dt)
+function run( nstep; npm = 100 )
     
+    dt = 0.01
     alpha = 0.1
-    kx = 0.5
-    landau_sampling!( particles, alpha, kx )
-    for i=1:nx, j=1:ny
-        fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
-        fdtd.ey[i,j] = 0.0
-        fdtd.bz[i,j] = 0.0
-    end
+    kx   = 0.5
+    dimx = 2*pi/kx
+    dimy = 1  
+    nx   = 128  # nombre de pts suivant x
+    ny   = 16   # nombre de pts suivant y
+    mesh = TwoDGrid( dimx, nx, dimy, ny)
+    dx, dy = mesh.dx, mesh.dy
 
+    nbpart = npm*nx*ny
+    println( " nbpart = $nbpart ")
+
+    particles = zeros(7,nbpart)
+    landau_sampling!( particles, alpha, kx )
+
+    fdtd = FDTD(mesh)
+    for i=1:nx, j=1:ny+1
+        fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
+    end
     time = 0
-    energy = Float64[0.5 * log( sum( fdtd.ex.^2) * mesh.dx * mesh.dy)]
+    energy = Float64[compute_energy(fdtd, mesh)]
     t = Float64[time]
     
     for istep in 1:nstep
     
-       istep > 1 && faraday!( fdtd, mesh, 0.5dt ) 
-       interpolation!( particles, mesh )
+       if istep > 1
+           faraday!( fdtd, mesh, 0.5dt ) 
+       end
+       update_fields!(mesh, fdtd)
+       interpolation!(particles, mesh)
        push_v!( particles, dt )
        push_x!( particles, mesh, 0.5dt) 
        compute_current!( mesh, particles)
@@ -78,18 +84,15 @@ function run( fdtd, particles, mesh, nstep, dt)
        ampere_maxwell!(fdtd, mesh, dt)
        time = time + dt
        push!(t, time)
-       push!(energy, 0.5 * log( sum(fdtd.ex.^2) * mesh.dx * mesh.dy))
+       push!(energy, compute_energy(fdtd, mesh))
     
     end
    
     t, energy
     
 end
-```
 
-```@example vm2d
-dt = 0.01
 nstep = 1000
-t, energy = run( fdtd, particles, mesh, nstep, dt)
+t, energy = run(nstep)
 plot(t, energy)
 ```

@@ -16,7 +16,7 @@ ny = 32
 xmin = 0.0
 ymin = 0.0
 xmax = 4π
-ymax = 4π
+ymax = 4pi	
 
 n_particles = 100000
 degree_smoother = 3
@@ -29,8 +29,7 @@ sampler = LandauDamping( alpha, kx )
 
 sample!( particles, sampler)
 
-particles.array[2,:] .*= ( ymax - ymin)
-particles.array[5,:]  .= 4π * 4π / n_particles;
+particles.array[5,:]  .= (4π * 4pi) ./ n_particles;
 ```
 
 ```@example vp2d2v

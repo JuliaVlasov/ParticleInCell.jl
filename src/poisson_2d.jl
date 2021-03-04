@@ -18,52 +18,52 @@ cartesian mesh with periodic boundary conditions on both sides
 """
 struct Poisson2DPeriodic
 
-   grid :: TwoDGrid
-   kx   :: Array{Float64, 2}    
-   ky   :: Array{Float64, 2}
-   k2   :: Array{Float64, 2}
-   rht  :: Array{ComplexF64, 2}
+    grid::TwoDGrid
+    kx::Array{Float64,2}
+    ky::Array{Float64,2}
+    k2::Array{Float64,2}
+    rht::Array{ComplexF64,2}
 
-   function Poisson2DPeriodic( grid :: TwoDGrid )
+    function Poisson2DPeriodic(grid::TwoDGrid)
 
-       nc_x = grid.nx
-       nc_y = grid.ny
+        nc_x = grid.nx
+        nc_y = grid.ny
 
-       rht = zeros(ComplexF64,(div(nc_x,2)+1,nc_y))
-    
-       kx = zeros(nc_x÷2+1,nc_y)
-       ky = zeros(nc_x÷2+1,nc_y)
-       k2 = zeros(nc_x÷2+1,nc_y)
+        rht = zeros(ComplexF64, (div(nc_x, 2) + 1, nc_y))
 
-       kx0 = 2π/grid.dimx
-       ky0 = 2π/grid.dimy
-       
-       for ik=1:nc_x÷2+1
-          kx1 = (ik-1)*kx0
-          for jk = 1:nc_y÷2
-             kx[ik,jk] = kx1
-             ky[ik,jk] = (jk-1)*ky0
-          end
-          for jk = nc_y÷2+1:nc_y     
-             kx[ik,jk] = kx1
-             ky[ik,jk] = (jk-1-nc_y)*ky0
-          end
-       end
+        kx = zeros(nc_x ÷ 2 + 1, nc_y)
+        ky = zeros(nc_x ÷ 2 + 1, nc_y)
+        k2 = zeros(nc_x ÷ 2 + 1, nc_y)
 
-       kx[1,1] = 1.0
-       k2 .= kx .* kx .+ ky .* ky
-       kx .= kx ./ k2
-       ky .= ky ./ k2
+        kx0 = 2π / grid.dimx
+        ky0 = 2π / grid.dimy
 
-       new( grid, kx, ky, k2, rht)
+        for ik = 1:nc_x÷2+1
+            kx1 = (ik - 1) * kx0
+            for jk = 1:nc_y÷2
+                kx[ik, jk] = kx1
+                ky[ik, jk] = (jk - 1) * ky0
+            end
+            for jk = nc_y÷2+1:nc_y
+                kx[ik, jk] = kx1
+                ky[ik, jk] = (jk - 1 - nc_y) * ky0
+            end
+        end
 
-   end 
+        kx[1, 1] = 1.0
+        k2 .= kx .* kx .+ ky .* ky
+        kx .= kx ./ k2
+        ky .= ky ./ k2
+
+        new(grid, kx, ky, k2, rht)
+
+    end
 
 end
 
 
 export solve!
-    
+
 """
     solve!( poisson, phi, rho )
 
@@ -74,13 +74,13 @@ computes `phi` from `rho`
 ```
 
 """
-function solve!( phi, poisson :: Poisson2DPeriodic, rho )
-    
-  poisson.rht .= rfft(rho)
-  poisson.rht ./= poisson.k2
-  phi .= irfft(poisson.rht, poisson.grid.nx)
+function solve!(phi, poisson::Poisson2DPeriodic, rho)
 
-end 
+    poisson.rht .= rfft(rho)
+    poisson.rht ./= poisson.k2
+    phi .= irfft(poisson.rht, poisson.grid.nx)
+
+end
 
 """
     solve!( ex, ey, poisson, rho )
@@ -93,23 +93,23 @@ E(x,y) = -\\nabla \\phi(x,y) \\\\
 ```
 
 """
-function solve!( ex, ey, poisson :: Poisson2DPeriodic, rho )
+function solve!(ex, ey, poisson::Poisson2DPeriodic, rho)
 
-  poisson.rht .= rfft(rho)
+    poisson.rht .= rfft(rho)
 
-  poisson.rht[1,1] = 0.0
-  poisson.rht .*=  -1im .* poisson.kx
+    poisson.rht[1, 1] = 0.0
+    poisson.rht .*= -1im .* poisson.kx
 
-  ex .= irfft(poisson.rht, poisson.grid.nx)  
+    ex .= irfft(poisson.rht, poisson.grid.nx)
 
-  poisson.rht .= rfft(rho)
+    poisson.rht .= rfft(rho)
 
-  poisson.rht[1,1] = 0.0
-  poisson.rht .*=  -1im .* poisson.ky
+    poisson.rht[1, 1] = 0.0
+    poisson.rht .*= -1im .* poisson.ky
 
-  ey .= irfft(poisson.rht, poisson.grid.nx)  
+    ey .= irfft(poisson.rht, poisson.grid.nx)
 
-end 
+end
 
 
 export PICPoisson2D
@@ -127,23 +127,22 @@ export PICPoisson2D
 - phi2d : 2d version of phi_dofs to adjust to field solver format
 """
 struct PICPoisson2D
-     
-    ndofs :: Int
-    kernel :: ParticleMeshCoupling2D 
-    poisson :: Poisson2DPeriodic
-    rho_dofs :: Vector{Float64}
-    efield_dofs :: Vector{Vector{Float64}}
-    phi_dofs :: Vector{Float64}
-    rho2d :: Array{Float64, 2}
-    efield :: Vector{Array{Float64, 2}}
-    phi2d :: Array{Float64, 2}
 
-    function PICPoisson2D( poisson :: Poisson2DPeriodic, 
-                           kernel :: ParticleMeshCoupling2D)
+    ndofs::Int
+    kernel::ParticleMeshCoupling2D
+    poisson::Poisson2DPeriodic
+    rho_dofs::Vector{Float64}
+    efield_dofs::Vector{Vector{Float64}}
+    phi_dofs::Vector{Float64}
+    rho2d::Array{Float64,2}
+    efield::Vector{Array{Float64,2}}
+    phi2d::Array{Float64,2}
+
+    function PICPoisson2D(poisson::Poisson2DPeriodic, kernel::ParticleMeshCoupling2D)
 
         nx, ny = poisson.grid.nx, poisson.grid.ny
         ndofs = nx * ny
-        
+
         rho_dofs = zeros(ndofs)
         rho_dofs_local = zeros(ndofs)
         rho_analyt_dofs = zeros(ndofs)
@@ -153,10 +152,9 @@ struct PICPoisson2D
         efield = [zeros(nx, ny), zeros(nx, ny)]
         phi2d = zeros(nx, ny)
 
-        new( ndofs, kernel, poisson, rho_dofs, 
-             efield_dofs, phi_dofs, rho2d, efield, phi2d )
+        new(ndofs, kernel, poisson, rho_dofs, efield_dofs, phi_dofs, rho2d, efield, phi2d)
 
-    end 
+    end
 
 end
 
@@ -168,14 +166,14 @@ Add charge from one particle
 - position : Position of the particle
 - marker_charge : Particle weight times charge
 """
-function add_charge!(pic :: PICPoisson2D, position, marker_charge)
+function add_charge!(pic::PICPoisson2D, position, marker_charge)
 
     xp, yp = position
 
     add_charge!(pic.rho_dofs, pic.kernel, xp, yp, marker_charge)
-       
-end 
-  
+
+end
+
 """
     evaluate_rho!(pic, position)
 
@@ -186,7 +184,7 @@ Evaluate charge density at rho at one position
 """
 function evaluate_rho!(pic, position)
 
-    evaluate!( kernel, position, pic.rho_dofs)
+    evaluate!(kernel, position, pic.rho_dofs)
 
 end
 
@@ -200,7 +198,7 @@ Evaluate potential at one position
 """
 function evaluate_rho(pic, position)
 
-    evaluate!( kernel, position, pic.phi_dofs)
+    evaluate!(kernel, position, pic.phi_dofs)
 
 end
 
@@ -216,7 +214,7 @@ function solve!(pic)
 
     solve_phi!(pic)
     solve_fields!(pic)
-    
+
 end
 
 """
@@ -231,7 +229,7 @@ function solve_phi!(pic)
     solve!(pic.phi2d, pic.poisson, pic.rho2d)
     pic.phi_dofs .= vec(pic.phi2d)
 
-end 
+end
 
 """
     solve_fields!( pic )
@@ -245,7 +243,7 @@ function solve_fields!(pic)
     pic.efield_dofs[1] .= vec(pic.efield[1])
     pic.efield_dofs[2] .= vec(pic.efield[2])
 
-end 
+end
 
 
 export SplittingOperator
@@ -257,8 +255,8 @@ Operator splitting type for 2d2v Vlasov-Poisson
 """
 struct SplittingOperator
 
-    pic :: PICPoisson2D
-    pg  :: ParticleGroup
+    pic::PICPoisson2D
+    pg::ParticleGroup
 
 end
 
@@ -268,42 +266,41 @@ Push x
 - split :: time splitting object 
 - dt   :: time step
 """
-function operator_t!(split :: SplittingOperator, dt)
+function operator_t!(split::SplittingOperator, dt)
 
     # x_new = x_old + dt * v
 
-    for i_part=1:split.pg.n_particles
-
-        split.pg.array[1,i_part] += dt * split.pg.array[3,i_part] 
-        split.pg.array[2,i_part] += dt * split.pg.array[4,i_part] 
+    for i_part = 1:split.pg.n_particles
+        split.pg.array[1, i_part] += dt * split.pg.array[3, i_part]
+        split.pg.array[2, i_part] += dt * split.pg.array[4, i_part]
 
     end
 
 end
-  
-function operator_v!(split :: SplittingOperator, dt)
+
+function operator_v!(split::SplittingOperator, dt)
 
     # v_new = v_old + dt * q/m * E
 
     qm = split.pg.q_over_m
 
-    for i_part=1:split.pg.n_particles
+    for i_part = 1:split.pg.n_particles
 
-       # Evaluate efields at particle position
+        # Evaluate efields at particle position
 
-       xi = split.pg.array[1, i_part]
-       yi = split.pg.array[2, i_part]
+        xi = split.pg.array[1, i_part]
+        yi = split.pg.array[2, i_part]
 
-       ex, ey = evaluate_multiple( split.pic.kernel, (xi, yi), split.pic.efield_dofs)
+        ex, ey = evaluate_multiple(split.pic.kernel, (xi, yi), split.pic.efield_dofs)
 
-       vx_new = split.pg.array[3, i_part]
-       vy_new = split.pg.array[4, i_part]
+        vx_new = split.pg.array[3, i_part]
+        vy_new = split.pg.array[4, i_part]
 
-       vx_new += dt * qm * ex
-       vy_new += dt * qm * ey
+        vx_new += dt * qm * ex
+        vy_new += dt * qm * ey
 
-       split.pg.array[3,i_part] = vx_new
-       split.pg.array[4,i_part] = vy_new
+        split.pg.array[3, i_part] = vx_new
+        split.pg.array[4, i_part] = vy_new
 
     end
 
@@ -311,14 +308,14 @@ end
 
 export charge_deposition!
 
-function charge_deposition!(split :: SplittingOperator)
+function charge_deposition!(split::SplittingOperator)
 
     fill!(split.pic.rho_dofs, 0.0)
     for i_part = 1:split.pg.n_particles
-       xp = split.pg.array[1, i_part]
-       yp = split.pg.array[2, i_part]
-       wp = split.pg.array[5, i_part]
-       add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
+        xp = split.pg.array[1, i_part]
+        yp = split.pg.array[2, i_part]
+        wp = split.pg.array[5, i_part]
+        add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
     end
     nx, ny = split.pic.poisson.grid.nx, split.pic.poisson.grid.ny
     split.pic.rho2d .= reshape(split.pic.rho_dofs, nx, ny)
@@ -330,7 +327,7 @@ export solve_fields!
 """
 Solve Poisson's equation for the electric field
 """
-solve_fields!(split :: SplittingOperator) = solve_fields!( split.pic )
+solve_fields!(split::SplittingOperator) = solve_fields!(split.pic)
 
 
 export strang_splitting!
@@ -340,7 +337,7 @@ Strang splitting
 - split :: time splitting object 
 - dt   :: time step
 """
-function strang_splitting!(split :: SplittingOperator, dt)
+function strang_splitting!(split::SplittingOperator, dt)
 
     operator_t!(split, 0.5dt)
     charge_deposition!(split)
@@ -357,4 +354,5 @@ export compute_field_energy
 
 Compute the squared l2 norm of electric field
 """
-compute_field_energy(pic :: PICPoisson2D, component :: Int) = sum(pic.efield_dofs[component].^2) * pic.poisson.grid.dx * pic.poisson.grid.dy
+compute_field_energy(pic::PICPoisson2D, component::Int) =
+    sum(pic.efield_dofs[component] .^ 2) * pic.poisson.grid.dx * pic.poisson.grid.dy
