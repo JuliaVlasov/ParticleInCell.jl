@@ -204,16 +204,6 @@ function evaluate_rho(pic, position)
 
 end
 
-"""
-    evaluate_field_single_2d(pic, position, components, func_value)
-
-Evaluate components of the electric field as one position
-- self : PIC Poisson solver object
-- components
-- position : Position of the particle
-- func_value
-"""
-evaluate_fields(pic, position) = evaluate_multiple( pic.kernel, position, pic.efield_dofs)
 
 
 """
@@ -250,8 +240,6 @@ Solve efields from rho
 """
 function solve_fields!(pic)
 
-    nx, ny = pic.poisson.grid.nx, pic.poisson.grid.ny
-    pic.rho2d .= reshape(pic.rho_dofs, nx, ny)
     solve!(pic.efield[1], pic.efield[2], pic.poisson, pic.rho2d)
 
     pic.efield_dofs[1] .= vec(pic.efield[1])
@@ -306,7 +294,7 @@ function operator_v!(split :: SplittingOperator, dt)
        xi = split.pg.array[1, i_part]
        yi = split.pg.array[2, i_part]
 
-       ex, ey = evaluate_fields(split.pic, (xi, yi))
+       ex, ey = evaluate_multiple( split.pic.kernel, (xi, yi), split.pic.efield_dofs)
 
        vx_new = split.pg.array[3, i_part]
        vy_new = split.pg.array[4, i_part]
@@ -325,12 +313,15 @@ export charge_deposition!
 
 function charge_deposition!(split :: SplittingOperator)
 
+    fill!(split.pic.rho_dofs, 0.0)
     for i_part = 1:split.pg.n_particles
        xp = split.pg.array[1, i_part]
        yp = split.pg.array[2, i_part]
        wp = split.pg.array[5, i_part]
        add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
     end
+    nx, ny = split.pic.poisson.grid.nx, split.pic.poisson.grid.ny
+    split.pic.rho2d .= reshape(split.pic.rho_dofs, nx, ny)
 
 end
 

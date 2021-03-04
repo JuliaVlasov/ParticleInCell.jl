@@ -19,6 +19,7 @@ makedocs(modules=[ParticleInCell],
                   "Landau damping" => "landau_damping.md",
                   "Two-stream instability" => "tsi.md",
                   "Vlasov-Maxwell 2D" => "vlasov-maxwell.md",
+                  "Vlasov-Poisson 2D" => "vlasov-poisson.md",
                   "Types"     => "types.md",
                   "Functions" => "functions.md",
                   "Contents"  => "contents.md"])
