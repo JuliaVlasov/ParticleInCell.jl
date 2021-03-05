@@ -77,9 +77,12 @@ f_0(x,v,t) = \\frac{n_0}{2π v_{th}^2} ( 1 + \\alpha cos(k_x x))
  exp( - \\frac{v_x^2+v_y^2}{2 v_{th}^2})
 ```
 """
-function sample!(pg::ParticleGroup{2,2}, d::LandauDamping)
+function sample!(pg::ParticleGroup{2,2}, mesh :: TwoDGrid, d::LandauDamping)
+
 
     alpha, kx = d.alpha, d.kx
+
+    @assert mesh.dimx ≈ 2π / kx
 
     s = Sobol.SobolSeq(3)
     nbpart = pg.n_particles
@@ -89,10 +92,10 @@ function sample!(pg::ParticleGroup{2,2}, d::LandauDamping)
         x, y, θ = Sobol.next!(s)
         θ = θ * 2π
         pg.array[1, i] = newton(x, alpha, kx)
-        pg.array[2, i] = y
+        pg.array[2, i] = mesh.ymin + y * mesh.dimy
         pg.array[3, i] = v * cos(θ)
         pg.array[4, i] = v * sin(θ)
-        pg.array[5, i] = 1 / nbpart
+        pg.array[5, i] = (mesh.dimx * mesh.dimy) / nbpart
     end
 
 end
