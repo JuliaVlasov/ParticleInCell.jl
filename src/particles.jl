@@ -1,36 +1,4 @@
 import Base.Threads
-export landau_sampling!
-
-function landau_sampling!(particles, alpha, kx)
-
-    nbpart = size(particles)[2]
-
-    function newton(r)
-        x0, x1 = 0.0, 1.0
-        r *= 2π / kx
-        while (abs(x1 - x0) > 1e-12)
-            p = x0 + alpha * sin(kx * x0) / kx
-            f = 1 + alpha * cos(kx * x0)
-            x0, x1 = x1, x0 - (p - r) / f
-        end
-        x1
-    end
-
-    s = Sobol.SobolSeq(3)
-
-    for i = 1:nbpart
-        v = sqrt(-2 * log((i - 0.5) / nbpart))
-        r1, r2, r3 = Sobol.next!(s)
-        θ = r1 * 2π
-        particles[1, i] = newton(r2)
-        particles[2, i] = r3
-        particles[3, i] = v * cos(θ)
-        particles[4, i] = v * sin(θ)
-    end
-
-end
-
-export update_cells!
 
 export push_v!
 
