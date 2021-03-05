@@ -11,12 +11,10 @@ nsteps = 100
 alpha = 0.1
 kx = 0.5
 
-nx = 32
-ny = 32
-xmin = 0.0
-ymin = 0.0
-xmax = 4π
-ymax = 4pi	
+nx = 128
+ny = 16
+xmin, xmax = 0.0, 4π
+ymin, ymax = 0.0, 1.0
 
 n_particles = 100000
 degree_smoother = 3
@@ -29,26 +27,24 @@ sampler = LandauDamping( alpha, kx )
 
 sample!( particles, sampler)
 
-particles.array[5,:]  .= (4π * 4pi) ./ n_particles;
+particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) ./ n_particles;
 ```
 
 ```@example vp2d2v
-histogram( particles.array[1,:], normalized=true)
+p = plot(layout=2)
+histogram!( p[1], particles.array[1,:], normalized=true)
+histogram!( p[2], particles.array[2,:], normalized=true)
 ```
 
 ```@example vp2d2v
-histogram( particles.array[2,:], normalized=true)
-```
+p = plot(layout=2)
 
-```@example vp2d2v
-histogram( particles.array[3,:], normalized=true)
+histogram!( p[1], particles.array[3,:], normalized=true)
+xlims!(-6,6)
+histogram!( p[2], particles.array[4,:], normalized=true)
 xlims!(-6,6)
 ```
 
-```@example vp2d2v
-histogram( particles.array[4,:], normalized=true)
-xlims!(-6,6)
-```
 
 ```@example vp2d2v
 poisson = Poisson2DPeriodic( mesh )
@@ -65,12 +61,10 @@ for i_part = 1:particles.n_particles
     ParticleInCell.add_charge!(rho_dofs, kernel, xi, yi, wi)
 end
 rho = reshape(rho_dofs, nx, ny )
-surface(rho)
-```
-
-```@example vp2d2v
 solve!(ex, ey, poisson, rho)
-surface(ex)
+p = plot(layout=(2))
+surface!(p[1], ex)
+surface!(p[2],rho)
 ```
 
 ```@example vp2d2v
@@ -86,13 +80,14 @@ nsteps = 100
 alpha = 0.1
 kx = 0.5
 
+particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
 
 sampler = LandauDamping( alpha, kx )
 
 sample!( particles, sampler)
 
 particles.array[2,:] .*= ( ymax - ymin)
-particles.array[5,:]  .= 4π * 4π / n_particles;
+particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) / n_particles;
 
 propagator = SplittingOperator( problem, particles ) 
 
@@ -111,4 +106,6 @@ for j=1:100
 end
 
 plot(log.(energy))
+
+
 ```
