@@ -1,20 +1,21 @@
+import Statistics: mean
 import Base.Threads: @sync, @spawn, nthreads, threadid
 
+export compute_rho
 
-export interpolation!
+function compute_rho(p, m :: TwoDGrid)
 
-function interpolation!(p::Array{Float64,2}, m::TwoDGrid)
+    nx, ny = m.nx, m.ny
+    dx, dy = m.dx, m.dy
+    rho = zeros(nx+1, ny+1)
+    nbpart = size(p.array)[2]
 
-    nbpart = size(p)[2]
-    dx = m.dx
-    dy = m.dy
+    for ipart = 1:nbpart
+        xp = p.array[1, ipart] / dx
+        yp = p.array[2, ipart] / dy
 
-    @inbounds for ipart = 1:nbpart
-        xp = p[1, ipart] / dx
-        yp = p[2, ipart] / dy
-
-        i = floor(Int, xp) + 1
-        j = floor(Int, yp) + 1
+        i = trunc(Int, xp) + 1
+        j = trunc(Int, yp) + 1
 
         dxp = xp - i + 1
         dyp = yp - j + 1
@@ -24,14 +25,28 @@ function interpolation!(p::Array{Float64,2}, m::TwoDGrid)
         a3 = dxp * dyp
         a4 = (1 - dxp) * dyp
 
-        p[5, ipart] =
-            a1 * m.ex[i, j] + a2 * m.ex[i+1, j] + a3 * m.ex[i+1, j+1] + a4 * m.ex[i, j+1]
-        p[6, ipart] =
-            a1 * m.ey[i, j] + a2 * m.ey[i+1, j] + a3 * m.ey[i+1, j+1] + a4 * m.ey[i, j+1]
-        p[7, ipart] =
-            a1 * m.bz[i, j] + a2 * m.bz[i+1, j] + a3 * m.bz[i+1, j+1] + a4 * m.bz[i, j+1]
+        ip1 = mod1(i + 1, nx)
+        jp1 = mod1(j + 1, ny)
+
+        w = p.array[5, ipart]
+
+        rho[i, j] += a1 * w
+        rho[ip1, j] += a2 * w
+        rho[ip1, jp1] += a3 * w
+        rho[i, jp1] += a4 * w
 
     end
+
+    for i = 1:nx
+       rho[i,1] += rho[i,ny+1]
+    end
+    for j = 1:ny
+       rho[1,j] += rho[nx+1,j]
+    end
+    
+    rho ./= ( dx * dy )
+
+    return rho[1:nx,1:ny] .- mean(rho[1:nx,1:ny])
 
 
 end
