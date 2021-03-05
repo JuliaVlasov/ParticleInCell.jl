@@ -15,7 +15,7 @@ function run( nstep; npm = 100 )
     nbpart = npm*nx*ny
     println( " nbpart = $nbpart ")
 
-    particles = zeros(7,nbpart)
+    particles = zeros(4,nbpart)
     landau_sampling!( particles, alpha, kx )
 
     fdtd = FDTD(mesh)
@@ -33,8 +33,8 @@ function run( nstep; npm = 100 )
            @timeit to "fdtd" faraday!( fdtd, mesh, 0.5dt ) 
        end
        update_fields!(mesh, fdtd)
-       @timeit to "interpolation" interpolation!(particles, mesh)
-       @timeit to "pushv" push_v!( particles, dt )
+       #@timeit to "interpolation" interpolation!(particles, mesh)
+       @timeit to "pushv" push_v!( particles, mesh, dt )
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
        @timeit to "deposition" compute_current!( mesh, particles)
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 

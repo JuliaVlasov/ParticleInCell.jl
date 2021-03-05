@@ -1,3 +1,4 @@
+import Base.Threads
 export landau_sampling!
 
 function landau_sampling!(particles, alpha, kx)
@@ -40,7 +41,7 @@ function push_v!(p, m, dt)
     dx = m.dx
     dy = m.dy
 
-    @inbounds for ipart = 1:nbpart
+    Threads.@threads for ipart = 1:nbpart
 
         v1 = p[3, ipart]
         v2 = p[4, ipart]
@@ -88,7 +89,7 @@ function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
-    for i = 1:nbpart
+    Threads.@threads for i = 1:nbpart
         p1 = p[1, i] + dt * p[3, i]
         p2 = p[2, i] + dt * p[4, i]
         p1 > dimx && (p1 -= dimx)
