@@ -19,7 +19,7 @@ import ParticleInCell.F90
     time = 0
     dt = 0.01
 
-    for i = 1:nx, j = 1:ny
+    for i = 1:nx, j = 1:ny+1
         fdtd1.ex[i, j] = alpha / kx * sin(kx * mesh1.x[i])
         fdtd2.ex[i, j] = alpha / kx * sin(kx * mesh2.x[i])
     end
@@ -33,6 +33,7 @@ import ParticleInCell.F90
     landau_sampling!(particles2, alpha, kx)
 
     for istep = 1:1
+
         istep > 1 && faraday!(fdtd1, mesh1, 0.5dt)
         istep > 1 && faraday!(fdtd2, mesh2, 0.5dt)
 
@@ -43,7 +44,7 @@ import ParticleInCell.F90
         F90.interpolation!(particles2, mesh2)
         @test all(particles1 .== particles2)
 
-        push_v!(particles1, dt)
+        push_v!(particles1, mesh1,  dt)
         F90.push_v!(particles2, dt)
         @test all(particles1 .== particles2)
 

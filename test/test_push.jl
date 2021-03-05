@@ -17,12 +17,15 @@ import ParticleInCell.F90
     pj[5, 1] = 1.0
     pj[7, 1] = 1.0
 
+    mesh.ex .= 1.0
+    mesh.bz .= 1.0
+
     pf = copy(pj)
 
     time = 0
 
     for istep = 1:50
-        push_v!(pj, dt)
+        push_v!(pj, mesh, dt)
         push_x!(pj, mesh, dt)
 
         F90.push_v!(pf, dt)
