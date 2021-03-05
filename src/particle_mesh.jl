@@ -1,9 +1,14 @@
 import Statistics: mean
-import Base.Threads: @sync, @spawn, nthreads, threadid
+import Base.Threads: @threads, @sync, @spawn, nthreads, threadid
+
+
+export CloudInCell
+
+struct CloudInCell end
 
 export compute_rho
 
-function compute_rho(p, m :: TwoDGrid)
+function compute_rho(p, kernel::CloudInCell, m :: TwoDGrid)
 
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
@@ -53,7 +58,7 @@ end
 
 export compute_current!
 
-function compute_current!(m::TwoDGrid, p)
+function compute_current!(m::TwoDGrid, kernel::CloudInCell, p)
 
     nbpart = size(p.array)[2]
     nx, ny = m.nx, m.ny
@@ -62,7 +67,7 @@ function compute_current!(m::TwoDGrid, p)
     fill!(m.jx, 0)
     fill!(m.jy, 0)
 
-    factor = (nx * ny) / nbpart
+    factor = (nx * ny)
 
     ntid = nthreads()
     jx = [zero(m.jx) for _ in 1:ntid]
@@ -90,8 +95,8 @@ function compute_current!(m::TwoDGrid, p)
 
                 w = p.array[5, ipart]
 
-                w1 = p.array[3, ipart] * factor
-                w2 = p.array[4, ipart] * factor
+                w1 = p.array[3, ipart] * factor * w
+                w2 = p.array[4, ipart] * factor * w
 
                 jx[tid][i, j] += a1 * w1
                 jy[tid][i, j] += a1 * w2

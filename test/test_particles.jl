@@ -30,7 +30,9 @@
 
     sample!(p, mesh, sampler)
 
-    ρ = compute_rho(p, mesh)
+    kernel = CloudInCell()
+
+    ρ = compute_rho(p, kernel, mesh)
 
     @test ρ ≈ rho atol=1e-2
 

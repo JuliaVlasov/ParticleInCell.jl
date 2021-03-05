@@ -2,7 +2,7 @@
 module F90
 
 using Libdl
-import ..ParticleInCell: TwoDGrid
+import ..ParticleInCell: TwoDGrid, CloudInCell
 
 const piclib = joinpath(@__DIR__, "libpic")
 
@@ -17,7 +17,7 @@ end
 
 
 
-function compute_current!(m::TwoDGrid, p )
+function compute_current!(m::TwoDGrid, kernel :: CloudInCell, p )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -80,7 +80,7 @@ end
 
 export push_v!
 
-function push_v!(p, m::TwoDGrid, dt::Float64)
+function push_v!(p, kernel::CloudInCell, m::TwoDGrid, dt::Float64)
 
     nbpart = Int32(size(p.array)[2])
     nx = Int32(m.nx)

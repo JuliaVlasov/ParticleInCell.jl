@@ -13,7 +13,6 @@ import ParticleInCell.F90
     dt = 0.1
     x0, y0 = 0.1, 0.1
 
-
     pj = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
     pf = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
 
@@ -28,11 +27,14 @@ import ParticleInCell.F90
 
     time = 0
 
+    kernel = CloudInCell()
+
     for istep = 1:50
-        push_v!(pj, mesh, dt)
+
+        push_v!(pj, kernel, mesh, dt)
         push_x!(pj, mesh, dt)
 
-        F90.push_v!(pf, mesh, dt)
+        F90.push_v!(pf, kernel, mesh, dt)
         F90.push_x!(pf, mesh, dt)
 
         @test all(pj.array .== pf.array)

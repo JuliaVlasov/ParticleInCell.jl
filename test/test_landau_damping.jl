@@ -37,6 +37,7 @@ import ParticleInCell.F90
         fdtd2.ex[i, j] = alpha / kx * sin(kx * mesh2.x[i])
     end
 
+    kernel = CloudInCell()
 
     particles1 = group1.array
     particles2 = group2.array
@@ -49,16 +50,16 @@ import ParticleInCell.F90
         update_fields!(mesh1, fdtd1)
         update_fields!(mesh2, fdtd2)
 
-        push_v!(group1, mesh1,  dt)
-        F90.push_v!(group2, mesh2, dt)
+        push_v!(group1, kernel, mesh1,  dt)
+        F90.push_v!(group2, kernel, mesh2, dt)
         @test all(particles1 .== particles2)
 
         push_x!(group1, mesh1, 0.5dt)
         F90.push_x!(group2, mesh2, 0.5dt)
         @test all(particles1 .== particles2)
 
-        compute_current!(mesh1, group1)
-        F90.compute_current!(mesh2, group2)
+        compute_current!(mesh1, kernel, group1)
+        F90.compute_current!(mesh2, kernel, group2)
 
         push_x!(group1, mesh1, 0.5dt)
         F90.push_x!(group2, mesh2, 0.5dt)

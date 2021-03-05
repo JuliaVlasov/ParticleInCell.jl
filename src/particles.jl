@@ -2,7 +2,7 @@ import Base.Threads
 
 export push_v!
 
-function push_v!(p, m :: TwoDGrid, dt)
+function push_v!(p, kernel:: CloudInCell, m :: TwoDGrid, dt)
 
     nbpart = size(p.array)[2]
 
