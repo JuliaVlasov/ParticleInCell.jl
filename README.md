@@ -29,6 +29,7 @@ Now I increase the number of particles to 1024000 and begin to parallelize parti
 - 58 seconds : First serial time, It spends 24 seconds in `push_x`, we can do better.
 - 46 seconds : Move interpolation step inside the `push_v` function and reduce memory print. 
 - 31 seconds : Add @threads in `push_x` and `push_v` functions. 
+- 17 seconds : by adding @threads in `compute_current`
 
 ## Other Julia PIC codes 
 

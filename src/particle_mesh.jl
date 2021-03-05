@@ -1,3 +1,6 @@
+import Base.Threads: @sync, @spawn, nthreads, threadid
+
+
 export interpolation!
 
 function interpolation!(p::Array{Float64,2}, m::TwoDGrid)
@@ -46,37 +49,50 @@ function compute_current!(m::TwoDGrid, p)
 
     factor = (nx * ny) / nbpart
 
-    for ipart = 1:nbpart
-        xp = p[1, ipart] / dx
-        yp = p[2, ipart] / dy
+    ntid = nthreads()
+    jx = [zero(m.jx) for _ in 1:ntid]
+    jy = [zero(m.jy) for _ in 1:ntid]
 
-        i = floor(Int, xp) + 1
-        j = floor(Int, yp) + 1
+    chunks = Iterators.partition(1:nbpart, nbpart÷ntid)
 
-        dxp = xp - i + 1
-        dyp = yp - j + 1
+    @sync for chunk in chunks
+        @spawn begin
+            tid = threadid()
+            @inbounds for ipart in chunk
+                xp = p[1, ipart] / dx
+                yp = p[2, ipart] / dy
 
-        a1 = (1 - dxp) * (1 - dyp)
-        a2 = dxp * (1 - dyp)
-        a3 = dxp * dyp
-        a4 = (1 - dxp) * dyp
+                i = floor(Int, xp) + 1
+                j = floor(Int, yp) + 1
 
-        w1 = p[3, ipart] * factor
-        w2 = p[4, ipart] * factor
+                dxp = xp - i + 1
+                dyp = yp - j + 1
 
-        m.jx[i, j] += a1 * w1
-        m.jy[i, j] += a1 * w2
+                a1 = (1 - dxp) * (1 - dyp)
+                a2 = dxp * (1 - dyp)
+                a3 = dxp * dyp
+                a4 = (1 - dxp) * dyp
 
-        m.jx[i+1, j] += a2 * w1
-        m.jy[i+1, j] += a2 * w2
+                w1 = p[3, ipart] * factor
+                w2 = p[4, ipart] * factor
 
-        m.jx[i+1, j+1] += a3 * w1
-        m.jy[i+1, j+1] += a3 * w2
+                jx[tid][i, j] += a1 * w1
+                jy[tid][i, j] += a1 * w2
 
-        m.jx[i, j+1] += a4 * w1
-        m.jy[i, j+1] += a4 * w2
+                jx[tid][i+1, j] += a2 * w1
+                jy[tid][i+1, j] += a2 * w2
 
+                jx[tid][i+1, j+1] += a3 * w1
+                jy[tid][i+1, j+1] += a3 * w2
+
+                jx[tid][i, j+1] += a4 * w1
+                jy[tid][i, j+1] += a4 * w2
+            end
+        end
     end
+
+    m.jx .= reduce(+,jx)
+    m.jy .= reduce(+,jy)
 
     for i = 1:nx+1
         m.jx[i, 1] += m.jx[i, ny+1]

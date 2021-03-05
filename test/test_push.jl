@@ -28,7 +28,7 @@ import ParticleInCell.F90
         push_v!(pj, mesh, dt)
         push_x!(pj, mesh, dt)
 
-        F90.push_v!(pf, dt)
+        F90.push_v!(pf, mesh, dt)
         F90.push_x!(pf, mesh, dt)
 
         @test all(pj .== pf)

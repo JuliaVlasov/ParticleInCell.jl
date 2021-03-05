@@ -45,7 +45,7 @@ import ParticleInCell.F90
         @test all(particles1 .== particles2)
 
         push_v!(particles1, mesh1,  dt)
-        F90.push_v!(particles2, dt)
+        F90.push_v!(particles2, mesh2, dt)
         @test all(particles1 .== particles2)
 
         push_x!(particles1, mesh1, 0.5dt)
