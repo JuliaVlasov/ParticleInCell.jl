@@ -14,20 +14,32 @@ mod1 = modulo(x-1, y) + 1
 
 end function mod1
 
-pure subroutine interpolation( nbpart, nx, ny, dx, dy, ex, ey, bz, p ) bind(C, name="interpolation")
 
-integer(c_int32_t), intent(in) :: nbpart, nx, ny
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+pure subroutine push_v( nbpart, p, dt, nx, ny, dx, dy, ex, ey, bz) bind(C, name="push_v")
+
+integer(c_int32_t), intent(in) :: nbpart
+real(c_double), intent(inout) :: p(5,nbpart)
+real(c_double), intent(in) :: dt
+integer(c_int32_t), intent(in) :: nx, ny
 real(c_double), intent(in) :: dx, dy
-real(c_double), intent(inout) :: p(7,nbpart)
 real(c_double), intent(in) :: ex(nx+1,ny+1)
 real(c_double), intent(in) :: ey(nx+1,ny+1)
 real(c_double), intent(in) :: bz(nx+1,ny+1)
 
+real(c_double) :: tantheta, sintheta
+real(c_double) :: hdt, v1, v2, e1, e2, b3
 real(c_double) :: a1, a2, a3, a4
 real(c_double) :: xp, yp, dxp, dyp
 integer(c_int32_t) :: i, j, ipart
 
-do ipart=1,nbpart
+hdt = 0.5 * dt
+
+do ipart = 1, nbpart
+
+   v1 = p(3,ipart)
+   v2 = p(4,ipart)
 
    xp = p(1,ipart) / dx
    yp = p(2,ipart) / dy
@@ -43,35 +55,9 @@ do ipart=1,nbpart
    a3 = dxp * dyp 
    a4 = (1-dxp) * dyp 
 
-   p(5,ipart) = a1 * ex(i,j) + a2 * ex(i+1,j) + a3 * ex(i+1,j+1) + a4 * ex(i,j+1)
-   p(6,ipart) = a1 * ey(i,j) + a2 * ey(i+1,j) + a3 * ey(i+1,j+1) + a4 * ey(i,j+1)
-   p(7,ipart) = a1 * bz(i,j) + a2 * bz(i+1,j) + a3 * bz(i+1,j+1) + a4 * bz(i,j+1)
-
-end do
-
-end subroutine interpolation
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-pure subroutine push_v( nbpart, p, dt ) bind(C, name="push_v")
-
-integer(c_int32_t), intent(in) :: nbpart
-real(c_double), intent(inout) :: p(7,nbpart)
-real(c_double), intent(in) :: dt
-
-real(c_double) :: tantheta, sintheta
-real(c_double) :: hdt, v1, v2, e1, e2, b3
-integer :: ipart
-
-hdt = 0.5 * dt
-
-do ipart = 1, nbpart
-
-   v1 = p(3,ipart)
-   v2 = p(4,ipart)
-   e1 = p(5,ipart)
-   e2 = p(6,ipart)
-   b3 = p(7,ipart)
+   e1 = a1 * ex(i,j) + a2 * ex(i+1,j) + a3 * ex(i+1,j+1) + a4 * ex(i,j+1)
+   e2 = a1 * ey(i,j) + a2 * ey(i+1,j) + a3 * ey(i+1,j+1) + a4 * ey(i,j+1)
+   b3 = a1 * bz(i,j) + a2 * bz(i+1,j) + a3 * bz(i+1,j+1) + a4 * bz(i,j+1)
 
    v1 = v1 + hdt * e1
    v2 = v2 + hdt * e2
@@ -96,7 +82,7 @@ pure subroutine push_x( nbpart, dimx, dimy, p, dt ) bind(C, name="push_x")
 
 integer(c_int32_t), intent(in) :: nbpart
 real(c_double), intent(in) :: dimx, dimy, dt
-real(c_double), intent(inout) :: p(7,nbpart)
+real(c_double), intent(inout) :: p(5,nbpart)
 real(c_double) ::  p1, p2
 integer :: ipart
 
@@ -117,7 +103,7 @@ pure subroutine deposition( nbpart, nx, ny, dx, dy, p, jx, jy ) bind(C, name="de
 
 integer(c_int32_t), intent(in) :: nbpart, nx, ny
 real(c_double), intent(in)  :: dx, dy
-real(c_double), intent(in)  :: p(7,nbpart)
+real(c_double), intent(in)  :: p(5,nbpart)
 real(c_double), intent(out) :: jx(nx+1,ny+1)
 real(c_double), intent(out) :: jy(nx+1,ny+1)
 
