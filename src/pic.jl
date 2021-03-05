@@ -17,13 +17,13 @@ end
 
 
 
-function compute_current!(m::TwoDGrid, p::Array{Float64,2})
+function compute_current!(m::TwoDGrid, p )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
     dx = m.dx
     dy = m.dy
-    nbpart = Int32(size(p)[2])
+    nbpart = Int32(size(p.array)[2])
 
     ccall(
         (:deposition, piclib),
@@ -43,7 +43,7 @@ function compute_current!(m::TwoDGrid, p::Array{Float64,2})
         ny,
         dx,
         dy,
-        p,
+        p.array,
         m.jx,
         m.jy,
     )
@@ -59,9 +59,9 @@ function compute_current!(m::TwoDGrid, p::Array{Float64,2})
 
 end
 
-function push_x!(p::Array{Float64,2}, mesh::TwoDGrid, dt::Float64)
+function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
-    nbpart = Int32(size(p)[2])
+    nbpart = Int32(size(p.array)[2])
     dimx = mesh.dimx
     dimy = mesh.dimy
 
@@ -72,7 +72,7 @@ function push_x!(p::Array{Float64,2}, mesh::TwoDGrid, dt::Float64)
         nbpart,
         dimx,
         dimy,
-        p,
+        p.array,
         dt,
     )
 
@@ -80,9 +80,9 @@ end
 
 export push_v!
 
-function push_v!(p::Array{Float64,2}, m::TwoDGrid, dt::Float64)
+function push_v!(p, m::TwoDGrid, dt::Float64)
 
-    nbpart = Int32(size(p)[2])
+    nbpart = Int32(size(p.array)[2])
     nx = Int32(m.nx)
     ny = Int32(m.ny)
     dx = m.dx
@@ -95,7 +95,7 @@ function push_v!(p::Array{Float64,2}, m::TwoDGrid, dt::Float64)
             Ref{Float64},
             Ptr{Float64},
             Ptr{Float64},
-            Ptr{Float64}), nbpart, p, dt, nx, ny, dx, dy, m.ex, m.ey, m.bz)
+            Ptr{Float64}), nbpart, p.array, dt, nx, ny, dx, dy, m.ex, m.ey, m.bz)
 
 end
 

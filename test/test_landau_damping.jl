@@ -49,19 +49,20 @@ import ParticleInCell.F90
         update_fields!(mesh1, fdtd1)
         update_fields!(mesh2, fdtd2)
 
-        push_v!(particles1, mesh1,  dt)
-        F90.push_v!(particles2, mesh2, dt)
+        push_v!(group1, mesh1,  dt)
+        F90.push_v!(group2, mesh2, dt)
         @test all(particles1 .== particles2)
 
-        push_x!(particles1, mesh1, 0.5dt)
-        F90.push_x!(particles2, mesh2, 0.5dt)
+        push_x!(group1, mesh1, 0.5dt)
+        F90.push_x!(group2, mesh2, 0.5dt)
         @test all(particles1 .== particles2)
 
-        compute_current!(mesh1, particles1)
-        F90.compute_current!(mesh2, particles2)
+        compute_current!(mesh1, group1)
+        F90.compute_current!(mesh2, group2)
 
-        push_x!(particles1, mesh1, 0.5dt)
-        push_x!(particles2, mesh2, 0.5dt)
+        push_x!(group1, mesh1, 0.5dt)
+        F90.push_x!(group2, mesh2, 0.5dt)
+        @test all(particles1 .== particles2)
 
         faraday!(fdtd1, mesh1, 0.5dt)
         faraday!(fdtd2, mesh2, 0.5dt)

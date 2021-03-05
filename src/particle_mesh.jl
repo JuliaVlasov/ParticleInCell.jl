@@ -55,7 +55,7 @@ export compute_current!
 
 function compute_current!(m::TwoDGrid, p)
 
-    nbpart = size(p)[2]
+    nbpart = size(p.array)[2]
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
 
@@ -74,8 +74,8 @@ function compute_current!(m::TwoDGrid, p)
         @spawn begin
             tid = threadid()
             @inbounds for ipart in chunk
-                xp = p[1, ipart] / dx
-                yp = p[2, ipart] / dy
+                xp = p.array[1, ipart] / dx
+                yp = p.array[2, ipart] / dy
 
                 i = floor(Int, xp) + 1
                 j = floor(Int, yp) + 1
@@ -88,8 +88,10 @@ function compute_current!(m::TwoDGrid, p)
                 a3 = dxp * dyp
                 a4 = (1 - dxp) * dyp
 
-                w1 = p[3, ipart] * factor
-                w2 = p[4, ipart] * factor
+                w = p.array[5, ipart]
+
+                w1 = p.array[3, ipart] * factor
+                w2 = p.array[4, ipart] * factor
 
                 jx[tid][i, j] += a1 * w1
                 jy[tid][i, j] += a1 * w2

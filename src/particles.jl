@@ -2,20 +2,20 @@ import Base.Threads
 
 export push_v!
 
-function push_v!(p, m, dt)
+function push_v!(p, m :: TwoDGrid, dt)
 
-    nbpart = size(p)[2]
+    nbpart = size(p.array)[2]
 
     dx = m.dx
     dy = m.dy
 
     Threads.@threads for ipart = 1:nbpart
 
-        v1 = p[3, ipart]
-        v2 = p[4, ipart]
+        v1 = p.array[3, ipart]
+        v2 = p.array[4, ipart]
 
-        xp = p[1, ipart] / dx
-        yp = p[2, ipart] / dy
+        xp = p.array[1, ipart] / dx
+        yp = p.array[2, ipart] / dy
 
         i = floor(Int, xp) + 1
         j = floor(Int, yp) + 1
@@ -42,8 +42,8 @@ function push_v!(p, m, dt)
         v2 += -v1 * sintheta
         v1 += v2 * tantheta
 
-        p[3, ipart] = v1 + 0.5dt * e1
-        p[4, ipart] = v2 + 0.5dt * e2
+        p.array[3, ipart] = v1 + 0.5dt * e1
+        p.array[4, ipart] = v2 + 0.5dt * e2
 
     end
 
@@ -53,19 +53,19 @@ export push_x!
 
 function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
-    nbpart = size(p)[2]
+    nbpart = size(p.array)[2]
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
     Threads.@threads for i = 1:nbpart
-        p1 = p[1, i] + dt * p[3, i]
-        p2 = p[2, i] + dt * p[4, i]
+        p1 = p.array[1, i] + dt * p.array[3, i]
+        p2 = p.array[2, i] + dt * p.array[4, i]
         p1 > dimx && (p1 -= dimx)
         p2 > dimy && (p2 -= dimy)
         p1 < 0.0 && (p1 += dimx)
         p2 < 0.0 && (p2 += dimy)
-        p[1, i] = p1
-        p[2, i] = p2
+        p.array[1, i] = p1
+        p.array[2, i] = p2
     end
 
 end

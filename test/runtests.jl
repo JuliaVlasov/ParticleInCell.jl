@@ -2,8 +2,8 @@ using LinearAlgebra
 using ParticleInCell
 using Test
 
-include("test_particles.jl")
 include("test_deposition.jl")
+include("test_particles.jl")
 include("test_particle_group.jl")
 include("test_splitting.jl")
 include("test_poisson_2d.jl")

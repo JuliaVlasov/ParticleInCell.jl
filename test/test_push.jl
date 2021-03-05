@@ -12,15 +12,19 @@ import ParticleInCell.F90
     pj = zeros(7, 1)
     dt = 0.1
     x0, y0 = 0.1, 0.1
-    pj[1, 1] = x0
-    pj[2, 1] = y0
-    pj[5, 1] = 1.0
-    pj[7, 1] = 1.0
+
+
+    pj = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
+    pf = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
+
+    pj.array[1, 1] = x0
+    pj.array[2, 1] = y0
+    pj.array[5, 1] = 1.0
 
     mesh.ex .= 1.0
     mesh.bz .= 1.0
 
-    pf = copy(pj)
+    pf.array .= copy(pj.array)
 
     time = 0
 
@@ -31,7 +35,7 @@ import ParticleInCell.F90
         F90.push_v!(pf, mesh, dt)
         F90.push_x!(pf, mesh, dt)
 
-        @test all(pj .== pf)
+        @test all(pj.array .== pf.array)
     end
 
 end
