@@ -17,8 +17,11 @@
     alpha = 0.1
     kx = 0.5
 
+    mesh = TwoDGrid( 0, 2π/kx, 128, 0, 1, 16)
+
     sampler = LandauDamping(alpha, kx)
-    sample!(particle_group, sampler)
+
+    sample!(particle_group, mesh, sampler)
 
     @test true
 
