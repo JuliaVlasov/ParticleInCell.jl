@@ -106,7 +106,7 @@ function add_charge!(ρ_dofs, pm::ParticleMeshCoupling2D, xp, yp, wp)
 
     ind_x, ind_y = compute_shape_factor(pm, xp, yp)
 
-    for i1 = 1:pm.n_span
+    @inbounds for i1 = 1:pm.n_span
         index1d_1 = ind_x + i1 - 2
         for i2 = 1:pm.n_span
             index1d_2 = ind_y + i2 - 2

@@ -15,8 +15,11 @@ function run( nstep; npm = 100 )
     nbpart = npm*nx*ny
     println( " nbpart = $nbpart ")
 
-    particles = zeros(4,nbpart)
-    landau_sampling!( particles, alpha, kx )
+    particles = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
+
+    sampler = LandauDamping(alpha, kx)
+
+    sample!(particles, mesh, sampler)
 
     fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny+1
@@ -25,6 +28,8 @@ function run( nstep; npm = 100 )
     time = 0
     energy = Float64[compute_energy(fdtd, mesh)]
     t = Float64[time]
+
+    kernel = CloudInCell()
     
     reset_timer!()
     @showprogress 1 for istep in 1:nstep
@@ -34,9 +39,9 @@ function run( nstep; npm = 100 )
        end
        update_fields!(mesh, fdtd)
        #@timeit to "interpolation" interpolation!(particles, mesh)
-       @timeit to "pushv" push_v!( particles, mesh, dt )
+       @timeit to "pushv" push_v!( particles, kernel, mesh, dt )
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
-       @timeit to "deposition" compute_current!( mesh, particles)
+       @timeit to "deposition" compute_current!( mesh, kernel, particles)
        @timeit to "pushx" push_x!( particles, mesh, 0.5dt) 
        @timeit to "fdtd" faraday!(fdtd, mesh, 0.5dt)
        @timeit to "fdtd" ampere_maxwell!(fdtd, mesh, dt)

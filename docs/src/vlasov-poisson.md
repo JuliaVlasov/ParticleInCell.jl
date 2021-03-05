@@ -25,7 +25,7 @@ particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
 
 sampler = LandauDamping( alpha, kx )
 
-sample!( particles, sampler)
+sample!( particles, mesh, sampler)
 
 particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) ./ n_particles;
 ```
@@ -84,7 +84,7 @@ particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
 
 sampler = LandauDamping( alpha, kx )
 
-sample!( particles, sampler)
+sample!( particles, mesh, sampler)
 
 particles.array[2,:] .*= ( ymax - ymin)
 particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) / n_particles;

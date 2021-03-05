@@ -1,5 +1,5 @@
-using LinearAlgebra, ProgressMeter
-using TimerOutputs, Sobol
+using ProgressMeter
+using TimerOutputs
 using ParticleInCell
 
 include("run_function.jl")

@@ -32,14 +32,15 @@ surface(fdtd.ex )
 
 ```@example vm2d
 nbpart = 100*nx*ny
-particles = zeros(7, nbpart)
-landau_sampling!( particles, alpha, kx )
+particles = ParticleGroup{2,2}( nbpart, charge=1.0, mass=1.0, n_weights=1)
+sampler = LandauDamping( alpha, kx )
+sample!( particles, mesh, sampler)
 
 p = plot(layout=4)
-histogram!(p[1], particles[1,:], normalize=true, label="x")
-histogram!(p[2], particles[2,:], normalize=true, label="y")
-histogram!(p[3], particles[3,:], normalize=true, label="vx")
-histogram!(p[4], particles[4,:], normalize=true, label="vy")
+histogram!(p[1], particles.array[1,:], normalize=true, label="x")
+histogram!(p[2], particles.array[2,:], normalize=true, label="y")
+histogram!(p[3], particles.array[3,:], normalize=true, label="vx")
+histogram!(p[4], particles.array[4,:], normalize=true, label="vy")
 ```
 
 ```@example vm2d
@@ -58,8 +59,9 @@ function run( nstep; npm = 100 )
     nbpart = npm*nx*ny
     println( " nbpart = $nbpart ")
 
-    particles = zeros(7,nbpart)
-    landau_sampling!( particles, alpha, kx )
+    particles = ParticleGroup{2,2}( nbpart, charge=1.0, mass=1.0, n_weights=1)
+    sampler = LandauDamping( alpha, kx )
+    sample!( particles, mesh, sampler)
 
     fdtd = FDTD(mesh)
     for i=1:nx, j=1:ny+1
@@ -68,6 +70,8 @@ function run( nstep; npm = 100 )
     time = 0
     energy = Float64[compute_energy(fdtd, mesh)]
     t = Float64[time]
+
+    kernel = CloudInCell()
     
     for istep in 1:nstep
     
@@ -75,9 +79,9 @@ function run( nstep; npm = 100 )
            faraday!( fdtd, mesh, 0.5dt ) 
        end
        update_fields!(mesh, fdtd)
-       push_v!( particles, mesh, dt )
+       push_v!( particles, kernel, mesh, dt )
        push_x!( particles, mesh, 0.5dt) 
-       compute_current!( mesh, particles)
+       compute_current!( mesh, kernel, particles)
        push_x!( particles, mesh, 0.5dt) 
        faraday!(fdtd, mesh, 0.5dt)
        ampere_maxwell!(fdtd, mesh, dt)

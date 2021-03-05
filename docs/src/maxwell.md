@@ -60,7 +60,7 @@ function run(mesh, maxwell, nstep)
     
         ampere_maxwell!(maxwell, mesh, dt) 
     
-        surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1))
+        surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1), clim=(-1,1))
 
     end every (nstep ÷ 100)
     
