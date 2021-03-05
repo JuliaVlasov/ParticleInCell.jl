@@ -18,7 +18,7 @@ import ParticleInCell.F90
     randn!(rng, p.array)
     p.array[1:2, :] .+= 2π
     p.array[3:4, :] .= (dimx * dimy) / nbpart
-    p.array[5, :]   .= 1 ./ nbpart
+    p.array[5, :]   .= (dimx * dimy) / nbpart
 
     @test sum(view(p.array, 1, :)) / nbpart ≈ 2π atol = 1e-2
     @test sum(view(p.array, 2, :)) / nbpart ≈ 2π atol = 1e-2

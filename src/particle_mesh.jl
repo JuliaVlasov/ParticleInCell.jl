@@ -15,7 +15,7 @@ function compute_rho(p, kernel::CloudInCell, m :: TwoDGrid)
     rho = zeros(nx+1, ny+1)
     nbpart = size(p.array)[2]
 
-    for ipart = 1:nbpart
+    @inbounds for ipart = 1:nbpart
         xp = p.array[1, ipart] / dx
         yp = p.array[2, ipart] / dy
 
@@ -67,7 +67,7 @@ function compute_current!(m::TwoDGrid, kernel::CloudInCell, p)
     fill!(m.jx, 0)
     fill!(m.jy, 0)
 
-    factor = (nx * ny)
+    scaling = 1 / ( dx * dy )
 
     ntid = nthreads()
     jx = [zero(m.jx) for _ in 1:ntid]
@@ -95,8 +95,8 @@ function compute_current!(m::TwoDGrid, kernel::CloudInCell, p)
 
                 w = p.array[5, ipart]
 
-                w1 = p.array[3, ipart] * factor * w
-                w2 = p.array[4, ipart] * factor * w
+                w1 = p.array[3, ipart] * scaling * w
+                w2 = p.array[4, ipart] * scaling * w
 
                 jx[tid][i, j] += a1 * w1
                 jy[tid][i, j] += a1 * w2
