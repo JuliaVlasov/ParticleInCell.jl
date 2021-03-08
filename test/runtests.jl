@@ -1,4 +1,5 @@
 using LinearAlgebra
+using GEMPIC
 using ParticleInCell
 using Test
 

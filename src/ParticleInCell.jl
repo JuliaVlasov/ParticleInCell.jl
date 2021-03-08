@@ -1,19 +1,13 @@
 module ParticleInCell
 
+using GEMPIC
 using LinearAlgebra
 using Random
 using SparseArrays
 import Sobol
 
-include("mesh.jl")
 include("particle_1d1v.jl")
-include("low_level_bsplines.jl")
-include("maxwell_1d_fem.jl")
-include("splinepp.jl")
-include("particle_group.jl")
 include("landau_damping.jl")
-include("particle_mesh_coupling_1d.jl")
-include("particle_mesh_coupling_2d.jl")
 include("poisson_2d.jl")
 include("particle_mesh.jl")
 include("particles.jl")
