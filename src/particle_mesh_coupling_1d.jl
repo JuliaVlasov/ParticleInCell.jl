@@ -602,7 +602,7 @@ function evaluate(p::ParticleMeshCoupling1D, position::Float64, field_dofs::Vect
 
     nx = p.n_grid[1]
     field_value = 0.0
-    for i = 1:p.n_span
+    @inbounds for i = 1:p.n_span
         index1d = mod1(index + i, nx)
         field_value += field_dofs[index1d] * p.spline_val[i]
     end

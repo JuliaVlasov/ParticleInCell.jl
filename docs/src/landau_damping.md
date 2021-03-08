@@ -2,9 +2,40 @@
 
 
 ```@setup landau
+using ParticleInCell
 using Plots
 using Random
 ```
+
+## Test particle initialization
+
+```@example landau
+alpha = 0.1
+kx = 0.5
+nx = 50
+np = 10000 * nx
+mesh = OneDGrid( 0, 4π, nx)
+x = LinRange(0, 4pi, nx+1)[1:end-1]
+rng = MersenneTwister(42)
+pa = landau_damping(rng, mesh, np, alpha, kx )
+ex = zeros(Float64, nx)
+rho = zeros(Float64, nx)
+poisson = Poisson1D( mesh )
+pm = ParticleMeshCoupling(pa, mesh)
+mat = compute_coeffs(pm, pa)
+compute_rho!(rho, mat, mesh, pa)
+solve!(ex, poisson, rho)
+```
+
+```@example landau
+p = plot(layout=2)
+plot!(p[1], x, ex)
+plot!(p[1], x, alpha/kx * sin.(kx * x))
+plot!(p[2], x, rho)
+plot!(p[2], x, alpha * cos.(kx * x))
+```
+
+## Full simulation
 
 
 ```@example landau
@@ -15,10 +46,10 @@ function main(nt, dt)
     
     nx = 50
     np = 10000 * nx
-    mesh = Mesh( 0, 4π, nx)
+    mesh = OneDGrid( 0, 4π, nx)
     poisson = Poisson1D( mesh )
     rng = MersenneTwister(42)
-    α = 0.5
+    α = 0.1
     kx = 0.5
     pa = landau_damping(rng, mesh, np, α, kx )
     pm = ParticleMeshCoupling(pa, mesh)
@@ -43,7 +74,7 @@ end
 ```
 
 ```@example landau
-nt, dt = 1000, 0.01
+nt, dt = 1000, 0.1
 results = main(nt, dt)
 t = collect(0:nt) .* dt
 plot( t, results, yaxis = :log )

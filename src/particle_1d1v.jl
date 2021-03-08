@@ -3,35 +3,16 @@
 # I keep it just for benchmark purpose
 
 
-export Mesh
-
-struct Mesh
-
-    xmin::Any
-    xmax::Any
-    nx::Any
-    dx::Any
-
-    function Mesh(xmin, xmax, nx)
-
-        dx = (xmax - xmin) / nx
-
-        new(xmin, xmax, nx, dx)
-
-    end
-
-end
-
 export Particles1D
 
 struct Particles1D
 
-    np::Any
-    qm::Any
-    xp::Any
-    vp::Any
-    qp::Any
-
+    np::Int
+    qm::Float64
+    xp::Vector{Float64}
+    vp::Vector{Float64}
+    qp::Float64
+ 
 end
 
 export tsi
@@ -93,7 +74,7 @@ function landau_damping(rng, mesh, np, alpha, kx)
     end
 
     qm = 1.0
-    qp = 1 / np
+    qp = mesh.Lx / np
 
     return Particles1D(np, qm, xp, vp, qp)
 

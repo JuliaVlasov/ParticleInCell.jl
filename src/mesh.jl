@@ -32,7 +32,7 @@ struct TwoDGrid
     jx::Array{Float64,2}
     jy::Array{Float64,2}
 
-    function TwoDGrid(xmin, xmax, nx, ymin, ymax, ny)
+    function TwoDGrid(xmin, xmax, nx :: Int, ymin, ymax, ny :: Int)
 
         dimx = xmax - xmin
         dimy = ymax - ymin
@@ -69,15 +69,16 @@ struct OneDGrid
     nx::Int
     xmin::Float64
     xmax::Float64
-    Lx::Float64
+    dimx::Float64
     dx::Float64
+    ex::Vector{Float64}
 
-    function OneDGrid(xmin::Real, xmax::Real, nx::Int)
+    function OneDGrid(xmin, xmax, nx::Int)
 
-        Lx = xmax - xmin
-        dx = Lx / (nx - 1)
+        dimx = xmax - xmin
+        dx = dimx / (nx - 1)
 
-        new(nx, xmin, xmax, Lx, dx)
+        new(nx, xmin, xmax, dimx, dx, zeros(nx))
 
     end
 

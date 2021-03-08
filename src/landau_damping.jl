@@ -81,7 +81,6 @@ function sample!(pg::ParticleGroup{2,2}, mesh :: TwoDGrid, d::LandauDamping)
 
 
     alpha, kx = d.alpha, d.kx
-
     @assert mesh.dimx ≈ 2π / kx
 
     s = Sobol.SobolSeq(3)
@@ -96,6 +95,35 @@ function sample!(pg::ParticleGroup{2,2}, mesh :: TwoDGrid, d::LandauDamping)
         pg.array[3, i] = v * cos(θ)
         pg.array[4, i] = v * sin(θ)
         pg.array[5, i] = (mesh.dimx * mesh.dimy) / nbpart
+    end
+
+end
+
+"""
+    sample!(d, pg)
+
+Sampling from a probability distribution to initialize a Landau damping in
+1D1V space.
+
+```math
+f_0(x,v,t) = \\frac{n_0}{2π v_{th}^2} ( 1 + \\alpha cos(k_x x)) exp( - \\frac{v^2}{2 v_{th}^2})
+```
+"""
+function sample!( pg::ParticleGroup{1,1}, mesh :: OneDGrid, d::LandauDamping)
+
+    s = Sobol.SobolSeq(2)
+    alpha, kx = d.alpha, d.kx
+    @assert mesh.dimx ≈ 2π / kx
+
+    nbpart = pg.n_particles
+
+    for i = 1:nbpart
+        v = sqrt(-2 * log((i - 0.5) / nbpart))
+        r1, r2 = Sobol.next!(s)
+        θ = r1 * 2π
+        pg.array[1,i] = newton(r2, alpha, kx)
+        pg.array[2,i] = v * sin(θ) 
+        pg.array[3,i] = mesh.dimx / nbpart
     end
 
 end
