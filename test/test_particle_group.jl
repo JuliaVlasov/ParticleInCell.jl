@@ -6,7 +6,8 @@
     n_weights = 1
 
     particle_group =
-        ParticleGroup{2,2}(n_particles, charge = 1.0, mass = 1.0, n_weights = 1)
+        ParticleGroup{2,2}(n_particles, charge = 1.0, 
+                           mass = 1.0, n_weights = 1)
 
     for ipart = 1:n_particles
         ParticleInCell.set_x!(particle_group, ipart, [ipart, 0.0])

@@ -10,6 +10,8 @@ import ParticleInCell.F90
     fdtd = FDTD(mesh)
     rng = MersenneTwister(1234)
     nbpart = 1_000_000
+    jx = zeros(nx+1, ny+1)
+    jy = zeros(nx+1, ny+1)
 
     kernel = CloudInCell()
 
@@ -23,14 +25,14 @@ import ParticleInCell.F90
     @test sum(view(p.array, 1, :)) / nbpart ≈ 2π atol = 1e-2
     @test sum(view(p.array, 2, :)) / nbpart ≈ 2π atol = 1e-2
 
-    compute_current!(mesh, kernel, p)
+    compute_current!(jx, jy, mesh, kernel, p)
 
-    @test sum(mesh.jx) ≈ 2.5872575761191685
-    @test sum(mesh.jy) ≈ 2.5872575761191685
+    @test sum(jx) ≈ 2.5872575761191685
+    @test sum(jy) ≈ 2.5872575761191685
 
-    F90.compute_current!(mesh, kernel, p)
+    F90.compute_current!(jx, jy, mesh, kernel, p)
 
-    @test sum(mesh.jx) ≈ 2.5872575761191685
-    @test sum(mesh.jy) ≈ 2.5872575761191685
+    @test sum(jx) ≈ 2.5872575761191685
+    @test sum(jy) ≈ 2.5872575761191685
 
 end

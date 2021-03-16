@@ -28,7 +28,7 @@
 
     sampler = LandauDamping(alpha, kx)
 
-    sample!(p, mesh, sampler)
+    ParticleInCell.sample!(p, mesh, sampler)
 
     kernel = CloudInCell()
 

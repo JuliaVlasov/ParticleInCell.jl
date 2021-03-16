@@ -17,7 +17,7 @@ end
 
 
 
-function compute_current!(m::TwoDGrid, kernel :: CloudInCell, p )
+function compute_current!(jx, jy, m::TwoDGrid, kernel :: CloudInCell, p )
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -44,17 +44,17 @@ function compute_current!(m::TwoDGrid, kernel :: CloudInCell, p )
         dx,
         dy,
         p.array,
-        m.jx,
-        m.jy,
+        jx,
+        jy,
     )
 
     for i = 1:nx+1
-        m.jx[i, 1] += m.jx[i, ny+1]
-        m.jx[i, ny+1] = m.jx[i, 1]
+        jx[i, 1] += jx[i, ny+1]
+        jx[i, ny+1] = jx[i, 1]
     end
     for j = 1:ny+1
-        m.jx[1, j] += m.jx[nx+1, j]
-        m.jx[nx+1, j] = m.jx[1, j]
+        jx[1, j] += jx[nx+1, j]
+        jx[nx+1, j] = jx[1, j]
     end
 
 end

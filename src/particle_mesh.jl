@@ -1,7 +1,6 @@
 import Statistics: mean
 import Base.Threads: @threads, @sync, @spawn, nthreads, threadid
 
-
 export CloudInCell
 
 struct CloudInCell end
@@ -58,20 +57,20 @@ end
 
 export compute_current!
 
-function compute_current!(m::TwoDGrid, kernel::CloudInCell, p)
+function compute_current!(jx, jy, m::TwoDGrid, kernel::CloudInCell, p)
 
     nbpart = size(p.array)[2]
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
 
-    fill!(m.jx, 0)
-    fill!(m.jy, 0)
+    fill!(jx, 0)
+    fill!(jy, 0)
 
     scaling = 1 / ( dx * dy )
 
     ntid = nthreads()
-    jx = [zero(m.jx) for _ in 1:ntid]
-    jy = [zero(m.jy) for _ in 1:ntid]
+    jxloc = [zero(jx) for _ in 1:ntid]
+    jyloc = [zero(jy) for _ in 1:ntid]
 
     chunks = Iterators.partition(1:nbpart, nbpart÷ntid)
 
@@ -98,31 +97,35 @@ function compute_current!(m::TwoDGrid, kernel::CloudInCell, p)
                 w1 = p.array[3, ipart] * scaling * w
                 w2 = p.array[4, ipart] * scaling * w
 
-                jx[tid][i, j] += a1 * w1
-                jy[tid][i, j] += a1 * w2
+                jxloc[tid][i, j] += a1 * w1
+                jyloc[tid][i, j] += a1 * w2
 
-                jx[tid][i+1, j] += a2 * w1
-                jy[tid][i+1, j] += a2 * w2
+                jxloc[tid][i+1, j] += a2 * w1
+                jyloc[tid][i+1, j] += a2 * w2
 
-                jx[tid][i+1, j+1] += a3 * w1
-                jy[tid][i+1, j+1] += a3 * w2
+                jxloc[tid][i+1, j+1] += a3 * w1
+                jyloc[tid][i+1, j+1] += a3 * w2
 
-                jx[tid][i, j+1] += a4 * w1
-                jy[tid][i, j+1] += a4 * w2
+                jxloc[tid][i, j+1] += a4 * w1
+                jyloc[tid][i, j+1] += a4 * w2
             end
         end
     end
 
-    m.jx .= reduce(+,jx)
-    m.jy .= reduce(+,jy)
+    jx .= reduce(+,jxloc)
+    jy .= reduce(+,jyloc)
 
     for i = 1:nx+1
-        m.jx[i, 1] += m.jx[i, ny+1]
-        m.jx[i, ny+1] = m.jx[i, 1]
+        jx[i, 1] += jx[i, ny+1]
+        jx[i, ny+1] = jx[i, 1]
+        jy[i, 1] += jy[i, ny+1]
+        jy[i, ny+1] = jy[i, 1]
     end
     for j = 1:ny+1
-        m.jx[1, j] += m.jx[nx+1, j]
-        m.jx[nx+1, j] = m.jx[1, j]
+        jx[1, j] += jx[nx+1, j]
+        jx[nx+1, j] = jx[1, j]
+        jy[1, j] += jy[nx+1, j]
+        jy[nx+1, j] = jy[1, j]
     end
 
 end

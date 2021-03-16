@@ -17,8 +17,8 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-GEMPIC = "0.2.3"
 FFTW = "1"
+GEMPIC = "0.2.3"
 Sobol = "1"
 StaticArrays = "0.10, 0.12"
 julia = "1"
