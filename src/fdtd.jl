@@ -32,38 +32,37 @@ function faraday!(fdtd::FDTD, m::TwoDGrid, dt)
         fdtd.bz[i, j] += dt * (dex_dy - dey_dx)
     end
 
-
 end
 
 export ampere_maxwell!
 
-function ampere_maxwell!(fdtd::FDTD, m::TwoDGrid, dt)
+function ampere_maxwell!(fdtd::FDTD, m::TwoDGrid, jx, jy, dt)
 
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
 
     for i = 1:nx, j = 1:ny+1
         dbz_dy = (fdtd.bz[i, mod1(j, ny)] - fdtd.bz[i, mod1(j - 1, ny)]) / dy
-        fdtd.ex[i, j] += dt * dbz_dy - dt * 0.5 * (m.jx[i, j] + m.jx[mod1(i + 1, nx), j])
+        fdtd.ex[i, j] += dt * dbz_dy - dt * 0.5 * (jx[i, j] + jx[mod1(i + 1, nx), j])
     end
 
     for i = 1:nx+1, j = 1:ny
         dbz_dx = (fdtd.bz[mod1(i, nx), mod1(j, ny)] - fdtd.bz[mod1(i - 1, nx), j]) / dx
-        fdtd.ey[i, j] -= dt * dbz_dx - dt * 0.5 * (m.jy[i, j] + m.jy[i, mod1(j + 1, ny)])
+        fdtd.ey[i, j] -= dt * dbz_dx - dt * 0.5 * (jy[i, j] + jy[i, mod1(j + 1, ny)])
     end
 
 end
 
 export update_fields!
 
-function update_fields!(m::TwoDGrid, fdtd::FDTD)
+function update_fields!(ex, ey, bz, m::TwoDGrid, fdtd::FDTD)
 
     nx, ny = m.nx, m.ny
 
     for i = 1:nx+1, j = 1:ny+1
-        m.ex[i, j] = 0.5 * (fdtd.ex[mod1(i - 1, nx), j] + fdtd.ex[mod1(i, nx), j])
-        m.ey[i, j] = 0.5 * (fdtd.ey[i, mod1(j - 1, ny)] + fdtd.ey[i, mod1(j, ny)])
-        m.bz[i, j] =
+        ex[i, j] = 0.5 * (fdtd.ex[mod1(i - 1, nx), j] + fdtd.ex[mod1(i, nx), j])
+        ey[i, j] = 0.5 * (fdtd.ey[i, mod1(j - 1, ny)] + fdtd.ey[i, mod1(j, ny)])
+        bz[i, j] =
             0.25 * (
                 fdtd.bz[mod1(i - 1, nx), mod1(j - 1, ny)] +
                 fdtd.bz[mod1(i, nx), mod1(j - 1, ny)] +

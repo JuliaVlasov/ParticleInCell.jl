@@ -10,9 +10,9 @@
                            mass = 1.0, n_weights = 1)
 
     for ipart = 1:n_particles
-        ParticleInCell.set_x!(particle_group, ipart, [ipart, 0.0])
-        ParticleInCell.set_v!(particle_group, ipart, [ipart^2, 0.0])
-        ParticleInCell.set_w!(particle_group, ipart, ipart / n_particles)
+        GEMPIC.set_x!(particle_group, ipart, [ipart, 0.0])
+        GEMPIC.set_v!(particle_group, ipart, [ipart^2, 0.0])
+        GEMPIC.set_w!(particle_group, ipart, ipart / n_particles)
     end
 
     alpha = 0.1
@@ -22,7 +22,7 @@
 
     sampler = LandauDamping(alpha, kx)
 
-    sample!(particle_group, mesh, sampler)
+    ParticleInCell.sample!(particle_group, mesh, sampler)
 
     @test true
 
