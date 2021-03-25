@@ -22,6 +22,7 @@ poids = dimx * dimy
 mesh = TwoDGrid( dimx, nx, dimy, ny)
 fdtd = FDTD(mesh)
 
+
 time  = 0
 
 for i=1:nx, j=1:ny+1
@@ -56,6 +57,12 @@ function run( nstep; npm = 100 )
     mesh = TwoDGrid( dimx, nx, dimy, ny)
     dx, dy = mesh.dx, mesh.dy
 
+    ex = zeros(nx+1, ny+1)
+    ey = zeros(nx+1, ny+1)
+    bz = zeros(nx+1, ny+1)
+    jx = zeros(nx+1, ny+1)
+    jy = zeros(nx+1, ny+1)
+
     nbpart = npm*nx*ny
     println( " nbpart = $nbpart ")
 
@@ -78,13 +85,13 @@ function run( nstep; npm = 100 )
        if istep > 1
            faraday!( fdtd, mesh, 0.5dt ) 
        end
-       update_fields!(mesh, fdtd)
-       push_v!( particles, kernel, mesh, dt )
+       update_fields!(ex, ey, bz, mesh, fdtd)
+       push_v!( particles, kernel, mesh, ex, ey, bz, dt )
        push_x!( particles, mesh, 0.5dt) 
-       compute_current!( mesh, kernel, particles)
+       compute_current!( jx, jy, mesh, kernel, particles)
        push_x!( particles, mesh, 0.5dt) 
        faraday!(fdtd, mesh, 0.5dt)
-       ampere_maxwell!(fdtd, mesh, dt)
+       ampere_maxwell!(fdtd, mesh, jx, jy, dt)
        time = time + dt
        push!(t, time)
        push!(energy, compute_energy(fdtd, mesh))

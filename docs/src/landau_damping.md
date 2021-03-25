@@ -20,7 +20,7 @@ rng = MersenneTwister(42)
 pa = landau_damping(rng, mesh, np, alpha, kx )
 ex = zeros(Float64, nx)
 rho = zeros(Float64, nx)
-poisson = Poisson1D( mesh )
+poisson = OneDPoisson( mesh )
 pm = ParticleMeshCoupling(pa, mesh)
 mat = compute_coeffs(pm, pa)
 compute_rho!(rho, mat, mesh, pa)
@@ -47,7 +47,7 @@ function main(nt, dt)
     nx = 50
     np = 10000 * nx
     mesh = OneDGrid( 0, 4π, nx)
-    poisson = Poisson1D( mesh )
+    poisson = OneDPoisson( mesh )
     rng = MersenneTwister(42)
     α = 0.1
     kx = 0.5

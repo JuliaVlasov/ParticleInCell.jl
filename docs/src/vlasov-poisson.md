@@ -4,6 +4,7 @@ Simulation of 2d2v Vlasov-Poisson with simple PIC method, periodic boundary cond
 
 ```@example vp2d2v
 using Plots
+using GEMPIC
 using ParticleInCell
 
 dt = 0.1
@@ -25,7 +26,7 @@ particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
 
 sampler = LandauDamping( alpha, kx )
 
-sample!( particles, mesh, sampler)
+ParticleInCell.sample!( particles, mesh, sampler)
 
 particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) ./ n_particles;
 ```
@@ -47,7 +48,7 @@ xlims!(-6,6)
 
 
 ```@example vp2d2v
-poisson = Poisson2DPeriodic( mesh )
+poisson = TwoDPoissonPeriodic( mesh )
 kernel = ParticleMeshCoupling2D( particles, mesh, degree_smoother, :collocation)
 
 ex = zeros(nx, ny)
@@ -58,7 +59,7 @@ for i_part = 1:particles.n_particles
     xi = particles.array[1, i_part]
     yi = particles.array[2, i_part]
     wi = particles.array[5, i_part]
-    ParticleInCell.add_charge!(rho_dofs, kernel, xi, yi, wi)
+    GEMPIC.add_charge!(rho_dofs, kernel, xi, yi, wi)
 end
 rho = reshape(rho_dofs, nx, ny )
 solve!(ex, ey, poisson, rho)
@@ -69,11 +70,11 @@ surface!(p[2],rho)
 
 ```@example vp2d2v
 
-poisson = Poisson2DPeriodic( mesh )
+poisson = TwoDPoissonPeriodic( mesh )
 
 kernel = ParticleMeshCoupling2D( particles, mesh, degree_smoother, :collocation)
 
-problem = PICPoisson2D(  poisson, kernel )
+problem = TwoDPoissonPIC(  poisson, kernel )
 
 dt = 0.1
 nsteps = 100
@@ -84,7 +85,7 @@ particles = ParticleGroup{2,2}( n_particles, charge=1.0, mass=1.0, n_weights=1)
 
 sampler = LandauDamping( alpha, kx )
 
-sample!( particles, mesh, sampler)
+ParticleInCell.sample!( particles, mesh, sampler)
 
 particles.array[2,:] .*= ( ymax - ymin)
 particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) / n_particles;

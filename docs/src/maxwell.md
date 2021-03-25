@@ -53,12 +53,15 @@ function run(mesh, maxwell, nstep)
 
     maxwell.bz .= - cos.(md*pi*x) .* cos.(nd*pi*y) .* cos(omega*(-0.5*dt))
     
+    nx, ny = mesh.nx, mesh.ny
+    jx = zeros(nx+1, ny+1)
+    jy = zeros(nx+1, ny+1)
     
     @gif for istep = 1:nstep # Loop over time
     
         faraday!(maxwell, mesh, dt)     
     
-        ampere_maxwell!(maxwell, mesh, dt) 
+        ampere_maxwell!(maxwell, mesh, jx, jy, dt) 
     
         surface(maxwell.bz, aspect_ratio=:equal, zlims=(-1,1), clim=(-1,1))
 

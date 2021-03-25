@@ -64,8 +64,8 @@ using ParticleInCell
         x = pg.array[1, i_part]
         y = pg.array[2, i_part]
         w = pg.array[5, i_part]
-        add_charge!(ρ_dofs, kernel, x, y, w)
-        add_charge_pp!(ρ_dofs1, kernel, x, y, w)
+        GEMPIC.add_charge!(ρ_dofs, kernel, x, y, w)
+        GEMPIC.add_charge_pp!(ρ_dofs1, kernel, x, y, w)
     end
 
     ρ_dofs_ref[8:10] .= v_grid[1:3, 1, 1]

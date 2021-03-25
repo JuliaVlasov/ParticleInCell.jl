@@ -74,20 +74,20 @@ function landau_damping(rng, mesh, np, alpha, kx)
     end
 
     qm = 1.0
-    qp = mesh.Lx / np
+    qp = (mesh.xmax - mesh.xmin) / np
 
     return Particles1D(np, qm, xp, vp, qp)
 
 end
 
-export Poisson1D
+export OneDPoisson
 
-struct Poisson1D
+struct OneDPoisson
 
     dx::Any
     matrix::Any
 
-    function Poisson1D(mesh)
+    function OneDPoisson(mesh)
 
         nx = mesh.nx
 

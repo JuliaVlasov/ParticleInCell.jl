@@ -1,6 +1,7 @@
 module ParticleInCell
 
-using GEMPIC
+using Reexport
+@reexport using GEMPIC
 using LinearAlgebra
 using Random
 using SparseArrays
