@@ -13,6 +13,12 @@ import ParticleInCell.F90
     mesh1 = TwoDGrid(dimx, nx, dimy, ny)
     mesh2 = TwoDGrid(dimx, nx, dimy, ny)
 
+    ex = zeros(nx+1, ny+1)
+    ey = zeros(nx+1, ny+1)
+    bz = zeros(nx+1, ny+1)
+    jx = zeros(nx+1, ny+1)
+    jy = zeros(nx+1, ny+1)
+
     nbpart = 100 * nx * ny
 
     group1 = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
@@ -23,8 +29,8 @@ import ParticleInCell.F90
 
     sampler = LandauDamping(alpha, kx)
 
-    sample!(group1, mesh1, sampler)
-    sample!(group2, mesh2, sampler)
+    ParticleInCell.sample!(group1, mesh1, sampler)
+    ParticleInCell.sample!(group2, mesh2, sampler)
 
     fdtd1 = FDTD(mesh1)
     fdtd2 = FDTD(mesh2)
@@ -47,19 +53,19 @@ import ParticleInCell.F90
         istep > 1 && faraday!(fdtd1, mesh1, 0.5dt)
         istep > 1 && faraday!(fdtd2, mesh2, 0.5dt)
 
-        update_fields!(mesh1, fdtd1)
-        update_fields!(mesh2, fdtd2)
+        update_fields!(ex, ey, bz, mesh1, fdtd1)
+        update_fields!(ex, ey, bz, mesh2, fdtd2)
 
-        push_v!(group1, kernel, mesh1,  dt)
-        F90.push_v!(group2, kernel, mesh2, dt)
+        push_v!(group1, kernel, mesh1, ex, ey, bz,  dt)
+        F90.push_v!(group2, kernel, mesh2, ex, ey, bz, dt)
         @test all(particles1 .== particles2)
 
         push_x!(group1, mesh1, 0.5dt)
         F90.push_x!(group2, mesh2, 0.5dt)
         @test all(particles1 .== particles2)
 
-        compute_current!(mesh1, kernel, group1)
-        F90.compute_current!(mesh2, kernel, group2)
+        compute_current!(jx, jy, mesh1, kernel, group1)
+        F90.compute_current!(jx, jy, mesh2, kernel, group2)
 
         push_x!(group1, mesh1, 0.5dt)
         F90.push_x!(group2, mesh2, 0.5dt)
@@ -68,8 +74,8 @@ import ParticleInCell.F90
         faraday!(fdtd1, mesh1, 0.5dt)
         faraday!(fdtd2, mesh2, 0.5dt)
 
-        ampere_maxwell!(fdtd1, mesh1, dt)
-        ampere_maxwell!(fdtd2, mesh2, dt)
+        ampere_maxwell!(fdtd1, mesh1, jx, jy, dt)
+        ampere_maxwell!(fdtd2, mesh2, jx, jy, dt)
 
         time = time + dt
 

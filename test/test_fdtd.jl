@@ -11,6 +11,12 @@ using LinearAlgebra
 
     mesh = TwoDGrid(dimx, nx, dimy, ny)
 
+    ex = zeros(nx+1, ny+1)
+    ey = zeros(nx+1, ny+1)
+    bz = zeros(nx+1, ny+1)
+    jx = zeros(nx+1, ny+1)
+    jy = zeros(nx+1, ny+1)
+
     fdtd = FDTD(mesh)
 
     ω = sqrt(2)
@@ -31,17 +37,17 @@ using LinearAlgebra
 
     for istep = 1:nstep # Loop over time
 
-        ampere_maxwell!(fdtd, mesh, dt)
+        ampere_maxwell!(fdtd, mesh, jx, jy, dt)
 
         t = t + 0.5dt
 
         @test maximum(abs.(fdtd.ex .- sol_ex(xc, yn) .* sin(ω * t))) < 1e-6
         @test maximum(abs.(fdtd.ey .- sol_ey(xn, yc) .* sin(ω * t))) < 1e-6
 
-        update_fields!(mesh, fdtd)
+        update_fields!(ex, ey, bz, mesh, fdtd)
 
-        @test maximum(abs.(mesh.ex .- sol_ex(xn, yn) .* sin(ω * t))) < 1e-6
-        @test maximum(abs.(mesh.ey .- sol_ey(xn, yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(ex .- sol_ex(xn, yn) .* sin(ω * t))) < 1e-6
+        @test maximum(abs.(ey .- sol_ey(xn, yn) .* sin(ω * t))) < 1e-6
 
         faraday!(fdtd, mesh, dt)
 
@@ -49,9 +55,9 @@ using LinearAlgebra
 
         @test maximum(abs.(fdtd.bz .- sol_bz(xc, yc) .* cos(ω * t))) < 1e-6
 
-        update_fields!(mesh, fdtd)
+        update_fields!(ex, ey, bz, mesh, fdtd)
 
-        @test maximum(abs.(mesh.bz .- sol_bz(xn, yn) .* cos(ω * t))) < 1e-3
+        @test maximum(abs.(bz .- sol_bz(xn, yn) .* cos(ω * t))) < 1e-3
 
     end # next time step
 

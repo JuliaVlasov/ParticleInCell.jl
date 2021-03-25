@@ -1,9 +1,9 @@
 @testset " particle-mesh coupling with spline 1d " begin
 
-    import ParticleInCell: set_x!, set_v!, set_w!
-    import ParticleInCell: get_x, get_v, get_charge, add_charge!, add_charge_pp!
-    import ParticleInCell: add_current_update_v!, add_current_update_v_pp!
-    import ParticleInCell: b_to_pp, evaluate, evaluate_pp
+    import GEMPIC: set_x!, set_v!, set_weights!
+    import GEMPIC: get_x, get_v, get_charge, add_charge!, add_charge_pp!
+    import GEMPIC: add_current_update_v!, add_current_update_v_pp!
+    import GEMPIC: b_to_pp, evaluate, evaluate_pp
 
     n_cells = 10            # Number of cells
     n_particles = 4             # Number of particles
@@ -20,7 +20,7 @@
     for i_part = 1:n_particles
         set_x!(particle_group, i_part, x_vec[i_part])
         set_v!(particle_group, i_part, v_vec[i_part, :])
-        set_w!(particle_group, i_part, 1.0)
+        set_weights!(particle_group, i_part, 1.0)
     end
 
     values_grid = zeros(Float64, (4, 1, 4))

@@ -12,7 +12,7 @@
     for ipart = 1:n_particles
         GEMPIC.set_x!(particle_group, ipart, [ipart, 0.0])
         GEMPIC.set_v!(particle_group, ipart, [ipart^2, 0.0])
-        GEMPIC.set_w!(particle_group, ipart, ipart / n_particles)
+        GEMPIC.set_weights!(particle_group, ipart, ipart / n_particles)
     end
 
     alpha = 0.1

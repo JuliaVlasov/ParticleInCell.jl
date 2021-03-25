@@ -20,8 +20,9 @@ import ParticleInCell.F90
     pj.array[2, 1] = y0
     pj.array[5, 1] = 1.0
 
-    mesh.ex .= 1.0
-    mesh.bz .= 1.0
+    ex = ones(nx+1, ny+1)
+    ey = zeros(nx+1, ny+1)
+    bz = ones(nx+1, ny+1)
 
     pf.array .= copy(pj.array)
 
@@ -31,10 +32,10 @@ import ParticleInCell.F90
 
     for istep = 1:50
 
-        push_v!(pj, kernel, mesh, dt)
+        push_v!(pj, kernel, mesh, ex, ey, bz, dt)
         push_x!(pj, mesh, dt)
 
-        F90.push_v!(pf, kernel, mesh, dt)
+        F90.push_v!(pf, kernel, mesh, ex, ey, bz, dt)
         F90.push_x!(pf, mesh, dt)
 
         @test all(pj.array .== pf.array)

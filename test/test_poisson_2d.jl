@@ -21,7 +21,7 @@
 
     grid = TwoDGrid(eta1_min, eta1_max, nc_eta1, eta2_min, eta2_max, nc_eta2)
 
-    poisson = Poisson2DPeriodic(grid)
+    poisson = TwoDPoissonPeriodic(grid)
 
     mode = 2
     for i = 1:nc_eta1, j = 1:nc_eta2
@@ -58,7 +58,7 @@
 
     grid = TwoDGrid(x1_min, x1_max, nc_x1, x2_min, x2_max, nc_x2)
 
-    poisson = Poisson2DPeriodic(grid)
+    poisson = TwoDPoissonPeriodic(grid)
 
     solve!(phi, poisson, rho)
 
@@ -74,7 +74,7 @@
 
     grid = TwoDGrid(xmin, xmax, nx, ymin, ymax, ny)
 
-    poisson = Poisson2DPeriodic(grid)
+    poisson = TwoDPoissonPeriodic(grid)
 
     # Initialize the kernel smoother
     kernel_smoother = ParticleMeshCoupling2D(particles, grid, degree_smoother, :collocation)

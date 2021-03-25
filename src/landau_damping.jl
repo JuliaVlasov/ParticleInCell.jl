@@ -27,9 +27,6 @@ function newton(r, alpha, kx)
     x1
 end
 
-export sample!
-
-
 """
     sample!(d, pg)
 

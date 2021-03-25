@@ -33,9 +33,9 @@
 
     kernel = ParticleMeshCoupling2D(pg, grid, degree_smoother, :collocation)
 
-    poisson = Poisson2DPeriodic(grid)
+    poisson = TwoDPoissonPeriodic(grid)
 
-    pic = PICPoisson2D(poisson, kernel)
+    pic = TwoDPoissonPIC(poisson, kernel)
 
     propagator = SplittingOperator(pic, pg)
 

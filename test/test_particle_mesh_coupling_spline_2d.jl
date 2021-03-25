@@ -83,7 +83,7 @@ using ParticleInCell
     @test ρ_dofs ≈ ρ_dofs_ref
     @test ρ_dofs1 ≈ ρ_dofs_ref
 
-    ParticleInCell.b_to_pp_2d!(ρ_dofs_pp, kernel.spline1, kernel.spline2, ρ_dofs)
+    GEMPIC.b_to_pp_2d!(ρ_dofs_pp, kernel.spline1, kernel.spline2, ρ_dofs)
 
     # For evaluation check
     particle_values = zeros(4)

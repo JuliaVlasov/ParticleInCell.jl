@@ -1,9 +1,9 @@
 using FFTW
 
-export Poisson2DPeriodic
+export TwoDPoissonPeriodic
 
 """
-    Poisson2DPeriodic
+    TwoDPoissonPeriodic
 
 Derived type to solve the Poisson equation on 2d regular 
 cartesian mesh with periodic boundary conditions on both sides
@@ -16,7 +16,7 @@ cartesian mesh with periodic boundary conditions on both sides
 - dy   : y step size
 - rht  : fft(rho)
 """
-struct Poisson2DPeriodic
+struct TwoDPoissonPeriodic
 
     grid::TwoDGrid
     kx::Array{Float64,2}
@@ -24,7 +24,7 @@ struct Poisson2DPeriodic
     k2::Array{Float64,2}
     rht::Array{ComplexF64,2}
 
-    function Poisson2DPeriodic(grid::TwoDGrid)
+    function TwoDPoissonPeriodic(grid::TwoDGrid)
 
         nc_x = grid.nx
         nc_y = grid.ny
@@ -74,7 +74,7 @@ computes `phi` from `rho`
 ```
 
 """
-function solve!(phi, poisson::Poisson2DPeriodic, rho)
+function solve!(phi, poisson::TwoDPoissonPeriodic, rho)
 
     poisson.rht .= rfft(rho)
     poisson.rht ./= poisson.k2
@@ -93,7 +93,7 @@ E(x,y) = -\\nabla \\phi(x,y) \\\\
 ```
 
 """
-function solve!(ex, ey, poisson::Poisson2DPeriodic, rho)
+function solve!(ex, ey, poisson::TwoDPoissonPeriodic, rho)
 
     poisson.rht .= rfft(rho)
 
@@ -112,10 +112,10 @@ function solve!(ex, ey, poisson::Poisson2DPeriodic, rho)
 end
 
 
-export PICPoisson2D
+export TwoDPoissonPIC
 
 """
-    PICPoisson2D( poisson, kernel )
+    TwoDPoissonPIC( poisson, kernel )
 
 - kernel : Kernel smoother taking care of charge deposition and field evaluation
 - poisson : Poisson solver
@@ -126,11 +126,11 @@ export PICPoisson2D
 - efield : 2d version of efield_dofs to adjust to field solver format
 - phi2d : 2d version of phi_dofs to adjust to field solver format
 """
-struct PICPoisson2D
+struct TwoDPoissonPIC
 
     ndofs::Int
     kernel::ParticleMeshCoupling2D
-    poisson::Poisson2DPeriodic
+    poisson::TwoDPoissonPeriodic
     rho_dofs::Vector{Float64}
     efield_dofs::Vector{Vector{Float64}}
     phi_dofs::Vector{Float64}
@@ -138,7 +138,7 @@ struct PICPoisson2D
     efield::Vector{Array{Float64,2}}
     phi2d::Array{Float64,2}
 
-    function PICPoisson2D(poisson::Poisson2DPeriodic, kernel::ParticleMeshCoupling2D)
+    function TwoDPoissonPIC(poisson::TwoDPoissonPeriodic, kernel::ParticleMeshCoupling2D)
 
         nx, ny = poisson.grid.nx, poisson.grid.ny
         ndofs = nx * ny
@@ -166,11 +166,11 @@ Add charge from one particle
 - position : Position of the particle
 - marker_charge : Particle weight times charge
 """
-function add_charge!(pic::PICPoisson2D, position, marker_charge)
+function add_charge!(pic::TwoDPoissonPIC, position, marker_charge)
 
     xp, yp = position
 
-    add_charge!(pic.rho_dofs, pic.kernel, xp, yp, marker_charge)
+    GEMPIC.add_charge!(pic.rho_dofs, pic.kernel, xp, yp, marker_charge)
 
 end
 
@@ -184,7 +184,7 @@ Evaluate charge density at rho at one position
 """
 function evaluate_rho!(pic, position)
 
-    evaluate!(kernel, position, pic.rho_dofs)
+    GEMPIC.evaluate!(kernel, position, pic.rho_dofs)
 
 end
 
@@ -198,7 +198,7 @@ Evaluate potential at one position
 """
 function evaluate_rho(pic, position)
 
-    evaluate!(kernel, position, pic.phi_dofs)
+    GEMPIC.evaluate!(kernel, position, pic.phi_dofs)
 
 end
 
@@ -210,7 +210,7 @@ end
 Solve for phi and fields
 - poisson : Pic Poisson solver object
 """
-function solve!(pic)
+function solve!(pic :: TwoDPoissonPIC)
 
     solve_phi!(pic)
     solve_fields!(pic)
@@ -222,7 +222,7 @@ end
 
 Solve for potential
 """
-function solve_phi!(pic)
+function solve_phi!(pic :: TwoDPoissonPIC)
 
     nx, ny = pic.poisson.grid.nx, pic.poisson.grid.ny
     pic.rho2d .= reshape(pic.rho_dofs, nx, ny)
@@ -236,7 +236,7 @@ end
 
 Solve efields from rho
 """
-function solve_fields!(pic)
+function solve_fields!(pic :: TwoDPoissonPIC)
 
     solve!(pic.efield[1], pic.efield[2], pic.poisson, pic.rho2d)
 
@@ -255,7 +255,7 @@ Operator splitting type for 2d2v Vlasov-Poisson
 """
 struct SplittingOperator
 
-    pic::PICPoisson2D
+    pic::TwoDPoissonPIC
     pg::ParticleGroup
 
 end
@@ -291,7 +291,7 @@ function operator_v!(split::SplittingOperator, dt)
         xi = split.pg.array[1, i_part]
         yi = split.pg.array[2, i_part]
 
-        ex, ey = evaluate_multiple(split.pic.kernel, (xi, yi), split.pic.efield_dofs)
+        ex, ey = GEMPIC.evaluate_multiple(split.pic.kernel, (xi, yi), split.pic.efield_dofs)
 
         vx_new = split.pg.array[3, i_part]
         vy_new = split.pg.array[4, i_part]
@@ -315,7 +315,7 @@ function charge_deposition!(split::SplittingOperator)
         xp = split.pg.array[1, i_part]
         yp = split.pg.array[2, i_part]
         wp = split.pg.array[5, i_part]
-        add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
+        GEMPIC.add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, yp, wp)
     end
     nx, ny = split.pic.poisson.grid.nx, split.pic.poisson.grid.ny
     split.pic.rho2d .= reshape(split.pic.rho_dofs, nx, ny)
@@ -354,5 +354,5 @@ export compute_field_energy
 
 Compute the squared l2 norm of electric field
 """
-compute_field_energy(pic::PICPoisson2D, component::Int) =
+compute_field_energy(pic::TwoDPoissonPIC, component::Int) =
     sum(pic.efield_dofs[component] .^ 2) * pic.poisson.grid.dx * pic.poisson.grid.dy

@@ -80,7 +80,7 @@ end
 
 export push_v!
 
-function push_v!(p, kernel::CloudInCell, m::TwoDGrid, dt::Float64)
+function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt::Float64)
 
     nbpart = Int32(size(p.array)[2])
     nx = Int32(m.nx)
@@ -95,7 +95,7 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, dt::Float64)
             Ref{Float64},
             Ptr{Float64},
             Ptr{Float64},
-            Ptr{Float64}), nbpart, p.array, dt, nx, ny, dx, dy, m.ex, m.ey, m.bz)
+            Ptr{Float64}), nbpart, p.array, dt, nx, ny, dx, dy, ex, ey, bz)
 
 end
 

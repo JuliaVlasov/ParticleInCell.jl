@@ -1,6 +1,6 @@
 @testset " spline pp 1d " begin
 
-    import ParticleInCell: SplinePP, b_to_pp, uniform_bsplines_eval_basis, horner_1d
+    import GEMPIC: SplinePP, b_to_pp, uniform_bsplines_eval_basis, horner_1d
 
     ncells = 8
 
@@ -71,7 +71,7 @@ end
     spline1 = SplinePP(d, ncells)
     spline2 = SplinePP(d, ncells)
 
-    ParticleInCell.b_to_pp_2d!(pp, spline1, spline2, b)
+    GEMPIC.b_to_pp_2d!(pp, spline1, spline2, b)
 
     xp, yp = rand(rng, 2) .* 2π
 
@@ -84,7 +84,7 @@ end
     xi -= (ind_x - 1)
     yi -= (ind_y - 1)
 
-    res1 = ParticleInCell.horner_2d((d, d), pp, (xi, yi), (ind_x, ind_y), (ncells, ncells))
+    res1 = GEMPIC.horner_2d((d, d), pp, (xi, yi), (ind_x, ind_y), (ncells, ncells))
 
     ind_x -= d
     ind_y -= d
@@ -106,7 +106,7 @@ end
 
     xp = rand(rng, 2)
 
-    res1 = ParticleInCell.horner_2d((d, d), pp, xp, [1, 1], [1, 1])
+    res1 = GEMPIC.horner_2d((d, d), pp, xp, [1, 1], [1, 1])
 
     res2 = 0.0
     for i = 1:d+1, j = 1:d+1
