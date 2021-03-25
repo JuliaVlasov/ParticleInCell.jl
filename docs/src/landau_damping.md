@@ -1,83 +1,92 @@
 # Landau damping
 
 
-```@setup landau
+```@setup vp1d1v
 using ParticleInCell
 using Plots
 using Random
+using GEMPIC
 ```
 
 ## Test particle initialization
 
-```@example landau
+```@example vp1d1v
+dt = 0.1
+nsteps = 100
 alpha = 0.1
 kx = 0.5
-nx = 50
-np = 10000 * nx
-mesh = OneDGrid( 0, 4π, nx)
-x = LinRange(0, 4pi, nx+1)[1:end-1]
-rng = MersenneTwister(42)
-pa = landau_damping(rng, mesh, np, alpha, kx )
-ex = zeros(Float64, nx)
-rho = zeros(Float64, nx)
-poisson = OneDPoisson( mesh )
-pm = ParticleMeshCoupling(pa, mesh)
-mat = compute_coeffs(pm, pa)
-compute_rho!(rho, mat, mesh, pa)
-solve!(ex, poisson, rho)
+
+nx = 128
+xmin, xmax = 0.0, 2π / kx
+
+n_particles = 100000
+degree_smoother = 3
+
+mesh = OneDGrid( xmin, xmax, nx)
+
+particles = ParticleGroup{1,1}( n_particles, charge=1.0, mass=1.0, n_weights=1)
+
+sampler = LandauDamping( alpha, kx )
+
+ParticleInCell.sample!( particles, mesh, sampler)
+
+particles.array[3,:] .= (xmax - xmin) ./ n_particles;
 ```
 
-```@example landau
+```@example vp1d1v
 p = plot(layout=2)
+histogram!( p[1], particles.array[1,:], normalized=true)
+histogram!( p[2], particles.array[2,:], normalized=true)
+```
+
+```@example vp2d2v
+poisson = OneDPoissonPeriodic( mesh )
+kernel = ParticleMeshCoupling1D( particles, mesh, degree_smoother, :collocation)
+
+ex = zeros(nx)
+rho = zeros(nx)
+
+for i_part = 1:particles.n_particles
+    xi = particles.array[1, i_part]
+    wi = particles.array[3, i_part]
+    GEMPIC.add_charge!(rho, kernel, xi, wi)
+end
+
+solve!(ex, poisson, rho)
+x = LinRange( xmin, xmax, nx+1)[1:end-1]
+p = plot(layout=(2))
 plot!(p[1], x, ex)
 plot!(p[1], x, alpha/kx * sin.(kx * x))
 plot!(p[2], x, rho)
 plot!(p[2], x, alpha * cos.(kx * x))
 ```
 
-## Full simulation
+```@example vp1d1v
 
+problem = OneDPoissonPIC( poisson, kernel )
 
-```@example landau
+dt = 0.1
+nsteps = 100
+alpha = 0.1
+kx = 0.5
 
-using ParticleInCell
+propagator = SplittingOperator( problem, particles ) 
 
-function main(nt, dt)
-    
-    nx = 50
-    np = 10000 * nx
-    mesh = OneDGrid( 0, 4π, nx)
-    poisson = OneDPoisson( mesh )
-    rng = MersenneTwister(42)
-    α = 0.1
-    kx = 0.5
-    pa = landau_damping(rng, mesh, np, α, kx )
-    pm = ParticleMeshCoupling(pa, mesh)
-    energy = Float64[]
-    e = zeros(Float64, nx)
-    ρ = zeros(Float64, nx)
-    xmin = mesh.xmin
-    xmax = mesh.xmax
-    mat = compute_coeffs(pm, pa)
-    compute_rho!(ρ, mat, mesh, pa)
-    solve!(e, poisson, ρ)
-    for it in 1:nt+1       
-        update_positions!(pa, mesh, dt)
-        mat = compute_coeffs(pm, pa)
-        compute_rho!(ρ, mat, mesh, pa)
-        solve!(e, poisson, ρ)
-        update_velocities!(pa, e, mat, dt)
-        push!(energy, 0.5 * sum(e.^2) * mesh.dx) 
-    end
-    energy
+energy = Float64[]
+
+for j=1:nsteps
+
+    ParticleInCell.operator_t!(propagator, 0.5dt)
+    ParticleInCell.charge_deposition!(propagator)
+    ParticleInCell.solve_fields!(propagator)
+    ParticleInCell.operator_v!(propagator, dt)
+    ParticleInCell.operator_t!(propagator, 0.5dt)
+
+    push!(energy, compute_field_energy(problem, 1))
+          
 end
+
+t = collect(0:nsteps) .* dt
+plot(log.(energy))
+
 ```
-
-```@example landau
-nt, dt = 1000, 0.1
-results = main(nt, dt)
-t = collect(0:nt) .* dt
-plot( t, results, yaxis = :log )
-```
-
-
