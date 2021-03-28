@@ -3,6 +3,7 @@ using GEMPIC
 using ParticleInCell
 using Test
 
+include("test_poisson_1d.jl")
 include("test_landau_damping.jl")
 include("test_push.jl")
 include("test_fdtd.jl")
