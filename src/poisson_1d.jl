@@ -1,9 +1,9 @@
 using FFTW
 
-export OneDPoissonPeriodic
+export OneDPoisson
 
 """
-    OneDPoissonPeriodic
+    OneDPoisson
 
 Derived type to solve the Poisson equation on 1d regular 
 cartesian mesh with periodic boundary conditions
@@ -12,13 +12,13 @@ cartesian mesh with periodic boundary conditions
 - dx   : x step size
 - rht  : fft(rho)
 """
-struct OneDPoissonPeriodic
+struct OneDPoisson
 
     grid::OneDGrid
     kx::Array{Float64,1}
     rht::Array{ComplexF64,1}
 
-    function OneDPoissonPeriodic(grid::OneDGrid)
+    function OneDPoisson(grid::OneDGrid)
 
         nc_x = grid.nx
         rht = zeros(ComplexF64, div(nc_x, 2) + 1)
@@ -47,7 +47,7 @@ export compute_e_from_rho!
 computes electric field `e` from `rho` by solving Poisson equation.
 
 """
-function compute_e_from_rho!(ex, poisson::OneDPoissonPeriodic, rho)
+function compute_e_from_rho!(ex, poisson::OneDPoisson, rho)
 
     poisson.rht .= rfft(rho)
 
@@ -73,12 +73,12 @@ struct OneDPoissonPIC
 
     ndofs::Int
     kernel::ParticleMeshCoupling2D
-    poisson::TwoDPoissonPeriodic
+    poisson::OneDPoisson
     rho::Vector{Float64}
     efield::Vector{Vector{Float64}}
     phi::Vector{Float64}
 
-    function OneDPoissonPIC(poisson::OneDPoissonPeriodic, kernel::ParticleMeshCoupling1D)
+    function OneDPoissonPIC(poisson::OneDPoisson, kernel::ParticleMeshCoupling1D)
 
         ndofs = poisson.grid.nx
 
