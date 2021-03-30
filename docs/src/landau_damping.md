@@ -40,9 +40,9 @@ histogram!( p[1], particles.array[1,:], normalized=true)
 histogram!( p[2], particles.array[2,:], normalized=true)
 ```
 
-```@example vp2d2v
+```@example vp1d1v
 poisson = OneDPoisson( mesh )
-kernel = ParticleMeshCoupling1D( particles, mesh, degree_smoother, :collocation)
+kernel = ParticleMeshCoupling1D( mesh, n_particles, degree_smoother, :collocation)
 
 ex = zeros(nx)
 rho = zeros(nx)
@@ -53,7 +53,7 @@ for i_part = 1:particles.n_particles
     GEMPIC.add_charge!(rho, kernel, xi, wi)
 end
 
-solve!(ex, poisson, rho)
+compute_e_from_rho!(ex, poisson, rho)
 x = LinRange( xmin, xmax, nx+1)[1:end-1]
 p = plot(layout=(2))
 plot!(p[1], x, ex)

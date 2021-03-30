@@ -17,7 +17,13 @@
 
     poisson = OneDPoisson( mesh )
     
-    @test true
+    computed_ex = zero(expected_ex)
+
+    ParticleInCell.compute_e_from_rho!( computed_ex, poisson, rho )
+
+    @show maximum(abs.( computed_ex .- expected_ex ))
+
+    @test computed_ex ≈ expected_ex
 
 
 end

@@ -15,24 +15,17 @@ cartesian mesh with periodic boundary conditions
 struct OneDPoisson
 
     grid::OneDGrid
-    kx::Array{Float64,1}
+    modes::Array{Float64,1}
     rht::Array{ComplexF64,1}
 
     function OneDPoisson(grid::OneDGrid)
 
         nx = grid.nx
-        rht = zeros(ComplexF64, div(nx, 2) + 1)
-        kx = zeros(nx ÷ 2 + 1)
+        rht = zeros(ComplexF64, nx)
+        k =  2π / grid.dimx
+        modes = [1.0; k .* vcat(1:nx÷2-1,-nx÷2:-1)...]
 
-        kx0 = 2π / grid.dimx
-
-        for ik = 1:nx÷2+1
-            kx[ik] = (ik - 1) * kx0
-        end
-
-        kx[1] = 1.0
-
-        new(grid, kx, rht)
+        new(grid, modes, rht)
 
     end
 
@@ -49,12 +42,8 @@ computes electric field `e` from `rho` by solving Poisson equation.
 """
 function compute_e_from_rho!(ex, poisson::OneDPoisson, rho)
 
-    poisson.rht .= rfft(rho)
-
-    poisson.rht[1] = 0.0
-    poisson.rht .*= -1im .* poisson.kx
-
-    ex .= irfft(poisson.rht, poisson.grid.nx)
+   poisson.rht .= fft(rho) ./ poisson.modes
+   ex .= real(ifft(-1im .* poisson.rht ))
 
 end
 
