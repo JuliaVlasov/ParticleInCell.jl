@@ -5,14 +5,17 @@
     xmin, xmax = 0.0, 2π / kx
     nx = 64
 
-    grid = OneDGrid( xmin, xmax, nx )
+    mesh = OneDGrid( xmin, xmax, nx )
+
+    rho = zeros(nx)
+    expected_ex = zeros(nx)
 
     for i in 1:nx
-        rho[i] = alpha * cos.(kx * x)
-        ex[i] = alpha / kx * sin(kx * grid.x[i])
+        rho[i] = alpha * cos(kx * mesh.x[i])
+        expected_ex[i] = alpha / kx * sin(kx * mesh.x[i])
     end
 
-    poisson = OneDPoisson( grid )
+    poisson = OneDPoisson( mesh )
     
     @test true
 

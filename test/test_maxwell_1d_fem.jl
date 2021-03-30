@@ -1,3 +1,5 @@
+using GEMPIC
+
 @testset " Maxwell 1D FEM solver " begin
 
     """
@@ -50,9 +52,9 @@
         ex_exact[i] = sin_k(xi) / (2.0 * mode * pi / Lx)
     end
 
-    compute_rhs_from_function!(rho, maxwell_1d, cos_k, deg)
+    GEMPIC.compute_rhs_from_function!(rho, maxwell_1d, cos_k, deg)
 
-    compute_e_from_rho!(ex, maxwell_1d, rho)
+    GEMPIC.compute_e_from_rho!(ex, maxwell_1d, rho)
 
     # Evaluate spline curve at grid points and compute error
     # Ex is a 1-form, i.e. one spline degree lower
@@ -70,9 +72,9 @@
         ex_exact[i] = -cos_k(xi) * dt
     end
 
-    compute_rhs_from_function!(rho, maxwell_1d, cos_k, deg - 1)
+    GEMPIC.compute_rhs_from_function!(rho, maxwell_1d, cos_k, deg - 1)
     fill!(ex, 0.0)
-    compute_e_from_j!(ex, maxwell_1d, dt .* rho, 1)
+    GEMPIC.compute_e_from_j!(ex, maxwell_1d, dt .* rho, 1)
 
     # Evaluate spline curve at grid points and compute error
     # Ex is a 1-form, i.e. one spline degree lower
@@ -95,7 +97,7 @@
 
     # Compute initial fields 
     ex = 0.0 # 0-form -> splines of degree deg
-    l2projection!(bz, maxwell_1d, cos_k, deg - 1) # 0-form -> splines of degree deg-1
+    GEMPIC.l2projection!(bz, maxwell_1d, cos_k, deg - 1) # 0-form -> splines of degree deg-1
 
     for istep = 1:nstep
         compute_b_from_e!(bz, maxwell_1d, 0.5 * dt, ey)

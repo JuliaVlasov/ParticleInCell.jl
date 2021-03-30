@@ -20,13 +20,13 @@ struct OneDPoisson
 
     function OneDPoisson(grid::OneDGrid)
 
-        nc_x = grid.nx
-        rht = zeros(ComplexF64, div(nc_x, 2) + 1)
-        kx = zeros(nc_x ÷ 2 + 1, nc_y)
+        nx = grid.nx
+        rht = zeros(ComplexF64, div(nx, 2) + 1)
+        kx = zeros(nx ÷ 2 + 1)
 
         kx0 = 2π / grid.dimx
 
-        for ik = 1:nc_x÷2+1
+        for ik = 1:nx÷2+1
             kx[ik] = (ik - 1) * kx0
         end
 
@@ -119,7 +119,7 @@ function evaluate_rho!(pic :: OneDPoissonPIC, position)
 
 end
 
-export SplittingOperator
+export OneDSplittingOperator
 
 """
 Operator splitting type for 2d2v Vlasov-Poisson
@@ -147,7 +147,7 @@ function operator_t!(split::OneDSplittingOperator, dt)
 
 end
 
-function operator_v!(split::SplittingOperator, dt)
+function operator_v!(split::OneDSplittingOperator, dt)
 
     qm = split.pg.q_over_m
 
@@ -171,7 +171,7 @@ end
 
 export charge_deposition!
 
-function charge_deposition!(split::SplittingOperator)
+function charge_deposition!(split::OneDSplittingOperator)
 
     fill!(split.pic.rho_dofs, 0.0)
     for i_part = 1:split.pg.n_particles
@@ -199,17 +199,19 @@ end
 """
 Solve Poisson's equation for the electric field
 """
-solve_fields!(split::SplittingOperator) = solve_fields!(split.pic)
+solve_fields!(split::OneDSplittingOperator) = solve_fields!(split.pic)
 
 
 export strang_splitting!
 
 """
+    strang_splitting!(split, dt)
+
 Strang splitting
 - split :: time splitting object 
 - dt   :: time step
 """
-function strang_splitting!(split::SplittingOperator{1}, dt)
+function strang_splitting!(split::OneDSplittingOperator, dt)
 
     operator_t!(split, 0.5dt)
     charge_deposition!(split)

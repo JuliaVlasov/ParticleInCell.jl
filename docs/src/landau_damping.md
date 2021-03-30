@@ -31,6 +31,7 @@ sampler = LandauDamping( alpha, kx )
 ParticleInCell.sample!( particles, mesh, sampler)
 
 particles.array[3,:] .= (xmax - xmin) ./ n_particles;
+nothing # hide
 ```
 
 ```@example vp1d1v

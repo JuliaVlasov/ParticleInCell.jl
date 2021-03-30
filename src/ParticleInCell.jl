@@ -9,6 +9,7 @@ import Sobol
 
 include("particle_1d1v.jl")
 include("landau_damping.jl")
+include("poisson_1d.jl")
 include("poisson_2d.jl")
 include("particle_mesh.jl")
 include("particles.jl")
