@@ -39,7 +39,7 @@ histogram!( p[1], particles.array[1,:], normalized=true)
 histogram!( p[2], particles.array[2,:], normalized=true)
 ```
 
-```@example vp2d2v
+```@example vp1d1v
 poisson = OneDPoissonPeriodic( mesh )
 kernel = ParticleMeshCoupling1D( particles, mesh, degree_smoother, :collocation)
 

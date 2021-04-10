@@ -1,8 +1,7 @@
 export TwoStreamInstability
 
 struct TwoStreamInstability
-    grid = OneDGrid
-    TwoStreamInstability( grid ) = new( grid )
+    grid :: OneDGrid
 end
 
 

@@ -95,11 +95,11 @@ function newton(r)
     x1
 end
 
-?newton
+help(newton)
 
 @btime newton(0.9)
 
-?dichotomie
+help(dichotomie)
 
 @btime dichotomie(0.9)
 
