@@ -7,11 +7,11 @@
 #       extension: .jl
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.7.1
+#       jupytext_version: 1.13.8
 #   kernelspec:
-#     display_name: Julia 1.5.3
+#     display_name: Julia 1.8.0
 #     language: julia
-#     name: julia-1.5
+#     name: julia-1.8
 # ---
 
 # # Sampling from a probability distribution
@@ -125,12 +125,16 @@ function landau( nbpart :: Int64)
 
 end
 
-xp, vp = landau(100000);
+@time xp, vp = landau(1000000);
 # -
 
-p = histogram([xp,vp], normalize=true, bins = 100,  layout=(2,1))
-plot!(p[1,1], x-> (1+0.1*cos(0.5*x))/4π, 0., 4π)
-plot!(p[2,1], x-> (exp(-x^2/2))/sqrt(2π), -6, 6)
+histogram(xp)
+
+p = plot(layout=(2,1))
+histogram!(p[1], xp, normalize=true, bins=100)
+plot!(p[1], x-> (1+0.1*cos(0.5*x))/4π, 0., 4π)
+histogram!(p[2], vp, normalize=true, bins=100)
+plot!(p[2], x-> (exp(-x^2/2))/sqrt(2π), -6, 6)
 
 ρ(x) = exp(-x^2/2)
 xmin, xmax, nx = -5, 5, 100
@@ -171,13 +175,15 @@ plot(x, v)
 
 # Construct the CDF numerically and find the closest value 
 
-nbpart = 10000
-s  = SobolSeq(1)
-xp = Float64[]
-for k=0:nbpart-1
-   r = next!(s)[1] * 4π
-   j = findmin(abs.(v .- r) )[2]
-   push!(xp,  x[j])
+@time begin 
+    nbpart = 1000000
+    s  = SobolSeq(1)
+    xp = Float64[]
+    for k=0:nbpart-1
+       r = next!(s)[1] * 4π
+       j = findmin(abs.(v .- r) )[2]
+       push!(xp,  x[j])
+    end
 end
 
 histogram(xp, normalize=true, bins = 100)

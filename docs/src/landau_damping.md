@@ -41,8 +41,8 @@ histogram!( p[2], particles.array[2,:], normalized=true)
 ```
 
 ```@example vp1d1v
-poisson = OneDPoisson( mesh )
-kernel = ParticleMeshCoupling1D( mesh, n_particles, degree_smoother, :collocation)
+poisson = OneDPoissonPeriodic( mesh )
+kernel = ParticleMeshCoupling1D( particles, mesh, degree_smoother, :collocation)
 
 ex = zeros(nx)
 rho = zeros(nx)
