@@ -4,8 +4,9 @@ struct TwoStreamInstability
     grid :: OneDGrid
 end
 
+export sample!
 
-function sample!(pg::ParticleGroup{1,1}, d::TwoStreamInstability)
+function sample!(rng, pg::ParticleGroup{1,1}, d::TwoStreamInstability)
 
     np = pg.n_particles
     xmin = d.grid.xmin
@@ -31,8 +32,10 @@ function sample!(pg::ParticleGroup{1,1}, d::TwoStreamInstability)
     xp .+= xp1 * dx * sin.(2π .* xp ./ (xmax - xmin) .* mode)
     xp .= mod.(xp, xmax - xmin)
 
-    pg.array[:,1] .= xp
-    pg.array[:,2] .= vp
+    @show np
+    @show size(xp)
+    pg.array[1,:] .= xp
+    pg.array[2,:] .= vp
 
 end
 

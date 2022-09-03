@@ -4,13 +4,12 @@
 
 Particle In Cell code in Julia
 
-Work in progress, you can find first tests in the documentation.
+This software is developed in order to experiment with optimizations and to try the best way to have an efficient package for particle-mesh numerical methods for plasmas.
+It is a work in progress, you can find first tests in the documentation.
 
-I am working on this Julia code to compare performances with a Fortran code that 
+I compared performances of this Julia code with a Fortran version that 
 solves same equation with same parameters and same numerical method.
-You can find it [here](https://github.com/pnavaro/vm_nonunif). This is an old code written in 2005
-and not well optimized but it takes 6 seconds with 204800 particles.
-I note here times of this Julia code and what I have done to speed-up things.
+You can find it [here](https://github.com/pnavaro/vm_nonunif). This is an old code written in 2005 with Régine Barthelmé and even is is not well optimized, it takes only 6 seconds with 204800 particles. I note here times of this Julia code and what I have done to speed-up things.
 
 - 323 seconds : First version 
 - 303 seconds : Use julia -O3 --check-bounds=no
@@ -22,7 +21,7 @@ I note here times of this Julia code and what I have done to speed-up things.
 - 019 seconds : replace the julia deposition by a call to the fortran subroutine
 - 006 seconds : vectorize and use views in function push_x instead of a loop
 - 135 seconds : back to julia functions for particles but without `mod1` calls.
-- 003 seconds : back to julia functions, I set the types of struct members.
+- 003 seconds : back to julia functions, I set the types of struct members. I let some of them with the type `Any`, very bad idea...
 
 Now I increase the number of particles to 1024000 and begin to parallelize particles motion.
 

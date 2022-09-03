@@ -4,9 +4,12 @@ using LinearAlgebra
 using Random
 using SparseArrays
 import Sobol
-import GEMPIC: OneDGrid, TwoDGrid, ParticleGroup
-import GEMPIC: ParticleMeshCoupling1D
-import GEMPIC: ParticleMeshCoupling2D
+
+using Reexport
+@reexport import GEMPIC
+@reexport import GEMPIC: OneDGrid, TwoDGrid, ParticleGroup
+@reexport import GEMPIC: ParticleMeshCoupling1D
+@reexport import GEMPIC: ParticleMeshCoupling2D
 
 include("particle_1d1v.jl")
 include("landau_damping.jl")

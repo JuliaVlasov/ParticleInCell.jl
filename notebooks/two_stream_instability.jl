@@ -1,6 +1,3 @@
-# Two-stream instability
-
-```@example tsi
 using Plots
 using Random
 using SparseArrays
@@ -163,10 +160,7 @@ function main()
     energy
 
 end
-```
 
-```@example tsi
 results = main()
 t = (0:nt) .* dt
 plot( t, results, yaxis=:log)
-```

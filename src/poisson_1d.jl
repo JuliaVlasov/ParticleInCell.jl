@@ -61,10 +61,10 @@ export OneDPoissonPIC
 struct OneDPoissonPIC
 
     ndofs::Int
-    kernel::ParticleMeshCoupling2D
+    kernel::ParticleMeshCoupling1D
     poisson::OneDPoisson
     rho::Vector{Float64}
-    efield::Vector{Vector{Float64}}
+    efield::Vector{Float64}
     phi::Vector{Float64}
 
     function OneDPoissonPIC(poisson::OneDPoisson, kernel::ParticleMeshCoupling1D)
@@ -72,7 +72,7 @@ struct OneDPoissonPIC
         ndofs = poisson.grid.nx
 
         rho = zeros(ndofs)
-        efield = [zeros(ndofs), zeros(ndofs)]
+        efield = zeros(ndofs)
 
         new(ndofs, kernel, poisson, rho, efield)
 
@@ -162,11 +162,11 @@ export charge_deposition!
 
 function charge_deposition!(split::OneDSplittingOperator)
 
-    fill!(split.pic.rho_dofs, 0.0)
+    fill!(split.pic.rho, 0.0)
     for i_part = 1:split.pg.n_particles
         xp = split.pg.array[1, i_part]
         wp = split.pg.array[3, i_part]
-        GEMPIC.add_charge!(split.pic.rho_dofs, split.pic.kernel, xp, wp)
+        GEMPIC.add_charge!(split.pic.rho, split.pic.kernel, xp, wp)
     end
 
 end
@@ -180,7 +180,7 @@ Solve efields from rho
 """
 function solve_fields!(pic :: OneDPoissonPIC)
 
-    compute_e_from_rho!(pic.efield[1], pic.poisson, pic.rho)
+    compute_e_from_rho!(pic.efield, pic.poisson, pic.rho)
 
 end
 
@@ -217,5 +217,4 @@ export compute_field_energy
 
 Compute the squared l2 norm of electric field
 """
-compute_field_energy(pic::OneDPoissonPIC, component::Int) =
-    sum(pic.efield[component] .^ 2) * pic.poisson.grid.dx
+compute_field_energy(pic::OneDPoissonPIC) = sum(pic.efield.^2) * pic.poisson.grid.dx
