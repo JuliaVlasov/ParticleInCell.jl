@@ -19,6 +19,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 FFTW = "1"
+FastGaussQuadrature = "0.4"
 GEMPIC = "0.2.3"
 Reexport = "1"
 Sobol = "1"
