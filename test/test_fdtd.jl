@@ -11,11 +11,11 @@ using LinearAlgebra
 
     mesh = TwoDGrid(dimx, nx, dimy, ny)
 
-    ex = zeros(nx+1, ny+1)
-    ey = zeros(nx+1, ny+1)
-    bz = zeros(nx+1, ny+1)
-    jx = zeros(nx+1, ny+1)
-    jy = zeros(nx+1, ny+1)
+    ex = zeros(nx + 1, ny + 1)
+    ey = zeros(nx + 1, ny + 1)
+    bz = zeros(nx + 1, ny + 1)
+    jx = zeros(nx + 1, ny + 1)
+    jy = zeros(nx + 1, ny + 1)
 
     fdtd = FDTD(mesh)
 

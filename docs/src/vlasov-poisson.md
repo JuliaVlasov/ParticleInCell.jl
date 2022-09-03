@@ -4,7 +4,6 @@ Simulation of 2d2v Vlasov-Poisson with simple PIC method, periodic boundary cond
 
 ```@example vp2d2v
 using Plots
-using GEMPIC
 using ParticleInCell
 
 dt = 0.1

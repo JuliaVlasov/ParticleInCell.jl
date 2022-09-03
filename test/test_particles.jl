@@ -34,8 +34,6 @@
 
     ρ = compute_rho(p, kernel, mesh)
 
-    @test ρ ≈ rho atol=1e-2
+    @test ρ ≈ rho atol = 1e-2
 
 end
-
-

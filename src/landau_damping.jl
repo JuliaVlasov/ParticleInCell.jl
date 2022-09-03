@@ -74,7 +74,7 @@ f_0(x,v,t) = \\frac{n_0}{2π v_{th}^2} ( 1 + \\alpha cos(k_x x))
  exp( - \\frac{v_x^2+v_y^2}{2 v_{th}^2})
 ```
 """
-function sample!(pg::ParticleGroup{2,2}, mesh :: TwoDGrid, d::LandauDamping)
+function sample!(pg::ParticleGroup{2,2}, mesh::TwoDGrid, d::LandauDamping)
 
 
     alpha, kx = d.alpha, d.kx
@@ -106,7 +106,7 @@ Sampling from a probability distribution to initialize a Landau damping in
 f_0(x,v,t) = \\frac{n_0}{2π v_{th}^2} ( 1 + \\alpha cos(k_x x)) exp( - \\frac{v^2}{2 v_{th}^2})
 ```
 """
-function sample!( pg::ParticleGroup{1,1}, mesh :: OneDGrid, d::LandauDamping)
+function sample!(pg::ParticleGroup{1,1}, mesh::OneDGrid, d::LandauDamping)
 
     s = Sobol.SobolSeq(2)
     alpha, kx = d.alpha, d.kx
@@ -118,9 +118,9 @@ function sample!( pg::ParticleGroup{1,1}, mesh :: OneDGrid, d::LandauDamping)
         v = sqrt(-2 * log((i - 0.5) / nbpart))
         r1, r2 = Sobol.next!(s)
         θ = r1 * 2π
-        pg.array[1,i] = newton(r2, alpha, kx)
-        pg.array[2,i] = v * sin(θ) 
-        pg.array[3,i] = mesh.dimx / nbpart
+        pg.array[1, i] = newton(r2, alpha, kx)
+        pg.array[2, i] = v * sin(θ)
+        pg.array[3, i] = mesh.dimx / nbpart
     end
 
 end

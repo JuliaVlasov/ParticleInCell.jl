@@ -7,11 +7,11 @@ struct CloudInCell end
 
 export compute_rho
 
-function compute_rho(p, kernel::CloudInCell, m :: TwoDGrid)
+function compute_rho(p, kernel::CloudInCell, m::TwoDGrid)
 
     nx, ny = m.nx, m.ny
     dx, dy = m.dx, m.dy
-    rho = zeros(nx+1, ny+1)
+    rho = zeros(nx + 1, ny + 1)
     nbpart = size(p.array)[2]
 
     @inbounds for ipart = 1:nbpart
@@ -42,15 +42,15 @@ function compute_rho(p, kernel::CloudInCell, m :: TwoDGrid)
     end
 
     for i = 1:nx
-       rho[i,1] += rho[i,ny+1]
+        rho[i, 1] += rho[i, ny+1]
     end
     for j = 1:ny
-       rho[1,j] += rho[nx+1,j]
+        rho[1, j] += rho[nx+1, j]
     end
-    
-    rho ./= ( dx * dy )
 
-    return rho[1:nx,1:ny] .- mean(rho[1:nx,1:ny])
+    rho ./= (dx * dy)
+
+    return rho[1:nx, 1:ny] .- mean(rho[1:nx, 1:ny])
 
 
 end
@@ -66,13 +66,13 @@ function compute_current!(jx, jy, m::TwoDGrid, kernel::CloudInCell, p)
     fill!(jx, 0)
     fill!(jy, 0)
 
-    scaling = 1 / ( dx * dy )
+    scaling = 1 / (dx * dy)
 
     ntid = nthreads()
-    jxloc = [zero(jx) for _ in 1:ntid]
-    jyloc = [zero(jy) for _ in 1:ntid]
+    jxloc = [zero(jx) for _ = 1:ntid]
+    jyloc = [zero(jy) for _ = 1:ntid]
 
-    chunks = Iterators.partition(1:nbpart, nbpart÷ntid)
+    chunks = Iterators.partition(1:nbpart, nbpart ÷ ntid)
 
     @sync for chunk in chunks
         @spawn begin
@@ -112,8 +112,8 @@ function compute_current!(jx, jy, m::TwoDGrid, kernel::CloudInCell, p)
         end
     end
 
-    jx .= reduce(+,jxloc)
-    jy .= reduce(+,jyloc)
+    jx .= reduce(+, jxloc)
+    jy .= reduce(+, jyloc)
 
     for i = 1:nx+1
         jx[i, 1] += jx[i, ny+1]

@@ -17,7 +17,7 @@ end
 
 
 
-function compute_current!(jx, jy, m::TwoDGrid, kernel :: CloudInCell, p )
+function compute_current!(jx, jy, m::TwoDGrid, kernel::CloudInCell, p)
 
     nx = Int32(m.nx)
     ny = Int32(m.ny)
@@ -88,14 +88,32 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt::Float64)
     dx = m.dx
     dy = m.dy
 
-    ccall((:push_v, piclib), Cvoid, (Ref{Int32}, Ptr{Float64}, Ref{Float64},
+    ccall(
+        (:push_v, piclib),
+        Cvoid,
+        (
+            Ref{Int32},
+            Ptr{Float64},
+            Ref{Float64},
             Ref{Int32},
             Ref{Int32},
             Ref{Float64},
             Ref{Float64},
             Ptr{Float64},
             Ptr{Float64},
-            Ptr{Float64}), nbpart, p.array, dt, nx, ny, dx, dy, ex, ey, bz)
+            Ptr{Float64},
+        ),
+        nbpart,
+        p.array,
+        dt,
+        nx,
+        ny,
+        dx,
+        dy,
+        ex,
+        ey,
+        bz,
+    )
 
 end
 

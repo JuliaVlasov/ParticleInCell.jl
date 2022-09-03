@@ -22,8 +22,8 @@ struct OneDPoisson
 
         nx = grid.nx
         rht = zeros(ComplexF64, nx)
-        k =  2π / grid.dimx
-        modes = [1.0; k .* vcat(1:nx÷2-1,-nx÷2:-1)...]
+        k = 2π / grid.dimx
+        modes = [1.0; k .* vcat(1:nx÷2-1, -nx÷2:-1)...]
 
         new(grid, modes, rht)
 
@@ -42,8 +42,8 @@ computes electric field `e` from `rho` by solving Poisson equation.
 """
 function compute_e_from_rho!(ex, poisson::OneDPoisson, rho)
 
-   poisson.rht .= fft(rho) ./ poisson.modes
-   ex .= real(ifft(-1im .* poisson.rht ))
+    poisson.rht .= fft(rho) ./ poisson.modes
+    ex .= real(ifft(-1im .* poisson.rht))
 
 end
 
@@ -102,7 +102,7 @@ Evaluate charge density at rho at one position
 - position : Position of the particle
 - func_value : Value of rho at given position
 """
-function evaluate_rho!(pic :: OneDPoissonPIC, position)
+function evaluate_rho!(pic::OneDPoissonPIC, position)
 
     GEMPIC.evaluate!(kernel, position, pic.rho)
 
@@ -178,7 +178,7 @@ export solve_fields!
 
 Solve efields from rho
 """
-function solve_fields!(pic :: OneDPoissonPIC)
+function solve_fields!(pic::OneDPoissonPIC)
 
     compute_e_from_rho!(pic.efield, pic.poisson, pic.rho)
 
@@ -217,4 +217,4 @@ export compute_field_energy
 
 Compute the squared l2 norm of electric field
 """
-compute_field_energy(pic::OneDPoissonPIC) = sum(pic.efield.^2) * pic.poisson.grid.dx
+compute_field_energy(pic::OneDPoissonPIC) = sum(pic.efield .^ 2) * pic.poisson.grid.dx

@@ -20,9 +20,9 @@ import ParticleInCell.F90
     pj.array[2, 1] = y0
     pj.array[5, 1] = 1.0
 
-    ex = ones(nx+1, ny+1)
-    ey = zeros(nx+1, ny+1)
-    bz = ones(nx+1, ny+1)
+    ex = ones(nx + 1, ny + 1)
+    ey = zeros(nx + 1, ny + 1)
+    bz = ones(nx + 1, ny + 1)
 
     pf.array .= copy(pj.array)
 

@@ -6,10 +6,10 @@ using SparseArrays
 import Sobol
 
 using Reexport
+
 @reexport import GEMPIC
-@reexport import GEMPIC: OneDGrid, TwoDGrid, ParticleGroup
-@reexport import GEMPIC: ParticleMeshCoupling1D
-@reexport import GEMPIC: ParticleMeshCoupling2D
+@reexport import GEMPIC:
+    OneDGrid, TwoDGrid, ParticleGroup, ParticleMeshCoupling1D, ParticleMeshCoupling2D
 
 include("particle_1d1v.jl")
 include("landau_damping.jl")

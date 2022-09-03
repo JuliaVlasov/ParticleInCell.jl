@@ -211,7 +211,7 @@ end
 Solve for phi and fields
 - poisson : Pic Poisson solver object
 """
-function solve!(pic :: TwoDPoissonPIC)
+function solve!(pic::TwoDPoissonPIC)
 
     solve_phi!(pic)
     solve_fields!(pic)
@@ -223,7 +223,7 @@ end
 
 Solve for potential
 """
-function solve_phi!(pic :: TwoDPoissonPIC)
+function solve_phi!(pic::TwoDPoissonPIC)
 
     nx, ny = pic.poisson.grid.nx, pic.poisson.grid.ny
     pic.rho2d .= reshape(pic.rho_dofs, nx, ny)
@@ -237,7 +237,7 @@ end
 
 Solve efields from rho
 """
-function solve_fields!(pic :: TwoDPoissonPIC)
+function solve_fields!(pic::TwoDPoissonPIC)
 
     solve!(pic.efield[1], pic.efield[2], pic.poisson, pic.rho2d)
 

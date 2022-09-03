@@ -1,7 +1,7 @@
 export TwoStreamInstability
 
 struct TwoStreamInstability
-    grid :: OneDGrid
+    grid::OneDGrid
 end
 
 export sample!
@@ -34,8 +34,7 @@ function sample!(rng, pg::ParticleGroup{1,1}, d::TwoStreamInstability)
 
     @show np
     @show size(xp)
-    pg.array[1,:] .= xp
-    pg.array[2,:] .= vp
+    pg.array[1, :] .= xp
+    pg.array[2, :] .= vp
 
 end
-

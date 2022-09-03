@@ -13,11 +13,11 @@ import ParticleInCell.F90
     mesh1 = TwoDGrid(dimx, nx, dimy, ny)
     mesh2 = TwoDGrid(dimx, nx, dimy, ny)
 
-    ex = zeros(nx+1, ny+1)
-    ey = zeros(nx+1, ny+1)
-    bz = zeros(nx+1, ny+1)
-    jx = zeros(nx+1, ny+1)
-    jy = zeros(nx+1, ny+1)
+    ex = zeros(nx + 1, ny + 1)
+    ey = zeros(nx + 1, ny + 1)
+    bz = zeros(nx + 1, ny + 1)
+    jx = zeros(nx + 1, ny + 1)
+    jy = zeros(nx + 1, ny + 1)
 
     nbpart = 100 * nx * ny
 
@@ -56,7 +56,7 @@ import ParticleInCell.F90
         update_fields!(ex, ey, bz, mesh1, fdtd1)
         update_fields!(ex, ey, bz, mesh2, fdtd2)
 
-        push_v!(group1, kernel, mesh1, ex, ey, bz,  dt)
+        push_v!(group1, kernel, mesh1, ex, ey, bz, dt)
         F90.push_v!(group2, kernel, mesh2, ex, ey, bz, dt)
         @test all(particles1 .== particles2)
 

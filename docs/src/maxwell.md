@@ -24,7 +24,6 @@ using Plots
 
 ```@example maxwell
 using ParticleInCell
-import GEMPIC: TwoDGrid
 
 dimx, dimy = 1, 1
 nx, ny = 64, 64
