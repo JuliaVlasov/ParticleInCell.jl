@@ -13,8 +13,9 @@
 #     name: julia-1.5
 # ---
 
-using Plots, Statistics, GEMPIC
+using Plots, Statistics
 using Random
+import GEMPIC: OneDGrid
 using Pkg
 Pkg.activate(@__DIR__)
 using Revise

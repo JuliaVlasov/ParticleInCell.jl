@@ -5,8 +5,6 @@ using ParticleInCell
 
 ENV["GKSwstype"] = "100"
 
-println("using Pkg; Pkg.develop(PackageSpec(path=pwd()))")
-
 makedocs(modules=[ParticleInCell],
          sitename = "ParticleInCell.jl",
          authors="Pierre Navaro",

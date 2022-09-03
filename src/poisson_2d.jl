@@ -1,4 +1,5 @@
 using FFTW
+import GEMPIC
 
 export TwoDPoissonPeriodic
 

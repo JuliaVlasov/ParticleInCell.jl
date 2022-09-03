@@ -10,7 +10,6 @@
 
     pg = ParticleGroup{2,2}(n_particles, charge = 1.0, mass = 1.0, n_weights = 1)
 
-
     particle_info_ref = [
         11.780972450961723 5.4977871437821380
         0.78539816339744828 7.0685834705770345
@@ -54,7 +53,6 @@
     charge_deposition!(propagator)
     solve_fields!(propagator)
     ParticleInCell.operator_v!(propagator, delta_t)
-
 
     particle_info_ref = [
         11.796703519422740 5.3443750893468831

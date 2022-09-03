@@ -1,6 +1,6 @@
 name = "ParticleInCell"
 uuid = "b2a21095-fe39-467b-95a1-deb4cd10d2e0"
-authors = "JuliaVlasov"
+authors = "Julia Vlasov"
 version = "0.1.0"
 
 [deps]
@@ -10,7 +10,6 @@ GEMPIC = "b6d65c3a-4a4e-11e9-25d0-d309dc85ddeb"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Sobol = "ed01d8cd-4d21-5b2a-85b4-cc3bdc58bad4"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
