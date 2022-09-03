@@ -35,7 +35,7 @@ xmin, xmax = 0, 2π/kx
 ∆t = 0.05
 nx = 32 
 n_particles = 100000
-mesh = Mesh( xmin, xmax, nx)
+mesh = OneDGrid( xmin, xmax, nx)
 spline_degree = 3
 
 df = CosSumGaussian{1,2}([[kx]], [α], [[σ,σ]], [[μ,μ]] )
@@ -62,8 +62,8 @@ savefig("histograms.png")
 
 # Initialize the arrays for the spline coefficients of the fields
 
-kernel_smoother1 = ParticleMeshCoupling( mesh, n_particles, spline_degree-1, :galerkin)    
-kernel_smoother0 = ParticleMeshCoupling( mesh, n_particles, spline_degree, :galerkin)
+kernel_smoother1 = ParticleMeshCoupling1D( mesh, n_particles, spline_degree-1, :galerkin)    
+kernel_smoother0 = ParticleMeshCoupling1D( mesh, n_particles, spline_degree, :galerkin)
 
 # Initialize the field solver
 rho = zeros(Float64, nx)
@@ -87,7 +87,7 @@ function run( steps)
     dt = 0.02
     nx = 32 
     n_particles = 200000
-    mesh = Mesh( xmin, xmax, nx)
+    mesh = OneDGrid( xmin, xmax, nx)
     spline_degree = 3
     
     df = CosSumGaussian{1,2}([[kx]], [α], [[σ,σ]], [[μ,μ]] )
@@ -98,8 +98,8 @@ function run( steps)
     
     sample!(particle_group, sampler, df, mesh)
     
-    kernel_smoother1 = ParticleMeshCoupling( mesh, n_particles, spline_degree-1, :galerkin)    
-    kernel_smoother0 = ParticleMeshCoupling( mesh, n_particles, spline_degree, :galerkin)
+    kernel_smoother1 = ParticleMeshCoupling1D( mesh, n_particles, spline_degree-1, :galerkin)    
+    kernel_smoother0 = ParticleMeshCoupling1D( mesh, n_particles, spline_degree, :galerkin)
     
     rho = zeros(Float64, nx)
     efield_poisson = zeros(Float64, nx)
