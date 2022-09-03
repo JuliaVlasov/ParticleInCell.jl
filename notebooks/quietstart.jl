@@ -128,8 +128,6 @@ end
 @time xp, vp = landau(1000000);
 # -
 
-histogram(xp)
-
 p = plot(layout=(2,1))
 histogram!(p[1], xp, normalize=true, bins=100)
 plot!(p[1], x-> (1+0.1*cos(0.5*x))/4π, 0., 4π)
@@ -176,7 +174,7 @@ plot(x, v)
 # Construct the CDF numerically and find the closest value 
 
 @time begin 
-    nbpart = 1000000
+    nbpart = 100000
     s  = SobolSeq(1)
     xp = Float64[]
     for k=0:nbpart-1
