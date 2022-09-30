@@ -1,4 +1,4 @@
-using UAPIC
+using ParticleInCell
 using Test
 
 @testset " Test particles input file read " begin

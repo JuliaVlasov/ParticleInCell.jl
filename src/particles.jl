@@ -34,8 +34,4 @@ mutable struct Particles
 
 end
 
-include("read_particles.jl")
-include("plasma.jl")
-include("compute_rho.jl")
-include("interpolation.jl")
 

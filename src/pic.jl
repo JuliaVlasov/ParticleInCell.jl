@@ -15,8 +15,6 @@ open(joinpath(@__DIR__, "pic.f90")) do f90file
     end
 end
 
-
-
 function compute_current!(jx, jy, m::TwoDGrid, kernel::CloudInCell, p)
 
     nx = Int32(m.nx)
@@ -77,8 +75,6 @@ function push_x!(p, mesh::TwoDGrid, dt::Float64)
     )
 
 end
-
-export push_v!
 
 function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt::Float64)
 

@@ -4,11 +4,11 @@ struct Mesh
 
     xmin :: Float64
     xmax :: Float64
-    nx   :: Int32
+    nx   :: Int
     dx   :: Float64
     ymin :: Float64
     ymax :: Float64
-    ny   :: Int32
+    ny   :: Int
     dy   :: Float64
 
     function Mesh( xmin, xmax, nx, ymin, ymax, ny )

@@ -1,6 +1,6 @@
 import Base.Threads
 
-export push_v!
+export push_x!, push_v!
 
 function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
 
@@ -48,8 +48,6 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
     end
 
 end
-
-export push_x!
 
 function push_x!(p, mesh::TwoDGrid, dt::Float64)
 

@@ -1,3 +1,4 @@
+using ParticleInCell
 import ParticleInCell.F90
 
 @testset "Landau Damping Julia" begin

@@ -1,3 +1,5 @@
+using FFTW
+
 """
 UA scheme for 4d Vlasov in Fluid-scaling with b(x)
 External E
