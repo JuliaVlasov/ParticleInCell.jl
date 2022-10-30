@@ -4,7 +4,8 @@
 
 Particle In Cell code in Julia
 
-This software is developed in order to experiment with optimizations and to try the best way to have an efficient package for particle-mesh numerical methods for plasmas.
+This software is developed in order to experiment optimizations and to try the best way to have an efficient package for particle-mesh numerical methods for plasmas.
+
 It is a work in progress, you can find first tests in the documentation.
 
 I compared performances of this Julia code with a Fortran version that 
