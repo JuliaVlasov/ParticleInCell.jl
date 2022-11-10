@@ -17,8 +17,7 @@ makedocs(
     doctest = false,
     pages = [
         "Home" => "index.md",
-        "Maxwell solver" => "maxwell.md",
-        "Landau damping" => "landau_damping.md",
+        "Maxwell solver" => "maxwell.md", #"Landau damping" => "landau_damping.md",
         "Two-stream instability" => "tsi.md",
         "Vlasov-Maxwell 2D" => "vlasov-maxwell.md",
         "Vlasov-Poisson 2D" => "vlasov-poisson.md",
