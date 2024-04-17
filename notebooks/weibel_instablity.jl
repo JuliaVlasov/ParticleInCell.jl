@@ -8,11 +8,11 @@
 #       extension: .jl
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.4.2
+#       jupytext_version: 1.16.1
 #   kernelspec:
-#     display_name: Julia 1.4.0
+#     display_name: Julia 1.10.2
 #     language: julia
-#     name: julia-1.4
+#     name: julia-1.10
 # ---
 
 # # Vlasov–Maxwell in 1D2V
@@ -94,7 +94,7 @@ symmetric      = true
 splitting_case = :symplectic
 spline_degree  = 3
 
-mesh   = Mesh( xmin, xmax, nx)
+mesh   = OneDGrid( xmin, xmax, nx)
 Lx = xmax - xmin
 xg = LinRange(xmin, xmax, nx)
 
@@ -132,8 +132,11 @@ histogram(vp[1,:], weights=wp, normalize=true, bins=100)
 histogram(vp[2,:], weights=wp, normalize=true, bins=100)
 
 
-kernel_smoother1 = ParticleMeshCoupling( mesh, n_particles, spline_degree-1, :galerkin)    
-kernel_smoother0 = ParticleMeshCoupling( mesh, n_particles, spline_degree, :galerkin)
+# +
+import GEMPIC
+
+kernel_smoother1 = GEMPIC.ParticleMeshCoupling( mesh, n_particles, spline_degree-1, :galerkin)    
+kernel_smoother0 = GEMPIC.ParticleMeshCoupling( mesh, n_particles, spline_degree, :galerkin)
 rho = zeros(Float64, nx);
 efield_poisson = zeros(Float64, nx)
 # Init!ialize the field solver

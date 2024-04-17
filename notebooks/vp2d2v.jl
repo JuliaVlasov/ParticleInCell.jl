@@ -1,12 +1,16 @@
+# -*- coding: utf-8 -*-
+# # Landau damping Vlasov-Poisson 2d2v
+
 using ProgressMeter
 using TimerOutputs
 using ParticleInCell
 
 const to = TimerOutput()
 
+# +
 function run( nsteps)
 
-    dt = 0.1
+    dt = 0.01
     alpha = 0.1
     kx = 0.5
     
@@ -26,10 +30,10 @@ function run( nsteps)
     
     sample!( particles, mesh, sampler)
     
-    poisson = Poisson2DPeriodic( mesh )
     kernel = ParticleMeshCoupling2D( particles, mesh, degree_smoother, :collocation)
-    
-    problem = PICPoisson2D(  poisson, kernel )
+    poisson = TwoDPoissonPeriodic( mesh )
+
+    problem = TwoDPoissonPIC(  poisson, kernel )
     
     particles.array[2,:] .*= ( ymax - ymin)
     particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) / n_particles;
@@ -56,12 +60,17 @@ function run( nsteps)
     time, energy
 
 end
+# -
 
 t, energy = run( 1 ) # trigger building
 @show nstep = 1000
 @time t, energy = run( nstep )
 show(to)
 
+using Plots
+plot(t, log.(energy))
+
+# +
 open("results_jl.dat", "w") do f
 
     for i in 1:nstep
@@ -69,5 +78,6 @@ open("results_jl.dat", "w") do f
     end
 
 end
+# -
 
-println()
+

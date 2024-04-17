@@ -4,7 +4,7 @@ export push_x!, push_v!
 
 function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
 
-    nbpart = size(p.array)[2]
+    nbpart = size(p.array, 2)
 
     dx = m.dx
     dy = m.dy
@@ -51,7 +51,7 @@ end
 
 function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
-    nbpart = size(p.array)[2]
+    nbpart = size(p.array, 2)
 
     dimx, dimy = mesh.dimx, mesh.dimy
 

@@ -30,3 +30,4 @@ modeE.dat
 *.dat
 .ipynb_checkpoints/fortran-julia-checkpoint.ipynb
 *.dylib
+/notebooks/.ipynb_checkpoints
