@@ -66,7 +66,7 @@ function efd( ntau, nbpart )
     
     mesh = Mesh( xmin, xmax, nx, ymin, ymax, ny )
     f    = MeshFields( mesh )
-    p    = read_particles( "particles.dat", mesh )
+    p    = read_particles( joinpath(@__DIR__, "particles.dat"), mesh )
 
     @show sum(p.x[1,:]), sum(p.x[2,:]), sum(p.v[1,:]), sum(p.v[2,:])
 

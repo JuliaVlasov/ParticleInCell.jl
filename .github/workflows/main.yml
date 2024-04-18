@@ -5,6 +5,10 @@ on:
     branches: [master]
     tags: [v*]
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ github.event_name }}
@@ -19,7 +23,8 @@ jobs:
           - macos-12
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: modflowpy/install-gfortran-action@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v1
