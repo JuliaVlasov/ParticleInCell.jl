@@ -49,7 +49,7 @@ rho = zeros(nx)
 for i_part = 1:particles.n_particles
     xi = particles.array[1, i_part]
     wi = particles.array[3, i_part]
-    GEMPIC.add_charge!(rho, kernel, xi, wi)
+    add_charge!(rho, kernel, xi, wi)
 end
 
 compute_e_from_rho!(ex, poisson, rho)

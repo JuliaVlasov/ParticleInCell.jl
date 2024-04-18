@@ -6,6 +6,8 @@ using SparseArrays
 import Sobol
 import GEMPIC: OneDGrid, TwoDGrid, ParticleGroup, ParticleMeshCoupling1D, ParticleMeshCoupling2D
 export OneDGrid, TwoDGrid, ParticleGroup, ParticleMeshCoupling1D, ParticleMeshCoupling2D
+import GEMPIC: add_charge!
+export add_charge!
 
 include("particles.jl")
 include("particle_1d1v.jl")

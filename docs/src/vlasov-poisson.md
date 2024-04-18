@@ -58,7 +58,7 @@ for i_part = 1:particles.n_particles
     xi = particles.array[1, i_part]
     yi = particles.array[2, i_part]
     wi = particles.array[5, i_part]
-    GEMPIC.add_charge!(rho_dofs, kernel, xi, yi, wi)
+    add_charge!(rho_dofs, kernel, xi, yi, wi)
 end
 rho = reshape(rho_dofs, nx, ny )
 solve!(ex, ey, poisson, rho)
