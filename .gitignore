@@ -28,6 +28,5 @@ test/particles.png
 modeE.dat
 *.mod
 *.dat
-.ipynb_checkpoints/fortran-julia-checkpoint.ipynb
+.ipynb_checkpoints/
 *.dylib
-/notebooks/.ipynb_checkpoints
