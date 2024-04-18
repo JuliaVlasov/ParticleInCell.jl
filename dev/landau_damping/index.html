@@ -20,7 +20,7 @@ ParticleInCell.sample!( particles, mesh, sampler)
 
 particles.array[3,:] .= (xmax - xmin) ./ n_particles;</code></pre><pre><code class="language-julia hljs">p = plot(layout=2)
 histogram!( p[1], particles.array[1,:], normalized=true)
-histogram!( p[2], particles.array[2,:], normalized=true)</code></pre><img src="afdb8da0.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = OneDPoisson( mesh )
+histogram!( p[2], particles.array[2,:], normalized=true)</code></pre><img src="0e4792be.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = OneDPoisson( mesh )
 kernel = ParticleMeshCoupling1D( mesh, n_particles, degree_smoother, :collocation)
 
 ex = zeros(nx)
@@ -38,7 +38,7 @@ p = plot(layout=(2))
 plot!(p[1], x, ex)
 plot!(p[1], x, alpha/kx * sin.(kx * x))
 plot!(p[2], x, rho)
-plot!(p[2], x, 1 .+ alpha * cos.(kx * x))</code></pre><img src="fc916064.svg" alt="Example block output"/><pre><code class="language-julia hljs">problem = OneDPoissonPIC( poisson, kernel )
+plot!(p[2], x, 1 .+ alpha * cos.(kx * x))</code></pre><img src="8eab2eb9.svg" alt="Example block output"/><pre><code class="language-julia hljs">problem = OneDPoissonPIC( poisson, kernel )
 
 dt = 0.01
 nsteps = 500
@@ -62,4 +62,4 @@ for j=1:nsteps
 end
 
 t = collect(0:nsteps) .* dt
-plot(log.(energy))</code></pre><img src="0083b77a.svg" alt="Example block output"/></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Thursday 18 April 2024 07:34">Thursday 18 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(log.(energy))</code></pre><img src="64b354bc.svg" alt="Example block output"/></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Thursday 18 April 2024 07:56">Thursday 18 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
