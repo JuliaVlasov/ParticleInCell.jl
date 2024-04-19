@@ -37,3 +37,13 @@ Now I increase the number of particles to 1024000 and begin to parallelize parti
 - [MPIParticleInCell.jl](https://github.com/adamslc/MPIParticleInCell.jl) by Luke Adams.
 - [ElectrostaticPIC1D.jl](https://github.com/jwscook/ElectrostaticPIC1D.jl) by James Cook.
 - [Julia discourse thread](https://discourse.julialang.org/t/pic-particle-in-cell-space-charge-tracking-simulation/)
+
+
+# Papers
+
+- P. Chartier, N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate methods for three dimensional Vlasov equations under strong magnetic field with varying direction, SIAM J. Sc. Comput. 42, pp. 520-547, 2020.
+- P. Chartier, N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate methods for Vlasov equations with non-homogeneous strong magnetic field, Math. Comp. 88, pp. 2697-2736, 2019.
+- P. Chartier, N. Crouseilles, X. Zhao, Numerical methods for the two-dimensional Vlasov-Poisson models in the finite Larmor radius approximation regime, J. Comput. Phys., 375, pp. 619-640, 2018.
+- N. Crouseilles, S. Hirstoaga, X. Zhao, Multiscale Particle-in-Cell methods and comparisons for the long time two-dimensional Vlasov-Poisson equation with strong magnetic field, Comput. Phys. Comm. 222, pp. 136-151, 2018.
+- N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate Particle-In-Cell method for the long time solution of the two-dimensional Vlasov-Poisson equation with uniform strong magnetic field, J. Comput. Phys. 346, pp. 172-190, 2017.
+- N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate forward semi-Lagrangian methods for highly oscillatory Vlasov-Poisson equations, SIAM MMS 15, pp. 723-744, 2017.
