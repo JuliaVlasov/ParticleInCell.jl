@@ -20,7 +20,7 @@ time  = 0
 for i=1:nx, j=1:ny+1
     fdtd.ex[i,j] = alpha/kx * sin(kx*(mesh.x[i]+mesh.x[i+1])/2)
 end
-surface(fdtd.ex )</code></pre><img src="1f64f6b7.svg" alt="Example block output"/><pre><code class="language-julia hljs">nbpart = 100*nx*ny
+surface(fdtd.ex )</code></pre><img src="f7ce3a66.svg" alt="Example block output"/><pre><code class="language-julia hljs">nbpart = 100*nx*ny
 particles = ParticleGroup{2,2}( nbpart, charge=1.0, mass=1.0, n_weights=1)
 sampler = LandauDamping( alpha, kx )
 sample!( particles, mesh, sampler)
@@ -29,7 +29,7 @@ p = plot(layout=4)
 histogram!(p[1], particles.array[1,:], normalize=true, label=&quot;x&quot;)
 histogram!(p[2], particles.array[2,:], normalize=true, label=&quot;y&quot;)
 histogram!(p[3], particles.array[3,:], normalize=true, label=&quot;vx&quot;)
-histogram!(p[4], particles.array[4,:], normalize=true, label=&quot;vy&quot;)</code></pre><img src="68f38d82.svg" alt="Example block output"/><pre><code class="language-julia hljs">function run( nstep; npm = 100 )
+histogram!(p[4], particles.array[4,:], normalize=true, label=&quot;vy&quot;)</code></pre><img src="dc12d479.svg" alt="Example block output"/><pre><code class="language-julia hljs">function run( nstep; npm = 100 )
 
     dt = 0.01
     alpha = 0.1
@@ -88,4 +88,4 @@ end
 
 nstep = 1000
 t, energy = run(nstep)
-plot(t, energy)</code></pre><img src="f2fdadd4.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tsi/">« Two-stream instability</a><a class="docs-footer-nextpage" href="../vlasov-poisson/">Vlasov-Poisson 2D »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Friday 19 April 2024 07:34">Friday 19 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(t, energy)</code></pre><img src="060fd39d.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tsi/">« Two-stream instability</a><a class="docs-footer-nextpage" href="../vlasov-poisson/">Vlasov-Poisson 2D »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.0 on <span class="colophon-date" title="Friday 19 April 2024 08:22">Friday 19 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
