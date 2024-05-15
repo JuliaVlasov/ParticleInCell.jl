@@ -1,6 +1,6 @@
 export plasma
 
-function plasma( mesh :: Mesh, nbpart :: Int64 )
+function plasma( mesh :: TwoDGrid, nbpart :: Int64 )
 
     kx     = 0.5
     alpha  = 0.05

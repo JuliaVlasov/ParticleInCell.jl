@@ -4,7 +4,7 @@
     kx    = 0.5
     ky    = 1.0
 
-    mesh = Mesh( 0, 2π/kx, 64, 0, 2π/ky, 128)
+    mesh = TwoDGrid( 0, 2π/kx, 64, 0, 2π/ky, 128)
 
     fields = MeshFields( mesh )
     solutions = MeshFields( mesh)

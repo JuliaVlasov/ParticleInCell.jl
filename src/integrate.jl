@@ -1,6 +1,6 @@
 export integrate
 
-function integrate( field :: Array{Float64,2}, mesh :: Mesh )
+function integrate( field :: Array{Float64,2}, mesh :: TwoDGrid )
 
     nx, ny = mesh.nx, mesh.ny
     dx, dy = mesh.dx, mesh.dy
