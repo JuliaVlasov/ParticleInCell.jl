@@ -1,6 +1,6 @@
 export read_particles
 
-function read_particles( filename, mesh :: Mesh )
+function read_particles( filename, mesh :: TwoDGrid )
 
     nbpart = countlines(filename)
     println( " nbpart   : ", nbpart )

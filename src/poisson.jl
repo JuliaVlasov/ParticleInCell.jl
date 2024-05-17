@@ -15,14 +15,14 @@ Solve the equation Δ Φ = - fields.ρ
 """
 struct Poisson
 
-    mesh   :: Mesh
+    mesh   :: TwoDGrid
     kx     :: Array{Float64, 2}
     ky     :: Array{Float64, 2}
     ρ̃      :: Array{ComplexF64, 2}
     fft_ex :: Array{ComplexF64, 2}
     fft_ey :: Array{ComplexF64, 2}
 
-    function Poisson( mesh :: Mesh )
+    function Poisson( mesh :: TwoDGrid )
 
         nx = mesh.nx
         ny = mesh.ny

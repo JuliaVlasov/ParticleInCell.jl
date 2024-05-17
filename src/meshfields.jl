@@ -1,37 +1,13 @@
-export Mesh
-
-struct Mesh
-
-    xmin :: Float64
-    xmax :: Float64
-    nx   :: Int
-    dx   :: Float64
-    ymin :: Float64
-    ymax :: Float64
-    ny   :: Int
-    dy   :: Float64
-
-    function Mesh( xmin, xmax, nx, ymin, ymax, ny )
-
-        dx = (xmax - xmin) / nx
-        dy = (ymax - ymin) / ny
-
-        new( xmin, xmax, nx, dx, ymin, ymax, ny, dy )
-
-    end
-
-end
-
 export MeshFields
 
-mutable struct MeshFields
+struct MeshFields
 
-    mesh :: Mesh
+    mesh :: TwoDGrid
 
     e :: Array{Float64,3}
     ρ :: Array{Float64,2}
 
-    function MeshFields( mesh :: Mesh )
+    function MeshFields( mesh :: TwoDGrid )
 	    
 	     nx, ny = mesh.nx, mesh.ny
 

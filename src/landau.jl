@@ -2,7 +2,7 @@ using Sobol
 
 export landau_sampling
 
-function landau_sampling( mesh :: Mesh, nbpart :: Int64 )
+function landau_sampling( mesh :: TwoDGrid, nbpart :: Int64 )
 
     kx     = 0.5
     alpha  = 0.05

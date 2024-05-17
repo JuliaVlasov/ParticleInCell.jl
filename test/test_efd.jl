@@ -64,7 +64,7 @@ function efd( ntau, nbpart )
     ymin = 0.0
     ymax = dimy
     
-    mesh = Mesh( xmin, xmax, nx, ymin, ymax, ny )
+    mesh = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny )
     f    = MeshFields( mesh )
     p    = read_particles( joinpath(@__DIR__, "particles.dat"), mesh )
 

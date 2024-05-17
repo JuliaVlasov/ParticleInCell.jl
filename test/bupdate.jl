@@ -18,7 +18,7 @@ function test_pic2d( ntau )
     xmin, xmax = 0.0, dimx
     ymin, ymax = 0.0, dimy
 
-    mesh = Mesh( xmin, xmax, nx, ymin, ymax, ny )
+    mesh = TwoDGrid( xmin, xmax, nx, ymin, ymax, ny )
 
     dx, dy = mesh.dx, mesh.dy
 
