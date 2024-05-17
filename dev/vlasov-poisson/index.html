@@ -45,12 +45,12 @@ particles.array[5,:]  .= (xmax - xmin) * (ymax - ymin) ./ n_particles;</code></p
  0.0001256637061435917
  0.0001256637061435917</code></pre><pre><code class="language-julia hljs">p = plot(layout=2)
 histogram!( p[1], particles.array[1,:], normalized=true)
-histogram!( p[2], particles.array[2,:], normalized=true)</code></pre><img src="f2c714ef.svg" alt="Example block output"/><pre><code class="language-julia hljs">p = plot(layout=2)
+histogram!( p[2], particles.array[2,:], normalized=true)</code></pre><img src="fbc754e3.svg" alt="Example block output"/><pre><code class="language-julia hljs">p = plot(layout=2)
 
 histogram!( p[1], particles.array[3,:], normalized=true)
 xlims!(-6,6)
 histogram!( p[2], particles.array[4,:], normalized=true)
-xlims!(-6,6)</code></pre><img src="ca026ec4.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = TwoDPoissonPeriodic( mesh )
+xlims!(-6,6)</code></pre><img src="6d0843dd.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = TwoDPoissonPeriodic( mesh )
 kernel = ParticleMeshCoupling2D( particles, mesh, degree_smoother, :collocation)
 
 ex = zeros(nx, ny)
@@ -67,7 +67,7 @@ rho = reshape(rho_dofs, nx, ny )
 solve!(ex, ey, poisson, rho)
 p = plot(layout=(2))
 surface!(p[1], ex)
-surface!(p[2],rho)</code></pre><img src="e5de2b9c.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = TwoDPoissonPeriodic( mesh )
+surface!(p[2],rho)</code></pre><img src="ce5342d6.svg" alt="Example block output"/><pre><code class="language-julia hljs">poisson = TwoDPoissonPeriodic( mesh )
 
 kernel = ParticleMeshCoupling2D( particles, mesh, degree_smoother, :collocation)
 
@@ -103,4 +103,4 @@ for j=1:100
 
 end
 
-plot(log.(energy))</code></pre><img src="dc3388ce.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../vlasov-maxwell/">« Vlasov-Maxwell 2D</a><a class="docs-footer-nextpage" href="../types/">Types »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 17 May 2024 08:35">Friday 17 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(log.(energy))</code></pre><img src="116e4485.svg" alt="Example block output"/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../vlasov-maxwell/">« Vlasov-Maxwell 2D</a><a class="docs-footer-nextpage" href="../types/">Types »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 17 May 2024 09:05">Friday 17 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
