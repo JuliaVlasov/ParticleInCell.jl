@@ -40,10 +40,13 @@ function run( nsteps)
     
     propagator = SplittingOperator( problem, particles ) 
     
+    reset_timer!()
+
     time = Float64[0.0]
+    @timeit to "charge computation" ParticleInCell.charge_deposition!(propagator)
+    @timeit to "fields solver" ParticleInCell.solve_fields!(propagator)
     energy = Float64[compute_field_energy(problem, 1)]
     
-    reset_timer!()
     @showprogress 1 for j=1:nsteps
     
         @timeit to "operatorT" ParticleInCell.operator_t!(propagator, 0.5dt)
@@ -67,8 +70,6 @@ t, energy = run( 1 ) # trigger building
 @time t, energy = run( nstep )
 show(to)
 
-using Plots
-plot(t, log.(energy))
 
 # +
 open("results_jl.dat", "w") do f
@@ -80,4 +81,6 @@ open("results_jl.dat", "w") do f
 end
 # -
 
+using Plots
+plot(t, log.(energy))
 
