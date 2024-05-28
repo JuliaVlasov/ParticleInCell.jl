@@ -4,6 +4,8 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
 
     nbpart = size(p.array, 2)
 
+    nx = m.nx
+    ny = m.ny
     dx = m.dx
     dy = m.dy
 
@@ -26,9 +28,12 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
         a3 = dxp * dyp
         a4 = (1 - dxp) * dyp
 
-        e1 = a1 * ex[i, j] + a2 * ex[i+1, j] + a3 * ex[i+1, j+1] + a4 * ex[i, j+1]
-        e2 = a1 * ey[i, j] + a2 * ey[i+1, j] + a3 * ey[i+1, j+1] + a4 * ey[i, j+1]
-        b3 = a1 * bz[i, j] + a2 * bz[i+1, j] + a3 * bz[i+1, j+1] + a4 * bz[i, j+1]
+        ip1 = mod1(i+1, nx)
+        jp1 = mod1(j+1, ny)
+
+        e1 = a1 * ex[i, j] + a2 * ex[ip1, j] + a3 * ex[ip1, jp1] + a4 * ex[i, jp1]
+        e2 = a1 * ey[i, j] + a2 * ey[ip1, j] + a3 * ey[ip1, jp1] + a4 * ey[i, jp1]
+        b3 = a1 * bz[i, j] + a2 * bz[ip1, j] + a3 * bz[ip1, jp1] + a4 * bz[i, jp1]
 
         v1 += 0.5dt * e1
         v2 += 0.5dt * e2
