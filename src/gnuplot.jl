@@ -1,7 +1,7 @@
 export gnuplot
 export errors
 
-function gnuplot( filename :: String, fields :: MeshFields )
+function gnuplot( filename :: String, fields :: MeshFields2D )
 
     open(filename, "w") do f
 
@@ -26,7 +26,7 @@ function gnuplot( filename :: String, fields :: MeshFields )
 
 end
 
-function errors( computed :: MeshFields, reference :: MeshFields )
+function errors( computed :: MeshFields2D, reference :: MeshFields2D )
 
     err = maximum(abs.(computed.e .- reference.e))
 

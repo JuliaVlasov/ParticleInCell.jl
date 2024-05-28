@@ -23,7 +23,7 @@ end
 
      dx, dy = mesh.dx, mesh.dy
 
-     fields = MeshFields( mesh )
+     fields = MeshFields2D( mesh )
 
      nbpart = 121
      w      = 1/nbpart

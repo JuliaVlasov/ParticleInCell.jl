@@ -1,4 +1,4 @@
-@testset "Poisson 2D on rectangular grid" begin
+@testset "Poisson 2D on rectangular grid using MeshFiels type " begin
 
     alpha = 0.05
     kx    = 0.5
@@ -6,8 +6,8 @@
 
     mesh = TwoDGrid( 0, 2π/kx, 64, 0, 2π/ky, 128)
 
-    fields = MeshFields( mesh )
-    solutions = MeshFields( mesh)
+    fields = MeshFields2D( mesh )
+    solutions = MeshFields2D( mesh)
 
     x = LinRange(mesh.xmin, mesh.xmax, mesh.nx+1) |> collect
     y = LinRange(mesh.ymin, mesh.ymax, mesh.ny+1) |> collect
@@ -17,9 +17,9 @@
     solutions.e[1,:,:] .=   2 * (cos.(2 .* x) .* cos.(2 .* y'))
     solutions.e[2,:,:] .= - 2 * (sin.(2 .* x) .* sin.(2 .* y'))
 
-    poisson! = Poisson( mesh )
+    poisson = Poisson2D( mesh )
 
-    poisson!( fields )
+    solve!( fields, poisson )
 
     err = errors( fields, solutions )
 
@@ -29,7 +29,7 @@
 
     fields.ρ .= - 4 * ( sin.(2*x) .+ cos.(2*y') )
 
-    poisson!( fields )
+    solve!( fields, poisson )
 
     nx, ny = mesh.nx, mesh.ny
 

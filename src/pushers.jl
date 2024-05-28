@@ -1,5 +1,3 @@
-import Base.Threads
-
 export push_x!, push_v!
 
 function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
@@ -9,7 +7,7 @@ function push_v!(p, kernel::CloudInCell, m::TwoDGrid, ex, ey, bz, dt)
     dx = m.dx
     dy = m.dy
 
-    Threads.@threads for ipart = 1:nbpart
+    for ipart = 1:nbpart
 
         v1 = p.array[3, ipart]
         v2 = p.array[4, ipart]
@@ -55,7 +53,7 @@ function push_x!(p, mesh::TwoDGrid, dt::Float64)
 
     dimx, dimy = mesh.dimx, mesh.dimy
 
-    Threads.@threads for i = 1:nbpart
+    for i = 1:nbpart
         p1 = p.array[1, i] + dt * p.array[3, i]
         p2 = p.array[2, i] + dt * p.array[4, i]
         p1 > dimx && (p1 -= dimx)

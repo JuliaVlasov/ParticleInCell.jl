@@ -1,7 +1,7 @@
 export interpol_eb_m6!
 
 function interpol_eb_m6!( e      :: Array{Float64,3}, 
-                          fields :: MeshFields, 
+                          fields :: MeshFields2D, 
                           x      :: Array{ComplexF64,3},
                           nbpart :: Int64,
                           ntau   :: Int64)
@@ -122,7 +122,7 @@ function interpol_eb_m6!( e      :: Array{Float64,3},
 
 end 
 
-function interpol_eb_m6!( particles :: Particles, fields :: MeshFields )
+function interpol_eb_m6!( particles :: Particles, fields :: MeshFields2D )
 
     nx = fields.mesh.nx
     ny = fields.mesh.ny

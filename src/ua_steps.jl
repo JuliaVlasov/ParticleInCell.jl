@@ -81,7 +81,7 @@ export update_particles_e!
 
 function update_particles_e!( particles :: Particles, 
                               et        :: Array{Float64,3}, 
-                              fields    :: MeshFields, 
+                              fields    :: MeshFields2D, 
                               ua        :: UA, 
                               xt        :: Array{ComplexF64,3}) 
 
@@ -92,7 +92,7 @@ end
 export update_particles_x!
 
 function update_particles_x!( particles :: Particles, 
-                              fields    :: MeshFields, 
+                              fields    :: MeshFields2D, 
                               ua        :: UA, 
                               xt        :: Array{ComplexF64,3}) 
 

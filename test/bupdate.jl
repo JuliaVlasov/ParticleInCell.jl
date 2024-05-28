@@ -27,14 +27,14 @@ function test_pic2d( ntau )
 
     nstep  = trunc(Int64, tfinal/dt)
 
-    fields = MeshFields( mesh )
+    fields = MeshFields2D( mesh )
     
     #particles = read_particles( "particles.dat", mesh )
     particles = plasma( mesh, 204800 )
 
     nbpart = particles.nbpart
 
-    poisson! = Poisson(mesh)
+    poisson = Poisson2D(mesh)
 
     ε = 0.1
     
@@ -60,7 +60,7 @@ function test_pic2d( ntau )
 
     compute_rho_m6!( fields, particles )
 
-    nrj =  poisson!( fields )
+    nrj =  solve!( fields, poisson )
 
     interpol_eb_m6!( particles, fields )
 
@@ -85,7 +85,7 @@ function test_pic2d( ntau )
 
         update_particles_x!( particles, fields, ua, xt)
 
-        nrj = poisson!( fields ) 
+        nrj = solve!( fields, poisson ) 
 
         update_particles_e!( particles, et, fields, ua, xt)
 
@@ -101,7 +101,7 @@ function test_pic2d( ntau )
 
         update_particles_x!( particles, fields, ua, xt)
 
-        nrj = poisson!( fields )
+        nrj = solve!( fields, poisson )
 
         update_particles_e!( particles, et, fields, ua, xt)
 
