@@ -11,7 +11,7 @@ function push_v!(p, kernel::M6, m::TwoDGrid, ex, ey, bz, dt)
     dx = m.dx
     dy = m.dy
 
-    for ipart = 1:nbpart
+    @threads for ipart = 1:nbpart
 
         v1 = p.array[3, ipart]
         v2 = p.array[4, ipart]
