@@ -36,10 +36,7 @@ end
 
 export landau_sampling
 
-function landau_sampling( mesh :: TwoDGrid, nbpart :: Int64 )
-
-    kx     = 0.5
-    alpha  = 0.05
+function landau_sampling( mesh :: TwoDGrid, alpha, kx, nbpart :: Int64 )
 
     nx, ny = mesh.nx, mesh.ny
     dx, dy = mesh.dx, mesh.dy
@@ -62,15 +59,14 @@ function landau_sampling( mesh :: TwoDGrid, nbpart :: Int64 )
     end
     
     s = Sobol.SobolSeq(3)
-    nbpart = pg.n_particles
 
     for i=1:nbpart
 
         v = sqrt(-2 * log( (i-0.5)/nbpart))
         r1, r2, r3  = Sobol.next!(s)
         θ = r1 * 2π
-        particles.x[1,i] = xmin + newton(r2) * ( xmax - xmin )
-        particles.x[2,i] = ymin + r3 * ( ymax - ymin )
+        particles.x[1,i] = mesh.xmin + newton(r2) * dimx
+        particles.x[2,i] = mesh.ymin + r3 * dimy
         particles.v[1,i] = v * cos(θ)
         particles.v[2,i] = v * sin(θ)
 
