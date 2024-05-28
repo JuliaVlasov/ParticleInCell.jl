@@ -22,9 +22,8 @@ using Plots
 using ProgressMeter
 using DispersionRelations
 
-# +
 nx = 128
-ny = 16
+ny = 32
 alpha = 0.05
 kx = 0.3
 ky = 0.0
@@ -49,6 +48,7 @@ function simulation( kernel)
     
     ex = similar(ρ)
     ey = similar(ρ)
+    bz = zero(ρ)
     
     poisson = TwoDPoissonPeriodic(mesh)
     
@@ -65,7 +65,7 @@ function simulation( kernel)
         
         push_x!(p, mesh, 0.5dt)
         
-        ρ = compute_rho(p, kernel, mesh)
+        ρ .= compute_rho(p, kernel, mesh)
         solve!(ex, ey, poisson, ρ)
         push!(t, i*dt)
         push!(e, energy(ex))
