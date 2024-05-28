@@ -26,6 +26,7 @@ include("integrate.jl")
 include("gnuplot.jl")
 include("ua_steps.jl")
 include("compute_rho_cic.jl")
+include("interpolate_cic.jl")
 include("compute_rho_m6.jl")
 include("interpolation_m6.jl")
 
