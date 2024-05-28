@@ -211,18 +211,18 @@ function compute_rho_m6!( fields  :: MeshFields2D, particles :: Particles)
                                                                                 
         weight = particles.w
       
-        im3 = mod(i-3,nx)+1
-        im2 = mod(i-2,nx)+1
-        im1 = mod(i-1,nx)+1
-        ip1 = mod(i+1,nx)+1
-        ip2 = mod(i+2,nx)+1
-        ip3 = mod(i+3,nx)+1
-        jm3 = mod(j-3,ny)+1
-        jm2 = mod(j-2,ny)+1
-        jm1 = mod(j-1,ny)+1
-        jp1 = mod(j+1,ny)+1
-        jp2 = mod(j+2,ny)+1
-        jp3 = mod(j+3,ny)+1
+        im3 = mod1(i-3,nx)
+        im2 = mod1(i-2,nx)
+        im1 = mod1(i-1,nx)
+        ip1 = mod1(i+1,nx)
+        ip2 = mod1(i+2,nx)
+        ip3 = mod1(i+3,nx)
+        jm3 = mod1(j-3,ny)
+        jm2 = mod1(j-2,ny)
+        jm1 = mod1(j-1,ny)
+        jp1 = mod1(j+1,ny)
+        jp2 = mod1(j+2,ny)
+        jp3 = mod1(j+3,ny)
 
         i = i+1
         j = j+1
