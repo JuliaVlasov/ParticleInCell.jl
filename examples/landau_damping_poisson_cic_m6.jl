@@ -23,9 +23,9 @@ using ProgressMeter
 using DispersionRelations
 
 nx = 128
-ny = 32
-alpha = 0.05
-kx = 0.3
+ny = 8
+alpha = 0.1
+kx = 0.5
 ky = 0.0
 dimx = 2pi / kx
 dimy = 1.0
@@ -36,7 +36,7 @@ dt = 0.1
 # +
 function simulation( kernel)
 
-    nbpart = 100 * nx * ny
+    nbpart = 1000 * nx * ny
     mesh = TwoDGrid(dimx, nx, dimy, ny)
 
     p = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
@@ -54,7 +54,7 @@ function simulation( kernel)
     
     solve!(ex, ey, poisson, ρ)
     
-    nsteps = 100
+    nsteps = 200
     
     energy(ex) = sqrt(sum( ex .^ 2) * mesh.dx * mesh.dy)
     
@@ -85,9 +85,15 @@ end
 line, γ = fit_complex_frequency(t, e)
 plot(t, e, yscale = :log10, label="CIC")  
 plot!(t, line, label = "$(imag(γ))")
-@time t, e = simulation(M6())
+#@time t, e = simulation(TriangularShapeCloud())
+#line, γ = fit_complex_frequency(t, e)
+#plot!(t, e, yscale = :log10, label="TSC")  
+#plot!(t, line, label = "$(imag(γ))")
+@time t, e = simulation(M4())
 line, γ = fit_complex_frequency(t, e)
-plot!(t, e, yscale = :log10, label="M6")  
+plot!(t, e, yscale = :log10, label="M4")  
 plot!(t, line, label = "$(imag(γ))")
-
-
+# @time t, e = simulation(M6())
+# line, γ = fit_complex_frequency(t, e)
+# plot!(t, e, yscale = :log10, label="M6")  
+# plot!(t, line, label = "$(imag(γ))")
