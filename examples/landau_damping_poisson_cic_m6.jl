@@ -31,12 +31,10 @@ dimx = 2pi / kx
 dimy = 1.0
 dt = 0.1
 
-
-
 # +
 function simulation( kernel)
 
-    nbpart = 100 * nx * ny
+    nbpart = 200 * nx * ny
     mesh = TwoDGrid(dimx, nx, dimy, ny)
 
     p = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
@@ -44,7 +42,15 @@ function simulation( kernel)
     sampler = LandauDamping(alpha, kx)
     ParticleInCell.sample!(p, mesh, sampler)
     
+    ρ_ref = zeros(nx, ny)
+
+    for i = 1:nx, j = 1:ny
+        ρ_ref[i, j] = alpha * cos(kx * mesh.x[i])
+    end
+    
     ρ = compute_rho(p, kernel, mesh)
+    
+    @show sum((ρ .- ρ_ref).^2)
     
     ex = similar(ρ)
     ey = similar(ρ)
@@ -97,3 +103,5 @@ plot!(t, line, label = "$(imag(γ))")
 line, γ = fit_complex_frequency(t, e)
 plot!(t, e, yscale = :log10, label="M6")  
 plot!(t, line, label = "$(imag(γ))")
+
+
