@@ -87,9 +87,13 @@ function simulation( kernel)
 end
 # -
 
+@time t, e = simulation(NearestGridPoint())
+line, γ = fit_complex_frequency(t, e)
+plot(t, e, yscale = :log10, label="NGP")  
+plot!(t, line, label = "$(imag(γ))")
 @time t, e = simulation(CloudInCell())
 line, γ = fit_complex_frequency(t, e)
-plot(t, e, yscale = :log10, label="CIC")  
+plot!(t, e, yscale = :log10, label="CIC")  
 plot!(t, line, label = "$(imag(γ))")
 @time t, e = simulation(TriangularShapeCloud())
 line, γ = fit_complex_frequency(t, e)
