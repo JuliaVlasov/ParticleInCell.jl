@@ -1,27 +1,20 @@
-# -*- coding: utf-8 -*-
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .jl
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.16.2
-#   kernelspec:
-#     display_name: Julia 1.10.3
-#     language: julia
-#     name: julia-1.10
-# ---
+# Weighting schemes
 
-# # Landau damping
-#
-# Poisson solver and cloud in cell
+This a comparison between four weighting schemes using the Landau damping test case.
 
+- NGP : Nearest Grid Point
+- CIC : Clud In Cell
+- TSC : Triangular Shape Cloud
+- M4 : Quartic Spline kernel (Monaghan)
+- M6 : Quintic spline kernel (Monaghan)
+
+```@example ws
 using ParticleInCell
 using Plots
-using ProgressMeter
 using DispersionRelations
+```
 
+```@example ws
 nx = 128
 ny = 8
 alpha = 0.1
@@ -30,11 +23,12 @@ ky = 0.0
 dimx = 2pi / kx
 dimy = 1.0
 dt = 0.1
+```
 
-# +
+```@example ws
 function simulation( kernel)
 
-    nbpart = 200 * nx * ny
+    nbpart = 100 * nx * ny
     mesh = TwoDGrid(dimx, nx, dimy, ny)
 
     p = ParticleGroup{2,2}(nbpart, charge = 1.0, mass = 1.0, n_weights = 1)
@@ -67,7 +61,7 @@ function simulation( kernel)
     t = [0.0]
     e = [energy(ex)]
     
-    @showprogress 1 for i in 1:nsteps
+    for i in 1:nsteps
         
         push_x!(p, mesh, 0.5dt)
         
@@ -85,8 +79,9 @@ function simulation( kernel)
     t, e
     
 end
-# -
+```
 
+```@example ws
 @time t, e = simulation(NearestGridPoint())
 line, γ = fit_complex_frequency(t, e)
 plot(t, e, yscale = :log10, label="NGP")  
@@ -107,7 +102,4 @@ plot!(t, line, label = "$(imag(γ))")
 line, γ = fit_complex_frequency(t, e)
 plot!(t, e, yscale = :log10, label="M6")  
 plot!(t, line, label = "$(imag(γ))")
-
-xlims!(15,20)
-
-
+```

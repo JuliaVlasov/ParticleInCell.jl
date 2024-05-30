@@ -15,7 +15,13 @@ include("landau_damping.jl")
 include("poisson_1d.jl")
 include("poisson_2d.jl")
 include("cloud_in_cell.jl")
-include("pushers.jl")
+
+export compute_rho
+
+include("pushers_ngp.jl")
+include("pushers_cic.jl")
+include("pushers_tsc.jl")
+include("pushers_m4.jl")
 include("pushers_m6.jl")
 include("fdtd.jl")
 include("pic.jl")

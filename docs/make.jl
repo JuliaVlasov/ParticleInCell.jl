@@ -21,6 +21,7 @@ makedocs(
         "Two-stream instability" => "tsi.md",
         "Vlasov-Maxwell 2D" => "vlasov-maxwell.md",
         "Vlasov-Poisson 2D" => "vlasov-poisson.md",
+        "Weighting schemes" => "weighting_schemes.md",
         "Types" => "types.md",
         "Functions" => "functions.md",
         "Contents" => "contents.md",
