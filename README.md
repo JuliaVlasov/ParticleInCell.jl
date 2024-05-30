@@ -41,7 +41,7 @@ Now I increase the number of particles to 1024000 and begin to parallelize parti
 
 # Papers
 
-The simulations in the following papers have been made with this code. Some of them are implemented in FORTRAN translated in Julia. Both codes are in the repository. The interface and code are messy, sorry for that. Don't hésitate to contact me or use the discussion tab.
+The simulations in the following papers have been made with this code. Some of them are implemented in FORTRAN translated in Julia. Both codes are in the repository. The interface and code are messy, sorry for that. Don't hésitate to contact me or use the [Discussions tab](https://github.com/JuliaVlasov/ParticleInCell.jl/discussions).
 
 - P. Chartier, N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate methods for three dimensional Vlasov equations under strong magnetic field with varying direction, SIAM J. Sc. Comput. 42, pp. 520-547, 2020.
 - P. Chartier, N. Crouseilles, M. Lemou, F. Méhats, X. Zhao, Uniformly accurate methods for Vlasov equations with non-homogeneous strong magnetic field, Math. Comp. 88, pp. 2697-2736, 2019.
