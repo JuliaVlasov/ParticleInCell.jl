@@ -33,7 +33,7 @@ Now I increase the number of particles to 1024000 and begin to parallelize parti
 
 ## Other Julia PIC codes 
 
-- [ParticleInCell.jl](https://github.com/adamslc/ParticleInCell.jl) by Luke Adams.
+- [ParticleInCell.jl](https://github.com/JuliaPlasma/ParticleInCell.jl) by Luke Adams.
 - [MPIParticleInCell.jl](https://github.com/adamslc/MPIParticleInCell.jl) by Luke Adams.
 - [ElectrostaticPIC1D.jl](https://github.com/jwscook/ElectrostaticPIC1D.jl) by James Cook.
 - [Julia discourse thread](https://discourse.julialang.org/t/pic-particle-in-cell-space-charge-tracking-simulation/)
