@@ -1,3 +1,5 @@
+using Sobol
+
 export plasma
 
 function plasma( mesh :: TwoDGrid, nbpart :: Int64 )
@@ -14,15 +16,18 @@ function plasma( mesh :: TwoDGrid, nbpart :: Int64 )
 
     particles = Particles(nbpart, weight )
 
+    s = SobolSeq(3)
+
     k = 1
     while (k<=nbpart)
 
-        xi   = rand() * dimx
-        yi   = rand() * dimy
-        zi   = (2.0 + alpha) * rand()
+        xi, yi, zi = next!(s)
+        xi   = mesh.xmin + xi * dimx
+        yi   = mesh.ymin + yi * dimy
+        zi   = (2.0 + alpha) * zi
         temm = 1.0 + sin(yi) + alpha * cos(kx*xi)
 
-        if (temm >= zi)
+        if temm >= zi
             particles.x[1,k] = xi
             particles.x[2,k] = yi
             k = k + 1
@@ -30,16 +35,18 @@ function plasma( mesh :: TwoDGrid, nbpart :: Int64 )
 
     end
 
+    s = SobolSeq(3)
+
     k = 1
     while (k<=nbpart)
 
-        xi   = (rand()-0.5)*10
-        yi   = (rand()-0.5)*10
-        zi   = rand()
+        xi, yi, zi = next!(s)
+        xi   = mesh.xmin + xi * dimx
+        yi   = mesh.ymin + yi * dimy
         temm = ( exp(-((xi-2)^2 + yi^2)/2)
                + exp(-((xi+2)^2 + yi^2)/2))/2
 
-        if (temm >= zi)
+        if temm >= zi
             particles.v[1,k] = xi
             particles.v[2,k] = yi
             k = k + 1
