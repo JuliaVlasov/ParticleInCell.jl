@@ -1,6 +1,6 @@
 # ParticleInCell.jl
 
-[![Documentation](https://github.com/juliavlasov/ParticleInCell.jl/workflows/Documentation/badge.svg)](https://juliavlasov.github.io/ParticleInCell.jl/dev)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliavlasov.github.io/ParticleInCell.jl/dev)
 
 Particle In Cell code in Julia
 
