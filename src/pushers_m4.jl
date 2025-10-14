@@ -5,20 +5,6 @@ M4 cubic spline kernel
 """
 struct M4 end
 
-#function f_m4( x )
-#
-#    if x > 2
-#        f = 0.
-#    elseif x >= 1 && x <= 2
-#        f = 0.5 * (2-x)^2 * (1 - x)
-#    elseif x <= 1 
-#        f = 1 - 2.5 * x^2 + 1.5 * abs(x^3)
-#    end
-#
-#    f
-#
-#end
-
 function f_m4( x )
 
     if x > 2
